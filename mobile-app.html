@@ -30,7 +30,7 @@
             <div class="ph-line"><i class="ph-ico-loc"></i>全国1000余家线下【交车中心】均可交付</div>
             <div class="ph-line"><i class="ph-ico-tel"></i>18686636658</div>
           </div>
-          <button class="ph-home" type="button">返回主页</button>
+          <button class="ph-home" type="button" id="ph-home">返回主页</button>
         </div>
         <div class="ph-grid">
           <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>下级店铺</span></button>
@@ -49,12 +49,12 @@
         </div>
         <div class="ph-partner">城市合伙人（0）</div>
         <div class="ph-empty">暂无数据</div>
-        <button class="ph-logout" type="button">退出<br>后台</button>
+        <button class="ph-logout" type="button" id="ph-logout">退出<br>后台</button>
       </div>
       <p class="entry-note">入口页是 <code>pages/seller/index.vue</code>。本次只在现有 12 个入口后面新增「车源登记」一个，其余入口、返回主页、城市合伙人、退出后台一概不动。点「车源登记」进车源登记页。</p>
     </div>
     <div class="mobile-stage">
-      <div class="mobile-head"><button class="icon-btn" aria-label="返回">‹</button><strong>车源登记</strong><button class="notify-btn" id="notify-entry" aria-label="驳回通知">🔔<span class="notify-badge" id="notify-badge" hidden>0</span></button></div>
+      <div class="mobile-head"><button class="icon-btn" id="inv-back" aria-label="返回">‹</button><strong>车源登记</strong><button class="notify-btn" id="notify-entry" aria-label="驳回通知">🔔<span class="notify-badge" id="notify-badge" hidden>0</span></button></div>
       <div class="inventory-actions">
         <button class="primary" id="add-vehicle">＋ 增加车源</button>
         <div class="filter-bar" id="query-body">
@@ -109,7 +109,10 @@
         </div>
         <div class="d-phone">
           <div class="d-screen">
-            <img src="assets/req-003/detail-nav.png?v=1" alt="导航栏">
+            <div style="position:relative">
+              <img src="assets/req-003/detail-nav.png?v=1" alt="导航栏">
+              <button type="button" id="d2-back" style="position:absolute;left:0;top:0;width:20%;height:100%;background:transparent;border:0"></button>
+            </div>
             <div class="d2-swiper">
               <img src="assets/req-003/detail-car.png?v=1" alt="车辆图片">
               <span class="d2-video" id="d2-video">▶ 含视频</span>
@@ -177,7 +180,7 @@
         <div class="d-phone l8-phone">
           <div class="l8-top">
             <img class="l8-status" src="assets/req-008/nav-status.png?v=2" alt="状态栏">
-            <div class="l8-navrow"><img class="l8-back" src="assets/req-008/nav-back.png?v=2" alt="返回"><span class="l8-title" id="l8-title">特价车</span><img class="l8-capsule" src="assets/req-008/nav-capsule.png?v=2" alt="胶囊按钮"></div>
+            <div class="l8-navrow"><img class="l8-back" id="l8-top-back" src="assets/req-008/nav-back.png?v=2" alt="返回"><span class="l8-title" id="l8-title">特价车</span><img class="l8-capsule" src="assets/req-008/nav-capsule.png?v=2" alt="胶囊按钮"></div>
           </div>
           <div class="l8-screen" id="l8-screen">
             <div class="l8-search">
@@ -246,6 +249,24 @@
         <div class="d-phone l10-phone" id="l10-phone"></div>
       </div>
     </div>
+  </section>
+
+  <section class="view" id="view-user">
+    <div class="mobile-layout"><div class="detail-col">
+      <div class="d-phone mu-phone">
+        <div class="mu-wrap">
+          <img src="assets/req-user/user_top.png" style="width:100%;display:block">
+          <button type="button" id="mu-login" class="mu-hot" style="top:49%;left:2%;width:68%;height:13%"></button>
+          <button type="button" id="mu-admin" class="mu-hot" style="top:49%;left:70%;width:28%;height:13%"></button>
+        </div>
+        <img src="assets/req-user/user_mid.png" style="width:100%;display:block">
+        <div class="mu-wrap">
+          <img src="assets/req-user/user_tabbar.png" style="width:100%;display:block">
+          <button type="button" id="mu-tab-home" class="mu-hot" style="top:0;left:0;width:33%;height:100%"></button>
+          <button type="button" id="mu-tab-user" class="mu-hot" style="top:0;left:67%;width:33%;height:100%"></button>
+        </div>
+      </div>
+    </div></div>
   </section>
 
 </main>

@@ -41,15 +41,10 @@ body.mobile-app .embedded-prototype { border:0 !important; border-radius:0 !impo
 body.mobile-app .embedded-prototype iframe { width:100%; max-width:430px; margin:0 auto; display:block; border:0; }
 body.mobile-app #view-home002 { margin:0 !important; padding:0 !important; background:#f5f6f7 !important; min-height:100vh; }
 
-/* 工具控制条：明确是外部工具，不是手机画面的一部分 */
-#mf-bar {
-  position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:8px;
-  background:#20303a; color:#cfe3e6; padding:8px 12px; font:13px/1.4 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
-}
-#mf-bar button { border:1px solid #4a6570; background:#284450; color:#e6f3f2; border-radius:7px; padding:6px 10px; font-size:12px; }
-#mf-bar button:disabled { opacity:.4; }
-#mf-bar .mf-title { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#8fb3ac; font-size:12px; }
-#mf-bar .mf-chip { background:transparent; border:1px solid #3d5active; }
+/* 「我的」页：截图铺满宽度，登录入口与底部导航用透明按钮叠在真实截图对应位置上，
+   截图本身、文字、颜色一概不改 */
+body.mobile-app .mu-wrap { position:relative; }
+body.mobile-app .mu-hot { position:absolute; background:transparent; border:0; padding:0; }
 
 @media (max-width:430px) {
   body.mobile-app .mobile-stage, body.mobile-app .entry-stage, body.mobile-app .d-phone,

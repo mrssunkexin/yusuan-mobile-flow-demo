@@ -46,7 +46,6 @@
       }, 30);
     }
     window.scrollTo(0, 0);
-    updateBar(view);
   }
 
   function goto(view, opts) {
@@ -67,34 +66,8 @@
     if (!action || !action.view) return;
     goto(action.view, action);
   };
-
-  var VIEW_LABEL = {
-    home002: 'C端首页', list008: '车辆列表', contact2: '车辆详情', inventory: '车源登记／代理商后台',
-    login009: '商户登录／4S店登录', clue010: '销售线索'
-  };
-
-  function updateBar(view) {
-    var t = document.getElementById('mf-title');
-    if (t) t.textContent = VIEW_LABEL[view] || view;
-    var b = document.getElementById('mf-back');
-    if (b) b.disabled = stack.length <= 1;
-  }
-
-  function buildBar() {
-    var bar = document.createElement('div');
-    bar.id = 'mf-bar';
-    bar.innerHTML =
-      '<button type="button" id="mf-back">‹ 返回</button>' +
-      '<span class="mf-title" id="mf-title"></span>' +
-      '<button type="button" data-go="home002">C端首页</button>' +
-      '<button type="button" data-go="login009">登录</button>' +
-      '<button type="button" data-go="clue010">线索</button>';
-    document.body.insertBefore(bar, document.body.firstChild);
-    bar.querySelector('#mf-back').addEventListener('click', back);
-    bar.querySelectorAll('[data-go]').forEach(function (b) {
-      b.addEventListener('click', function () { goto(b.dataset.go, {}); });
-    });
-  }
+  // 供各业务文件里真实的返回箭头调用，取代原来弹提示的假返回
+  window.__mobileBack = back;
 
   // 登录页默认预填一个可用账号，点登录即可（不用手输）。l9-phone 在页面一加载就已渲染，
   // 不需要等视图切换，直接填，避免自动化连续点击时出现的时序竞争。
@@ -107,7 +80,19 @@
     if (mc) mc.value = '123456';
   }
 
-  // 代理商后台首页的格子：「车源登记」进登记列表，「线索管理」进销售线索
+  // 「我的」页：登录入口与底部导航（截图上叠透明按钮，图片本身不变）
+  function bindUserPage() {
+    var login = document.getElementById('mu-login');
+    if (login) login.addEventListener('click', function () { goto('login009', {}); });
+    var admin = document.getElementById('mu-admin');
+    if (admin) admin.addEventListener('click', function () { goto('login009', {}); });
+    var tabHome = document.getElementById('mu-tab-home');
+    if (tabHome) tabHome.addEventListener('click', function () { goto('home002', {}); });
+    // 「我要比价」等其余按钮不在本次范围，不绑定，保持点了没反应
+  }
+
+  // 代理商后台首页的格子：「车源登记」进登记列表，「线索管理」进销售线索，
+  // 「返回主页」「退出后台」回「我的」；车源登记页顶部「‹」按来路返回
   function bindClueEntry() {
     var b = document.getElementById('entry-clue');
     if (b) b.addEventListener('click', function (e) {
@@ -124,19 +109,29 @@
       // 只切换显示模式；app.js 自带的滚动高亮效果一并保留，互不冲突
       goto('inventory', { mode: 'list' });
     });
+    var phHome = document.getElementById('ph-home');
+    if (phHome) phHome.addEventListener('click', function () { goto('user', {}); });
+    var phLogout = document.getElementById('ph-logout');
+    if (phLogout) phLogout.addEventListener('click', function () { goto('user', {}); });
+    var invBack = document.getElementById('inv-back');
+    if (invBack) invBack.addEventListener('click', back);
   }
 
-  // 车辆列表页格子点击 → 车源详情（特价车沿用现状商品详情，不在本次范围，保留原提示）
+  // 车辆列表页格子点击 → 车源详情（特价车沿用现状商品详情，不在本次范围，保留原提示）；
+  // 列表页、详情页左上角返回箭头 → 回上一页
   function bindListClick() {
     var list = document.getElementById('l8-list');
-    if (!list) return;
-    list.addEventListener('click', function (e) {
+    if (list) list.addEventListener('click', function (e) {
       var it = e.target.closest('.l8-item');
       if (!it) return;
       if (it.dataset.src === 'special_price') return; // 保留原有提示，不跳转
       e.stopImmediatePropagation();
       goto('contact2', { source: it.dataset.src });
     }, true);
+    var l8Back = document.getElementById('l8-top-back');
+    if (l8Back) l8Back.addEventListener('click', back);
+    var d2Back = document.getElementById('d2-back');
+    if (d2Back) d2Back.addEventListener('click', back);
   }
 
   // C 端首页（iframe，同源）：隐藏样稿自带的评审工具条／说明栏，手机内容按屏宽等比缩放；
@@ -179,6 +174,17 @@
           goto('list008', { entry: entry });
         }, true);
       });
+      // 底部导航「我的」是图片，右三分之一叠一个透明按钮，图片本身不动
+      var tabbar = doc.querySelector('.tabbar');
+      if (tabbar && !tabbar.querySelector('.mf-user-hot')) {
+        // .tabbar 自身已是 position:fixed（现状样式），本来就是有效的定位上下文，不用再改它的定位方式
+        var hot = doc.createElement('button');
+        hot.type = 'button';
+        hot.className = 'mf-user-hot';
+        hot.style.cssText = 'position:absolute;right:0;top:0;width:33%;height:100%;background:transparent;border:0;';
+        hot.addEventListener('click', function (e) { e.stopImmediatePropagation(); goto('user', {}); });
+        tabbar.appendChild(hot);
+      }
     }
     if (frame.contentDocument && frame.contentDocument.readyState === 'complete') wire();
     frame.addEventListener('load', wire);
@@ -192,7 +198,7 @@
   });
 
   function boot() {
-    buildBar();
+    bindUserPage();
     bindClueEntry();
     bindListClick();
     bindHomeFrame();
@@ -204,7 +210,6 @@
     // 真实用户打开小程序，第一屏是 C 端首页
     stack = [{ view: 'home002', opts: {} }];
     realShow('home002');
-    updateBar('home002');
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

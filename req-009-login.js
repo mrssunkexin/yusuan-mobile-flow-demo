@@ -132,7 +132,9 @@
   }
 
   function bind() {
-    $('l9-m-back').addEventListener('click', function () { toast('返回「我的」'); });
+    $('l9-m-back').addEventListener('click', function () {
+      if (window.__mobileBack) window.__mobileBack(); else toast('返回「我的」');
+    });
     $('l9-m-send').addEventListener('click', function () { toast('验证码已发送'); });
     $('l9-m-login').addEventListener('click', merchantLogin);
     $('l9-m-entry').addEventListener('click', function () { go('staff'); });
