@@ -147,9 +147,15 @@
         '.layout{display:block!important}.wrap{padding:0!important;margin:0!important;max-width:none!important}' +
         '.left-col{position:static!important;width:100%!important}';
       doc.head.appendChild(style);
-      // 不缩放：按原始 390px 宽显示，iframe 固定同宽度居中，宽度不够的手机两边裁掉几像素。
-      // 之前按屏宽等比缩放会和 REQ-002 样稿自己上报高度的逻辑抢时机，在微信内置浏览器里
-      // 经常导致上报的高度对不上实际内容，看起来像"拖不动、下面是空白"。
+      // 整体缩小到 80%：手机壳（.phone）连同内部滚动区、公告栏、底部导航一起变矮，
+      // 一屏就能看全，不需要外层页面再多滚一截，避免内层能滚、外层还要再滚一点
+      // 这种嵌套滚动在 iOS 上经常卡住交接不过去的问题。用 zoom 不用 transform：
+      // zoom 是真的按比例改变布局大小，.phone 内部绝对定位的公告栏、底部导航
+      // 仍然按缩小后的尺寸正确摆放，不会错位。
+      var ZOOM = 0.8;
+      doc.documentElement.style.zoom = ZOOM;
+      frame.style.width = Math.round(390 * ZOOM) + 'px';
+      frame.style.height = Math.round(844 * ZOOM) + 'px';
       doc.querySelectorAll('.op-card').forEach(function (card) {
         card.addEventListener('click', function (e) {
           var entry = card.getAttribute('data-entry');
