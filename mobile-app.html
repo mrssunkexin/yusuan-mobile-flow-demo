@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>预蒜小程序 · 手机端流程演示</title>
+<link rel="stylesheet" href="styles.css?v=6.4.0">
+<link rel="stylesheet" href="mobile-flow.css?v=1">
+</head>
+<body class="mobile-app">
+<div class="shell">
+<main id="app" tabindex="-1">
+
+  <section class="view" id="view-home002">
+    <div class="embedded-prototype">
+      <iframe id="home002-frame" src="req-002-home.html?v=5.0.0" title="REQ-002 小程序首页改造"></iframe>
+    </div>
+  </section>
+
+  <section class="view" id="view-inventory">
+   <div class="mobile-layout">
+    <div class="entry-col">
+      <p class="entry-cap">入口页 · 代理商后台</p>
+      <div class="mobile-stage entry-stage">
+        <div class="ph-status"><span class="ph-time">16:08</span><span class="ph-right"><i class="ph-sig"></i>5G<i class="ph-bat"></i></span></div>
+        <div class="ph-green">
+          <div class="ph-capsule"><span>•••</span><i></i></div>
+          <div class="ph-usercard">
+            <div class="ph-name">孙可鑫</div>
+            <div class="ph-line"><i class="ph-ico-loc"></i>全国1000余家线下【交车中心】均可交付</div>
+            <div class="ph-line"><i class="ph-ico-tel"></i>18686636658</div>
+          </div>
+          <button class="ph-home" type="button">返回主页</button>
+        </div>
+        <div class="ph-grid">
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>下级店铺</span></button>
+          <button class="ph-item" type="button" id="entry-clue"><img src="assets/req-001/ic-clue.png?v=1" alt=""><span>线索管理</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-share.png?v=1" alt=""><span>共享车源</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-bill.png?v=1" alt=""><span>积分账单</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>全网比价</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>招募合伙人</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-hot.png?v=1" alt=""><span>朋友圈素材</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>保养套餐</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>运营管理</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>助道学堂</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>签署合同</span></button>
+          <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>售车登记</span></button>
+          <button class="ph-item" type="button" id="entry-car-source"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>车源登记</span></button>
+        </div>
+        <div class="ph-partner">城市合伙人（0）</div>
+        <div class="ph-empty">暂无数据</div>
+        <button class="ph-logout" type="button">退出<br>后台</button>
+      </div>
+      <p class="entry-note">入口页是 <code>pages/seller/index.vue</code>。本次只在现有 12 个入口后面新增「车源登记」一个，其余入口、返回主页、城市合伙人、退出后台一概不动。点「车源登记」进车源登记页。</p>
+    </div>
+    <div class="mobile-stage">
+      <div class="mobile-head"><button class="icon-btn" aria-label="返回">‹</button><strong>车源登记</strong><button class="notify-btn" id="notify-entry" aria-label="驳回通知">🔔<span class="notify-badge" id="notify-badge" hidden>0</span></button></div>
+      <div class="inventory-actions">
+        <button class="primary" id="add-vehicle">＋ 增加车源</button>
+        <div class="filter-bar" id="query-body">
+          <button type="button" class="filter-item" id="q-car">品牌<i></i></button>
+          <button type="button" class="filter-item" id="q-type">类型<i></i></button>
+          <button type="button" class="filter-item" id="q-approve">审核<i></i></button>
+          <button type="button" class="filter-item" id="q-shelf">上下架<i></i></button>
+        </div>
+      </div>
+      <div id="vehicle-list" class="vehicle-list" aria-live="polite"></div>
+      <div id="list-footer" class="list-footer">向下滚动加载后续记录</div>
+      <div id="m-stack" class="m-stack"></div>
+      <div id="m-dialog" class="m-dialog-wrap" hidden></div>
+      <div id="m-picker" class="m-picker-wrap" hidden></div>
+      <div id="m-toast" class="m-toast"></div>
+    </div>
+   </div>
+  </section>
+
+  <!-- 以下两块是 PC 端页面（REQ-005/006），本次手机端流程演示不展示；保留这两块空壳
+       只是因为 app.js 里 renderStores()/renderEmployees() 直接操作这些元素、无判空，
+       删掉会报错导致车源登记列表渲染不出来。不改动业务内容，纯粹保结构完整。 -->
+  <section class="view" id="view-stores" style="display:none">
+    <div class="pc-page">
+      <div class="page-heading"><div><p class="kicker">PC端</p><h2>4S店信息维护</h2></div><div class="button-row"><button class="primary" id="add-store">新增4S店</button></div></div>
+      <div class="panel toolbar"><label>4S店名称<input id="store-search" maxlength="100" placeholder="请输入4S店名称"></label><button id="query-store" class="primary">查询</button><button id="reset-store" class="ghost">重置</button></div>
+      <div class="panel table-panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>4S店名称</th><th>省市区县</th><th>详细地址</th><th>操作</th></tr></thead><tbody id="store-table-body"></tbody></table></div><div id="store-empty" class="table-empty" hidden></div><div class="pagination"><span id="store-total"></span><label>每页<select id="store-page-size"><option>20</option><option>50</option><option>100</option></select></label><button id="store-prev">上一页</button><span id="store-page"></span><button id="store-next">下一页</button></div></div>
+    </div>
+  </section>
+  <section class="view" id="view-employees" style="display:none">
+    <div class="pc-page">
+      <div class="page-heading"><div><p class="kicker">PC端</p><h2>4S店员工维护</h2></div><div class="button-row"><button class="ghost" id="contact-setting">车源联系人设置</button><button class="primary" id="add-employee">新增员工</button></div></div>
+      <div class="panel toolbar employee-toolbar">
+        <label>员工姓名<input id="employee-name" maxlength="50" placeholder="请输入员工姓名"></label>
+        <label>手机号<input id="employee-phone" placeholder="请输入手机号"></label>
+        <label>所属4S店<input id="employee-store-filter" list="employee-store-options" placeholder="全部门店／输入店名搜索"><datalist id="employee-store-options"></datalist></label>
+        <label>状态<select id="employee-status"><option value="">全部</option><option>启用</option><option>停用</option></select></label>
+        <button id="query-employee" class="primary">查询</button><button id="reset-employee" class="ghost">重置</button>
+      </div>
+      <div class="panel table-panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>员工姓名</th><th>手机号</th><th>所属4S店</th><th>账号状态</th><th>备注</th><th>操作</th></tr></thead><tbody id="employee-table-body"></tbody></table></div><div id="employee-empty" class="table-empty" hidden></div><div class="pagination"><span id="employee-total"></span><button id="employee-prev">上一页</button><span id="employee-page"></span><button id="employee-next">下一页</button></div></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-contact2">
+    <div class="mobile-layout">
+      <div class="detail-col">
+        <div class="d-toolbar">
+          <span class="d-label">当前身份</span>
+          <div class="seg2" id="d2-role"><button data-role="agent" class="on">代理商</button><button data-role="customer">C 端客户</button></div>
+          <span class="d-label">车源类型</span>
+          <div class="seg2" id="d2-source"><button data-source="inventory" class="on">库存车</button><button data-source="firsthand">一手车源</button></div>
+        </div>
+        <div class="d-phone">
+          <div class="d-screen">
+            <img src="assets/req-003/detail-nav.png?v=1" alt="导航栏">
+            <div class="d2-swiper">
+              <img src="assets/req-003/detail-car.png?v=1" alt="车辆图片">
+              <span class="d2-video" id="d2-video">▶ 含视频</span>
+              <span class="d2-media" id="d2-media"></span>
+            </div>
+            <div class="d2-price">
+              <div class="d2-price-big" id="d2-big"></div>
+              <div class="d2-price-lines">
+                <p>指导价: <s id="d2-ref"></s></p>
+                <p class="d2-yellow">预蒜价: <span id="d2-sale"></span></p>
+              </div>
+            </div>
+            <div class="d2-model"><span class="d2-model-tag">车型:</span><span class="d2-model-name" id="d2-name"></span></div>
+            <div class="d2-info">
+              <div class="d2-info-head"><b>车辆信息</b><span class="d2-src" id="d2-src"></span></div>
+              <dl class="d2-grid">
+                <div><dt>外观颜色</dt><dd id="d2-color-out"></dd></div>
+                <div><dt>内饰颜色</dt><dd id="d2-color-in"></dd></div>
+                <div><dt>车辆类型</dt><dd id="d2-vtypes"></dd></div>
+                <div><dt>所在地区</dt><dd id="d2-region"></dd></div>
+              </dl>
+              <div class="d2-row"><span class="d2-k">标签</span><div class="d2-labels" id="d2-labels"></div></div>
+              <div class="d2-row"><span class="d2-k">备注</span><p class="d2-remark" id="d2-remark"></p></div>
+            </div>
+            <img src="assets/req-003/detail-shop.png?v=1" alt="我附近门店">
+            <img src="assets/req-003/detail-adv.png?v=1" alt="购车优势">
+            <div class="d2-detail">
+              <div class="d2-detail-head">商品详情</div>
+              <div class="d2-blocks" id="d2-blocks"></div>
+            </div>
+          </div>
+          <div class="m-dialog-wrap" id="d2-confirm" hidden></div>
+          <button class="d-fab d2-fab" id="d2-fab" title="联系登记人">
+            <span class="d-fab-ico">☎</span><span class="d-fab-txt">登记人</span>
+          </button>
+          <div class="d-tabbar"><img src="assets/req-003/detail-tabbar.png?v=1" alt="底部固定栏"></div>
+          <div class="d-sheet-wrap" id="d2-sheet" hidden>
+            <div class="d-mask" id="d2-mask"></div>
+            <div class="d-sheet">
+              <div class="d-sheet-head"><b>登记人</b><button class="d-x" id="d2-close">×</button></div>
+              <div class="d-row"><span class="d-k">姓名</span><span class="d-v" id="d2-c-name"></span></div>
+              <div class="d-row"><span class="d-k">来源</span><span class="d-v d-from" id="d2-c-from"></span></div>
+              <div class="d-row"><span class="d-k">手机号</span><a class="d-v d-tel" id="d2-c-tel"></a></div>
+              <div class="d-hr"></div>
+              <div class="d-sold">
+                <button class="d-mark" id="d2-mark"></button>
+                <p class="d-markcount" id="d2-markcount"></p>
+                <p class="d-soldtip">如果您觉得该车已售，请点击【疑似已售】标记</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-list008">
+    <div class="mobile-layout">
+      <div class="detail-col">
+        <div class="d-toolbar">
+          <span class="d-label">从首页哪个卡片进入</span>
+          <div class="seg2" id="l8-entry"><button data-entry="special_price" class="on">特价车</button><button data-entry="firsthand">一手车源</button><button data-entry="inventory">库存车</button></div>
+          <label class="d-check"><input type="checkbox" id="l8-empty"> 模拟无数据</label>
+        </div>
+        <div class="d-phone l8-phone">
+          <div class="l8-top">
+            <img class="l8-status" src="assets/req-008/nav-status.png?v=2" alt="状态栏">
+            <div class="l8-navrow"><img class="l8-back" src="assets/req-008/nav-back.png?v=2" alt="返回"><span class="l8-title" id="l8-title">特价车</span><img class="l8-capsule" src="assets/req-008/nav-capsule.png?v=2" alt="胶囊按钮"></div>
+          </div>
+          <div class="l8-screen" id="l8-screen">
+            <div class="l8-search">
+              <div class="l8-input"><span class="l8-mag" aria-hidden="true"></span><input id="l8-kw" placeholder="找到您的爱车"></div>
+              <button type="button" class="l8-sbtn" id="l8-search">搜索</button>
+            </div>
+            <img class="l8-banner" src="assets/req-008/banner.png?v=1" alt="横幅">
+            <div class="l8-filter">
+              <span class="l8-f" id="l8-f-brand"><span class="t">全部</span><i></i></span>
+              <span class="l8-f" id="l8-f-price"><span class="t">价格</span><i></i></span>
+              <span class="l8-f" id="l8-f-cat"><span class="t">类别</span><i></i></span>
+              <img class="l8-toggle" id="l8-toggle" src="assets/req-008/toggle-icon.png?v=1" alt="列表宫格切换">
+            </div>
+            <div class="l8-list grid" id="l8-list"></div>
+            <div class="l8-emptybox" id="l8-emptybox" hidden><div class="l8-empty-ico"></div>没有搜索结果</div>
+            <div class="l8-more" id="l8-more">没有更多数据了</div>
+          </div>
+          <div class="l8-page" id="l8-brand-page" hidden>
+            <div class="l8-top">
+              <img class="l8-status" src="assets/req-008/nav-status.png?v=2" alt="状态栏">
+              <div class="l8-navrow"><img class="l8-back" id="l8-brand-back" src="assets/req-008/nav-back.png?v=2" alt="返回"><span class="l8-title">选择品牌</span><img class="l8-capsule" src="assets/req-008/nav-capsule.png?v=2" alt="胶囊按钮"></div>
+            </div>
+            <div class="l8-brand-list" id="l8-brand-list"></div>
+          </div>
+          <div class="l8-sheet-wrap" id="l8-price-sheet" hidden>
+            <div class="l8-mask" id="l8-price-mask"></div>
+            <div class="l8-sheet">
+              <div class="l8-pick-head"><button type="button" id="l8-price-cancel">取消</button><button type="button" class="ok" id="l8-price-ok">确定</button></div>
+              <div class="l8-price-opts" id="l8-price-opts"></div>
+            </div>
+          </div>
+          <div class="l8-sheet-wrap" id="l8-cat-sheet" hidden>
+            <div class="l8-mask" id="l8-cat-mask"></div>
+            <div class="l8-sheet">
+              <div class="l8-cat-title">选择类别</div>
+              <div class="l8-cat-opts" id="l8-cat-opts"></div>
+              <div class="l8-cat-foot"><button type="button" id="l8-cat-reset">重置</button><button type="button" class="ok" id="l8-cat-ok">确定</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-login009">
+    <div class="mobile-layout">
+      <div class="detail-col">
+        <div class="d-toolbar">
+          <span class="d-label">试填账号</span>
+          <div class="seg2"><button type="button" data-fill="13800001234|07123x">启用员工</button><button type="button" data-fill="13800005678|224567">停用员工</button><button type="button" data-fill="13900001111|123456">未开通手机号</button></div>
+          <button type="button" class="seg2-reset" id="l9-reset">回到商户登录</button>
+        </div>
+        <div class="d-phone l9-phone" id="l9-phone"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-clue010">
+    <div class="mobile-layout">
+      <div class="detail-col">
+        <div class="d-toolbar">
+          <span class="d-label">手机系统</span>
+          <div class="seg2" id="l10-os"><button type="button" data-os="ios" class="on">苹果</button><button type="button" data-os="android">安卓</button></div>
+          <label class="d-check"><input type="checkbox" id="l10-nophone"> 第 2 条没有手机号</label>
+        </div>
+        <div class="d-phone l10-phone" id="l10-phone"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="modal-root"></div>
+<script src="logic.js?v=6.1.0"></script>
+<script src="app.js?v=5.4.0"></script>
+<script src="req-003-detail2.js?v=5.2.0"></script>
+<script src="req-008-list.js?v=1.0.2"></script>
+<script src="req-009-login.js?v=1.2.0"></script>
+<script src="req-010-clue.js?v=1.2.0"></script>
+<script src="mobile-flow.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+/* 手机端整体流程演示 —— 只隐藏评审工具外壳，不改样稿本身的业务内容与样式。
+   规则：手机屏幕里的画面必须和现有样稿完全一致；工具控制条固定在屏幕外面（顶部）。 */
+html.mobile-app, body.mobile-app { margin:0; padding:0; background:#e9edee; }
+body.mobile-app .topbar,
+body.mobile-app .side-nav,
+body.mobile-app .scope-note,
+body.mobile-app .d-toolbar,
+body.mobile-app .side-info,
+body.mobile-app .entry-cap,
+body.mobile-app .entry-note,
+body.mobile-app .notes-toggle,
+body.mobile-app #view-overview { display:none !important; }
+
+body.mobile-app .shell { display:block; min-height:100vh; }
+body.mobile-app main { padding:0 !important; min-height:100vh; }
+body.mobile-app .view { display:none; }
+body.mobile-app .view.active { display:block; }
+
+body.mobile-app .mobile-layout { display:block !important; gap:0; }
+body.mobile-app .entry-col,
+body.mobile-app .detail-col { width:auto !important; }
+
+/* 手机画面本身：铺满可视宽度，不再挤在桌面版式里 */
+body.mobile-app .mobile-stage,
+body.mobile-app .entry-stage,
+body.mobile-app .d-phone,
+body.mobile-app .l8-phone,
+body.mobile-app .l9-phone,
+body.mobile-app .l10-phone {
+  width:100% !important; max-width:430px !important; height:auto !important; min-height:100vh !important;
+  margin:0 auto !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; position:relative !important;
+}
+body.mobile-app .mobile-layout .mobile-stage { position:static !important; }
+
+/* 车源登记：默认是代理商后台首页（entry-stage），点「车源登记」后只看列表页 */
+body.mobile-app #view-inventory.mf-mode-list .entry-stage { display:none !important; }
+body.mobile-app #view-inventory:not(.mf-mode-list) .mobile-stage:not(.entry-stage) { display:none !important; }
+
+/* 首页 C 端页面用 iframe 承载，铺满宽度 */
+body.mobile-app .embedded-prototype { border:0 !important; border-radius:0 !important; box-shadow:none !important; background:none !important; }
+body.mobile-app .embedded-prototype iframe { width:100%; max-width:430px; margin:0 auto; display:block; border:0; }
+body.mobile-app #view-home002 { margin:0 !important; padding:0 !important; background:#f5f6f7 !important; min-height:100vh; }
+
+/* 工具控制条：明确是外部工具，不是手机画面的一部分 */
+#mf-bar {
+  position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:8px;
+  background:#20303a; color:#cfe3e6; padding:8px 12px; font:13px/1.4 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+}
+#mf-bar button { border:1px solid #4a6570; background:#284450; color:#e6f3f2; border-radius:7px; padding:6px 10px; font-size:12px; }
+#mf-bar button:disabled { opacity:.4; }
+#mf-bar .mf-title { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#8fb3ac; font-size:12px; }
+#mf-bar .mf-chip { background:transparent; border:1px solid #3d5active; }
+
+@media (max-width:430px) {
+  body.mobile-app .mobile-stage, body.mobile-app .entry-stage, body.mobile-app .d-phone,
+  body.mobile-app .l8-phone, body.mobile-app .l9-phone, body.mobile-app .l10-phone { max-width:100% !important; }
+}

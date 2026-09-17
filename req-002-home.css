@@ -1,0 +1,381 @@
+/* REQ-002 小程序首页改造样稿 v3
+   尺寸依据：mall-portal-itu/pages/index/index.vue 的 rpx 版位换算（750rpx = 390px）
+   素材依据：SRC-001 原始 Word 内嵌首页示意图 image4.png 实际切图，未使用手绘色块或 emoji 代替 */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #edf4ef;
+  color: #1f2a24;
+  font: 14px/1.6 -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+}
+
+.wrap {
+  max-width: 1200px;
+  margin: 0;
+  padding: 12px 16px 28px;
+}
+
+/* 左手机、右说明；手机靠左并顶到顶 */
+.layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.left-col {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 12px;
+}
+
+/* ---------- 工具条 ---------- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+
+.seg {
+  display: inline-flex;
+  border: 1px solid #cddcd3;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.seg button {
+  border: 0;
+  background: #fff;
+  color: #2f4137;
+  font-size: 12px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.seg button + button { border-left: 1px solid #cddcd3; }
+.seg button.on { background: #128a3a; color: #fff; }
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #2f4137;
+  cursor: pointer;
+}
+
+/* ---------- 手机 ---------- */
+.stage { padding: 0; }
+
+.phone {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  background: #fff;
+  overflow: hidden;
+  border-radius: 26px;
+  box-shadow: 0 18px 44px rgba(15, 46, 28, .22);
+  flex: 0 0 auto;
+}
+
+.phone.small { width: 375px; height: 667px; }
+
+/* 可滚动内容区：底部让出公告与导航，公告和导航固定在底部 */
+.screen {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: calc(var(--notice-h) + var(--tab-h));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* 手机内不显示滚动条，真机小程序也没有这条 */
+.screen::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+.phone { --notice-h: 41px; --tab-h: 65px; }
+.phone.small { --notice-h: 39px; --tab-h: 63px; }
+
+.screen img { display: block; width: 100%; height: auto; }
+
+.block { position: relative; }
+
+/* 大卡区：容器高度按原页面 310rpx 版位加下方间距 */
+.daily {
+  background: #fff;
+  padding: 0 0 2px;
+  text-align: center;
+}
+
+.daily img {
+  width: 91.74%;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+/* 两张并排卡片：按 340rpx × 408rpx 版位与实际左右间距换算 */
+.cards {
+  display: flex;
+  align-items: flex-start;
+  background: #fff;
+  padding: 2px 3.17% 1px 3.53%;
+  gap: 2.02%;
+}
+
+.cards img { cursor: pointer; }
+.cards .left { width: 48.74%; }
+.cards .right { width: 49.24%; }
+
+/* ---------- 底部滚动公告（真实滚动） ---------- */
+.notice {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--tab-h);
+  height: var(--notice-h);
+  background: #fdecec;   /* R2-01 淡红底 */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 0 10px;
+  z-index: 3;
+}
+
+.notice .speaker {
+  width: 26px;
+  height: 22px;
+  flex: 0 0 auto;
+  background: url("assets/req-002/speaker-red.png?v=2") center/contain no-repeat;   /* R2-01 红喇叭 */
+}
+
+.notice .viewport {
+  flex: 1 1 auto;
+  height: 36px;
+  overflow: hidden;
+  position: relative;
+}
+
+.phone.small .notice .viewport { height: 34px; }
+
+.notice .track {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  will-change: transform;
+}
+
+.notice .line {
+  height: 18px;
+  line-height: 18px;
+  font-size: 12px;
+  color: #23302a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.phone.small .notice .line { height: 17px; line-height: 17px; font-size: 11.5px; }
+
+/* ---------- 底部导航 ---------- */
+.tabbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--tab-h);
+  z-index: 4;
+}
+
+.tabbar .bar { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+.tabbar .center {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  width: 66px;
+  height: 66px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+}
+
+/* ---------- 改动标注 ---------- */
+.marker {
+  position: absolute;
+  z-index: 5;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #b3261e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+  pointer-events: none;
+}
+
+.phone.marked .marker { display: inline-flex; }
+
+.phone.marked .outline {
+  outline: 2px dashed #b3261e;
+  outline-offset: -2px;
+}
+
+/* ---------- 提示条：放在手机内，位置与小程序 Toast 一致 ---------- */
+.toast {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(.96);
+  background: rgba(20, 32, 25, .93);
+  color: #fff;
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding: 12px 14px;
+  border-radius: 10px;
+  width: 290px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s, transform .18s;
+  z-index: 20;
+}
+
+.toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+/* ---------- 说明 ---------- */
+.notes {
+  flex: 1 1 380px;
+  min-width: 320px;
+  margin-top: 0;
+  background: #fff;
+  border: 1px solid #dbe6df;
+  border-radius: 12px;
+  padding: 18px 20px 20px;
+}
+
+.notes h2 {
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+.notes h2 + p { margin-top: -4px; }
+
+.notes p { margin: 0 0 12px; color: #4a5c52; font-size: 12.5px; }
+
+.notes table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  margin-bottom: 16px;
+}
+
+.notes th, .notes td {
+  border: 1px solid #e2ebe5;
+  padding: 7px 9px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.notes th { background: #f2f8f4; font-weight: 600; width: 86px; }
+.notes td.what { width: 216px; }
+
+.notes ul { margin: 0 0 14px; padding-left: 18px; color: #4a5c52; font-size: 12.5px; }
+.notes li { margin-bottom: 4px; }
+
+.notes .flag {
+  display: inline-block;
+  min-width: 18px;
+  text-align: center;
+  background: #b3261e;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 6px;
+  margin-right: 6px;
+}
+
+.notes .keep { background: #128a3a; }
+.notes .pending { background: #b07203; }
+
+code {
+  background: #f0f5f2;
+  border: 1px solid #e0e9e3;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 11.5px;
+}
+
+/* 原「特价车列表」位置示意：只在标注模式下显示 */
+.removed {
+  background: #fff;
+  padding: 8px 12px 14px;
+}
+
+.removed-inner {
+  border: 2px dashed #b3261e;
+  border-radius: 8px;
+  padding: 14px 12px;
+  color: #b3261e;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  background: rgba(179, 38, 30, .05);
+}
+
+/* 窄屏回落为上下排列 */
+@media (max-width: 980px) {
+  .layout { flex-direction: column; }
+  .left-col { position: static; }
+  .notes { width: 100%; }
+}
+
+.notes .ok2 { background: #1a7f5a; }
+
+/* 右侧说明一键隐藏 */
+.notes{position:relative}
+.notes-toggle{position:absolute;right:12px;top:12px;border:1px solid #dbe6df;background:#fff;color:#63756b;border-radius:8px;font-size:11.5px;padding:4px 9px;font-family:inherit;cursor:pointer}
+.notes-toggle:hover{border-color:#128a3a;color:#128a3a}
+.notes.collapsed{flex:0 0 auto;min-width:0;width:112px;padding:12px 10px}
+.notes.collapsed>*:not(.notes-toggle){display:none}
+.notes.collapsed .notes-toggle{position:static;display:block;width:100%;text-align:center}
+
+/* ===== R2-02 三个入口卡片：标题区（运营图）＋ 轮播框 =====
+   比例依据 REQ-002 v2.6 第 3.1 节 rpx 版位：
+   大卡 688×310rpx，轮播框距左 332、距右 16、上下 16 → 340×278；每格车图 222 ＋ 价格条 56
+   小卡 340×408rpx，轮播框距左右 16、距顶 172、距底 16 → 308×220；每格车图 164 ＋ 价格条 56 */
+.op-card { position: relative; overflow: hidden; border-radius: 5px; cursor: pointer; }
+.daily .op-card { width: 91.74%; margin: 0 auto; }
+.screen .op-card img.op-bg { display: block; width: 100%; height: auto; margin: 0; }
+.carousel { position: absolute; overflow: hidden; border-radius: 4px; }
+.op-daily .carousel { left: 48.26%; top: 5.16%; width: 49.42%; height: 89.68%; }
+.op-small .carousel { left: 4.71%; top: 42.16%; width: 90.59%; height: 53.92%; }
+.carousel .track { display: flex; height: 100%; will-change: transform; }
+.carousel .slide { flex: 0 0 100%; height: 100%; display: flex; flex-direction: column; }
+.carousel .pic { flex: 1 1 auto; min-height: 0; background: #f2f4f3; }
+.screen .carousel .pic img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.carousel .price-bar { position: relative; flex: 0 0 auto; background: #128132; overflow: hidden; }
+.op-daily .price-bar { height: 20.14%; }
+.op-small .price-bar { height: 25.45%; }
+.carousel .price-bar::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 42%;
+  background: linear-gradient(90deg, #4c9c66, #1e6b37); clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%); }
+.carousel .price-bar .big { position: absolute; left: 6%; top: 0; bottom: 0; z-index: 1; display: flex; align-items: center;
+  font-size: 15.6px; color: #fff700; white-space: nowrap; }                /* 30rpx */
+.carousel .price-bar .ref { position: absolute; right: 5%; top: 0; bottom: 0; max-width: 52%; display: flex; align-items: center;
+  font-size: 10.4px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 20rpx */
+.carousel .price-bar .ref s { margin-left: 3px; }
+.carousel .dots { position: absolute; left: 0; right: 0; display: flex; justify-content: center; gap: 4px; pointer-events: none; }
+.op-daily .dots { bottom: calc(20.14% + 5px); }
+.op-small .dots { bottom: calc(25.45% + 5px); }
+.carousel .dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, .55); box-shadow: 0 0 2px rgba(0,0,0,.35); }
+.carousel .dots i.on { background: #fff; }

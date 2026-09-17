@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>预蒜 · REQ-002 小程序首页改造</title>
+  <link rel="stylesheet" href="req-002-home.css?v=4.0.0">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="layout">
+
+   <div class="left-col">
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="视口">
+        <button type="button" id="vp-normal" class="on">390 × 844</button>
+        <button type="button" id="vp-small">小屏 375 × 667</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="mark-toggle"> 标注本次改动</label>
+    </div>
+
+  <div class="stage">
+    <div class="phone" id="phone">
+
+      <div class="screen" id="screen">
+
+        <div class="block" data-info="顶部视频／轮播：本次不改动。">
+          <img src="assets/req-002/video.png?v=4" alt="顶部视频区域">
+        </div>
+
+        <div class="block" data-info="门店信息卡：本次不改动。">
+          <img src="assets/req-002/shopcard.png?v=4" alt="门店信息卡">
+        </div>
+
+        <div class="block" data-info="五个圆形快捷入口（特价车、库存车、包牌包税、精品商城、积分商城）：不属于本次范围，指向由后台配置，功能做完再配。">
+          <img src="assets/req-002/nav.png?v=4" alt="五个圆形快捷入口">
+        </div>
+
+        <div class="daily block">
+          <div class="op-card op-daily outline" data-info="①「每天一款特价车」：左侧标题是运营图，右侧轮播特价车列表页前 5 台车。点卡片任意位置 → 进入特价车列表页（带入口类型），不进详情。">
+            <img class="op-bg" src="assets/req-002/ops-daily.png?v=1" alt="每天一款特价车 运营图">
+            <div class="carousel" data-entry="special"></div>
+          </div>
+          <span class="marker" style="right:22px; top:6px;">① 标题固定 · 前 5 台轮播</span>
+        </div>
+
+        <div class="cards block">
+          <div class="op-card op-small left outline" data-info="②「每天一款一手车源」：上部标题是运营图，下部轮播一手车源列表页前 5 台车。点卡片任意位置 → 进入一手车源列表页（带入口类型），不进详情。">
+            <img class="op-bg" src="assets/req-002/ops-firsthand.png?v=1" alt="每天一款一手车源 运营图">
+            <div class="carousel" data-entry="firsthand"></div>
+          </div>
+          <div class="op-card op-small right outline" data-info="③「每天一款库存车」：上部标题是运营图，下部轮播库存车列表页前 5 台车。点卡片任意位置 → 进入库存车列表页（带入口类型），不进详情。">
+            <img class="op-bg" src="assets/req-002/ops-inventory.png?v=1" alt="每天一款库存车 运营图">
+            <div class="carousel" data-entry="inventory"></div>
+          </div>
+          <span class="marker" style="left:14px; top:94px;">② 一手车源 · 轮播</span>
+          <span class="marker" style="right:14px; top:94px;">③ 库存车 · 轮播</span>
+        </div>
+
+        <div class="removed block" id="removed-block" hidden>
+          <div class="removed-inner">④ 原「特价车列表」标题 + 下方车辆网格：本次整块去掉，改造后此处没有内容</div>
+        </div>
+
+      </div>
+
+      <div class="notice" id="notice">
+        <span class="speaker" aria-hidden="true"></span>
+        <div class="viewport">
+          <div class="track" id="notice-track"></div>
+        </div>
+        <span class="marker" style="right:10px; top:-2px;">⑤ 红喇叭 · 淡红底</span>
+      </div>
+
+      <div class="tabbar" data-info="底部导航（首页／我要比价／我的）：本次不改动。">
+        <img src="assets/req-002/tabbar.png?v=4" class="bar" alt="底部导航">
+        <img src="assets/req-002/tab-center.png?v=4" class="center" alt="我要比价">
+      </div>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    </div>
+    </div>
+   </div>
+
+  <div class="notes" id="notes-box">
+    <h2>这一版做了什么</h2>
+    <p>在上一版（用户已放行）基础上改第二轮两条：三个车入口改为「标题固定＋前 5 台车图轮播」（R2-02），公告改为红色喇叭、淡红底（R2-01）。点击手机里的模块会说明该模块怎么处理。完整规则见 REQ-002 v2.6 第 3 节。</p>
+
+    <table>
+      <tr><th>本次改动</th><th class="what">位置</th><th>怎么改</th></tr>
+      <tr>
+        <td><span class="flag">①</span>轮播</td>
+        <td>「每天一款特价车」大卡</td>
+        <td>左侧标题固定（运营图），右侧轮播特价车列表页前 5 台车。每格＝车的第一张图＋价格条。点卡片任意位置进入特价车列表页。</td>
+      </tr>
+      <tr>
+        <td><span class="flag">②</span>轮播</td>
+        <td>大卡下方左卡片</td>
+        <td>「每天一款一手车源」：上部标题固定，下部轮播一手车源列表页前 5 台车。点卡片进入一手车源列表页。</td>
+      </tr>
+      <tr>
+        <td><span class="flag">③</span>轮播</td>
+        <td>大卡下方右卡片</td>
+        <td>「每天一款库存车」：上部标题固定，下部轮播库存车列表页前 5 台车。点卡片进入库存车列表页。</td>
+      </tr>
+      <tr>
+        <td><span class="flag">④</span>去掉</td>
+        <td>两张卡片下方</td>
+        <td>「特价车列表」标题及其车辆网格整块去掉。勾选上面的「标注本次改动」，再在手机里往上滑到底，可以看到它原来的位置。</td>
+      </tr>
+      <tr>
+        <td><span class="flag">⑤</span>改色</td>
+        <td>底部导航上方公告</td>
+        <td>喇叭改红色、底色改淡红色。两行同时显示、按顺序上下滚动、固定在底部、不可点击，都不变。</td>
+      </tr>
+    </table>
+
+    <h2>轮播每一格</h2>
+    <ul>
+      <li><b>车图</b>：这台车的第一张图片，用缩略图，居中裁切铺满。</li>
+      <li><b>价格条</b>：左边大字是实际售价，只显示整数万位，如「10.XX万」；右边一行「指导价 11.98万」带删除线；不放「预蒜价」（和大字是同一个数）。页面显示时现拼，不生成新图片。</li>
+      <li><b>滚动</b>：每 3 秒换一格，循环，带小圆点。不足 5 台有几台放几台；只有 1 台不滚动；没有车留空。</li>
+      <li><b>取哪 5 台</b>：直接取该入口列表页的前 5 条，列表页怎么排首页就怎么排。</li>
+    </ul>
+
+    <h2>不改动的部分</h2>
+    <ul>
+      <li>顶部视频／轮播、门店信息卡、五个圆形快捷入口、底部导航，全部保持现状。</li>
+      <li>三个卡片的位置和大小不变。</li>
+      <li>现有首页在圆形入口和大卡之间还有一块「预售车轮播」，后台配了预售车才显示。本次不动它，这里不画这块。</li>
+    </ul>
+
+    <h2>本次改动的边界</h2>
+    <ul>
+      <li>本地静态页面，不连接任何接口，不产生业务数据写入。</li>
+      <li>三个卡片的底图是本次做好的三张新运营图（TASK-026 运营图，已确认）；上线需运营在后台把三个卡片位的图换成这三张。</li>
+      <li>轮播里的车图和价格是本地固定数据，车图取自现有运营图和详情页截图；价格条背景此处用颜色模拟，开发时用详情页同一张背景图（配置 <code>car_sale_price01</code>）。</li>
+      <li>公告文案是本地固定数据；公告和轮播都是真的在滚动。</li>
+    </ul>
+  </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  var phone = document.getElementById('phone');
+  var toast = document.getElementById('toast');
+  var toastTimer = null;
+
+  function showToast(text) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 4200);
+  }
+
+  // 点击任意模块，说明本次怎么处理
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-info]');
+    if (!el) return;
+    showToast(el.getAttribute('data-info'));
+  });
+
+  // 视口切换：验证小屏时公告与底部导航仍固定在底部
+  var btnNormal = document.getElementById('vp-normal');
+  var btnSmall = document.getElementById('vp-small');
+  btnNormal.addEventListener('click', function () {
+    phone.classList.remove('small');
+    btnNormal.classList.add('on');
+    btnSmall.classList.remove('on');
+  });
+  btnSmall.addEventListener('click', function () {
+    phone.classList.add('small');
+    btnSmall.classList.add('on');
+    btnNormal.classList.remove('on');
+  });
+
+  // 标注本次改动
+  var markToggle = document.getElementById('mark-toggle');
+  var removed = document.getElementById('removed-block');
+  markToggle.addEventListener('change', function () {
+    phone.classList.toggle('marked', markToggle.checked);
+    removed.hidden = !markToggle.checked;
+  });
+
+  // 右侧说明一键隐藏
+  (function () {
+    var box = document.getElementById('notes-box');
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'notes-toggle'; b.textContent = '隐藏文字';
+    b.addEventListener('click', function () {
+      var on = box.classList.toggle('collapsed');
+      b.textContent = on ? '显示文字' : '隐藏文字';
+      setTimeout(reportHeight, 60);
+    });
+    box.insertBefore(b, box.firstChild);
+  })();
+
+  // 三个入口轮播：每格＝车的第一张图＋价格条；演示数据，各入口取列表页前 5 台
+  var A = 'assets/req-002/';
+  var CARS = {
+    special:   [['car-e.jpg', '9.XX万', '16.59万'], ['car-c.jpg', '27.XX万', '28.98万'], ['car-a.jpg', '34.XX万', '35.35万'], ['car-b.jpg', '8.XX万', ''], ['car-d.jpg', '10.XX万', '11.98万']],
+    firsthand: [['car-a.jpg', '33.XX万', '35.35万'], ['car-d.jpg', '11.XX万', '11.98万'], ['car-e.jpg', '14.XX万', '16.59万'], ['car-c.jpg', '26.XX万', '28.98万'], ['car-b.jpg', '8.XX万', '8.68万']],
+    inventory: [['car-d.jpg', '10.XX万', '11.98万'], ['car-b.jpg', '7.XX万', '8.68万'], ['car-a.jpg', '32.XX万', '35.35万'], ['car-e.jpg', '13.XX万', '16.59万'], ['car-c.jpg', '25.XX万', '28.98万']]
+  };
+  var q = new URLSearchParams(location.search);
+
+  function buildCarousel(box) {
+    var list = CARS[box.getAttribute('data-entry')].slice(0, 5);
+    var n = q.get('n') !== null ? Math.max(0, Math.min(5, parseInt(q.get('n'), 10) || 0)) : 5;
+    list = list.slice(0, n);
+    if (!list.length) return;                       // 没有在售车：轮播框留空
+    function slide(c) {
+      return '<div class="slide"><div class="pic"><img src="' + A + c[0] + '?v=1" alt="车图"></div>' +
+        '<div class="price-bar"><span class="big">' + c[1] + '</span>' +
+        '<span class="ref">指导价 ' + (c[2] ? '<s>' + c[2] + '</s>' : '暂无') + '</span></div></div>';
+    }
+    var html = list.map(slide).join('');
+    if (list.length > 1) html += slide(list[0]);       // 末尾接第一格，循环无缝
+    box.innerHTML = '<div class="track">' + html + '</div>' +
+      (list.length > 1 ? '<div class="dots">' + list.map(function (_, i) { return '<i' + (i ? '' : ' class="on"') + '></i>'; }).join('') + '</div>' : '');
+    if (list.length === 1) return;                   // 只有 1 台：不滚动、不显示指示点
+    var track = box.querySelector('.track'), dots = box.querySelectorAll('.dots i'), idx = 0;
+    setInterval(function () {
+      idx += 1;
+      track.style.transition = 'transform .45s ease';
+      track.style.transform = 'translateX(' + (-idx * 100) + '%)';
+      dots.forEach(function (d, i) { d.classList.toggle('on', i === idx % list.length); });
+      if (idx === list.length) {
+        setTimeout(function () { track.style.transition = 'none'; idx = 0; track.style.transform = 'translateX(0)'; }, 480);
+      }
+    }, 3000);
+  }
+  document.querySelectorAll('.carousel').forEach(buildCarousel);
+
+  // 支持用地址参数直接打开标注视图或小屏视图，便于核验时截同一状态
+  if (q.get('mark') === '1') { markToggle.checked = true; markToggle.dispatchEvent(new Event('change')); }
+  if (q.get('vp') === 'small') { btnSmall.click(); }
+  if (q.get('to') === 'bottom') { setTimeout(function () { var sc = document.getElementById('screen'); sc.scrollTop = sc.scrollHeight; }, 400); }
+
+  // 两行滚动公告：两行同时显示，按顺序上下滚动
+  var LINES = [
+    '尾号 9989 正在查看 2024 款 丰田 赛那 2.5 混动尊享版',
+    '尾号 8822 正在查看 2026 款 380TSI 四驱巡游版',
+    '尾号 3170 正在查看 2025 款 本田 雅阁 260TURBO 智享版',
+    '尾号 6045 正在查看 2024 款 坦克 500 Hi4-T',
+    '尾号 2288 正在查看 2026 款 长安 启源 A07 550 优享型',
+    '尾号 7761 正在查看 2025 款 比亚迪 汉 EV 长续航版'
+  ];
+
+  var track = document.getElementById('notice-track');
+  function lineEl(text) {
+    var d = document.createElement('div');
+    d.className = 'line';
+    d.textContent = text;
+    return d;
+  }
+  LINES.forEach(function (t) { track.appendChild(lineEl(t)); });
+  // 首尾相接，滚到末尾时无缝回到开头
+  LINES.slice(0, 2).forEach(function (t) { track.appendChild(lineEl(t)); });
+
+  var idx = 0;
+  function step() {
+    idx += 1;
+    var h = track.firstChild.offsetHeight || 18;
+    track.style.transition = 'transform .45s ease';
+    track.style.transform = 'translateY(' + (-idx * h) + 'px)';
+    if (idx >= LINES.length) {
+      setTimeout(function () {
+        track.style.transition = 'none';
+        idx = 0;
+        track.style.transform = 'translateY(0)';
+      }, 480);
+    }
+  }
+  setInterval(step, 2600);
+
+  // 嵌入总入口时把真实内容高度报给外层，避免内层出现滚动条或底部大块空白
+  function reportHeight() {
+    if (window.parent === window) return;
+    var wrap = document.querySelector('.wrap');
+    var h = Math.ceil(wrap.getBoundingClientRect().height + 2);
+    window.parent.postMessage({ type: 'req002-height', height: h }, '*');
+  }
+  window.addEventListener('load', reportHeight);
+  window.addEventListener('resize', reportHeight);
+  if (window.ResizeObserver) {
+    // 外层从隐藏切到显示时，这里才第一次量到真实高度
+    new ResizeObserver(reportHeight).observe(document.body);
+  }
+  document.addEventListener('click', function () { setTimeout(reportHeight, 60); });
+  setTimeout(reportHeight, 300);
+})();
+</script>
+</body>
+</html>
