@@ -20,15 +20,26 @@ body.mobile-app .mobile-layout { display:block !important; gap:0; }
 body.mobile-app .entry-col,
 body.mobile-app .detail-col { width:auto !important; }
 
-/* 手机画面本身：铺满可视宽度，不再挤在桌面版式里 */
+/* 手机画面本身：统一按 390px 设计宽度、缩小到 80%，和首页那台容器的绝对尺寸完全一致，
+   全部页面看起来一样大。
+   两类容器高度处理不同：.mobile-stage/.entry-stage/.mu-phone 内部是正常排版的图片/内容，
+   高度交给内容自己撑开（auto）；.d-phone/.l8-phone/.l9-phone/.l10-phone 内部用绝对定位
+   摆放各个区块（和首页 .phone 是同一种做法），必须保留原有的固定 844px 高度，
+   改成 auto 会因为没有正常排版的子元素撑不开、直接塌成 0 高。 */
 body.mobile-app .mobile-stage,
 body.mobile-app .entry-stage,
+body.mobile-app .mu-phone {
+  width:390px !important; max-width:390px !important; height:auto !important; min-height:0 !important;
+  margin:0 auto !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; position:relative !important;
+  zoom:0.8;
+}
 body.mobile-app .d-phone,
 body.mobile-app .l8-phone,
 body.mobile-app .l9-phone,
 body.mobile-app .l10-phone {
-  width:100% !important; max-width:430px !important; height:auto !important; min-height:100vh !important;
+  width:390px !important; max-width:390px !important; height:844px !important; min-height:0 !important;
   margin:0 auto !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; position:relative !important;
+  zoom:0.8;
 }
 body.mobile-app .mobile-layout .mobile-stage { position:static !important; }
 
@@ -50,7 +61,3 @@ body.mobile-app #view-home002 { margin:0 !important; padding:0 !important; backg
 body.mobile-app .mu-wrap { position:relative; }
 body.mobile-app .mu-hot { position:absolute; background:transparent; border:0; padding:0; }
 
-@media (max-width:430px) {
-  body.mobile-app .mobile-stage, body.mobile-app .entry-stage, body.mobile-app .d-phone,
-  body.mobile-app .l8-phone, body.mobile-app .l9-phone, body.mobile-app .l10-phone { max-width:100% !important; }
-}
