@@ -1,6 +1,6 @@
 /* 手机端整体流程演示 —— 只隐藏评审工具外壳，不改样稿本身的业务内容与样式。
    规则：手机屏幕里的画面必须和现有样稿完全一致；工具控制条固定在屏幕外面（顶部）。 */
-html.mobile-app, body.mobile-app { margin:0; padding:0; background:#e9edee; }
+html.mobile-app, body.mobile-app { margin:0; padding:0; background:#e9edee; overflow-x:hidden; }
 body.mobile-app .topbar,
 body.mobile-app .side-nav,
 body.mobile-app .scope-note,
@@ -36,10 +36,12 @@ body.mobile-app .mobile-layout .mobile-stage { position:static !important; }
 body.mobile-app #view-inventory.mf-mode-list .entry-stage { display:none !important; }
 body.mobile-app #view-inventory:not(.mf-mode-list) .mobile-stage:not(.entry-stage) { display:none !important; }
 
-/* 首页 C 端页面用 iframe 承载，铺满宽度 */
+/* 首页 C 端页面用 iframe 承载：不缩放，按原始 390px 固定宽度居中显示。
+   宽度不够的手机（比如 375px）两边各裁掉几像素，比强行按屏宽等比缩放稳得多——
+   缩放会和 REQ-002 样稿自己上报高度那段逻辑抢时机，在微信内置浏览器上经常算错高度。 */
 body.mobile-app .embedded-prototype { border:0 !important; border-radius:0 !important; box-shadow:none !important; background:none !important; }
-body.mobile-app .embedded-prototype iframe { width:100%; max-width:430px; margin:0 auto; display:block; border:0; }
-body.mobile-app #view-home002 { margin:0 !important; padding:0 !important; background:#f5f6f7 !important; min-height:100vh; }
+body.mobile-app .embedded-prototype iframe { width:390px; margin:0 auto; display:block; border:0; }
+body.mobile-app #view-home002 { margin:0 !important; padding:0 !important; background:#f5f6f7 !important; min-height:100vh; overflow-x:hidden; }
 
 /* 「我的」页：截图铺满宽度，登录入口与底部导航用透明按钮叠在真实截图对应位置上，
    截图本身、文字、颜色一概不改 */

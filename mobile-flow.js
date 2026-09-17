@@ -139,19 +139,6 @@
   function bindHomeFrame() {
     var frame = document.getElementById('home002-frame');
     if (!frame) return;
-    function fitPhone(doc) {
-      var phone = doc.querySelector('.phone');
-      var stage = doc.querySelector('.stage') || (phone && phone.parentElement);
-      if (!phone || !stage) return;
-      var avail = frame.clientWidth || window.innerWidth;
-      var natural = phone.classList.contains('small') ? 375 : 390;
-      var scale = Math.min(1, avail / natural);
-      phone.style.transform = 'scale(' + scale + ')';
-      phone.style.transformOrigin = 'top center';
-      stage.style.height = (844 * scale) + 'px';
-      stage.style.display = 'flex';
-      stage.style.justifyContent = 'center';
-    }
     function wire() {
       var doc = frame.contentDocument;
       if (!doc) return;
@@ -160,8 +147,9 @@
         '.layout{display:block!important}.wrap{padding:0!important;margin:0!important;max-width:none!important}' +
         '.left-col{position:static!important;width:100%!important}';
       doc.head.appendChild(style);
-      fitPhone(doc);
-      window.addEventListener('resize', function () { fitPhone(doc); });
+      // 不缩放：按原始 390px 宽显示，iframe 固定同宽度居中，宽度不够的手机两边裁掉几像素。
+      // 之前按屏宽等比缩放会和 REQ-002 样稿自己上报高度的逻辑抢时机，在微信内置浏览器里
+      // 经常导致上报的高度对不上实际内容，看起来像"拖不动、下面是空白"。
       doc.querySelectorAll('.op-card').forEach(function (card) {
         card.addEventListener('click', function (e) {
           var entry = card.getAttribute('data-entry');
