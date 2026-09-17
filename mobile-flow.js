@@ -178,12 +178,8 @@
     frame.addEventListener('load', wire);
   }
 
-  // REQ-002 样稿按自身高度撑开 iframe（原 index.html 里的同一段逻辑）
-  window.addEventListener('message', function (e) {
-    if (!e.data || e.data.type !== 'req002-height') return;
-    var frame = document.getElementById('home002-frame');
-    if (frame) frame.style.height = e.data.height + 'px';
-  });
+  // 不再监听样稿自己上报的高度——iframe 固定 390×844（CSS 里定），公告栏、底部导航、
+  // 内部滚动区都是照这个固定尺寸算的，跟着内容动态改高度反而会和上报时机对不上，见记录。
 
   function boot() {
     bindUserPage();

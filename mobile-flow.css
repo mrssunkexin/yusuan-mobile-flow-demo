@@ -36,12 +36,14 @@ body.mobile-app .mobile-layout .mobile-stage { position:static !important; }
 body.mobile-app #view-inventory.mf-mode-list .entry-stage { display:none !important; }
 body.mobile-app #view-inventory:not(.mf-mode-list) .mobile-stage:not(.entry-stage) { display:none !important; }
 
-/* 首页 C 端页面用 iframe 承载：不缩放，按原始 390px 固定宽度居中显示。
-   宽度不够的手机（比如 375px）两边各裁掉几像素，比强行按屏宽等比缩放稳得多——
-   缩放会和 REQ-002 样稿自己上报高度那段逻辑抢时机，在微信内置浏览器上经常算错高度。 */
+/* 首页 C 端页面用 iframe 承载：固定 390×844，和样稿「手机壳」（.phone）设计尺寸完全一致。
+   公告栏、底部导航、内部滚动区（.screen）都是照 .phone 固定 844px 高度算位置的，
+   不跟着内容动态变——之前用 JS 监听内容高度、动态设置 iframe 高度，会跟样稿自己
+   上报高度的时机抢答，经常算错，导致公告栏/底部导航跟视觉位置对不上、留一大截空白。
+   宽度不够的手机两边裁掉几像素，比强行缩放稳。 */
 body.mobile-app .embedded-prototype { border:0 !important; border-radius:0 !important; box-shadow:none !important; background:none !important; }
-body.mobile-app .embedded-prototype iframe { width:390px; margin:0 auto; display:block; border:0; }
-body.mobile-app #view-home002 { margin:0 !important; padding:0 !important; background:#f5f6f7 !important; min-height:100vh; overflow-x:hidden; }
+body.mobile-app .embedded-prototype iframe { width:390px; height:844px; margin:0 auto; display:block; border:0; }
+body.mobile-app #view-home002 { margin:0 !important; padding:0 !important; background:#f5f6f7 !important; overflow-x:hidden; }
 
 /* 「我的」页：截图铺满宽度，登录入口与底部导航用透明按钮叠在真实截图对应位置上，
    截图本身、文字、颜色一概不改 */
