@@ -146,9 +146,11 @@
       var avail = frame.clientWidth || window.innerWidth;
       var natural = phone.classList.contains('small') ? 375 : 390;
       var scale = Math.min(1, avail / natural);
-      phone.style.transform = 'scale(' + scale + ')';
-      phone.style.transformOrigin = 'top center';
-      stage.style.height = (844 * scale) + 'px';
+      // 用 zoom 而不是 transform:scale——transform 会让内部固定定位的公告/底部导航
+      // 改认这个缩放容器当"屏幕"，在真机 Safari 上和内部滚动一起用会直接卡住无法上滑。
+      // zoom 只是整体缩小渲染，不改变定位关系，滑动不受影响。
+      phone.style.transform = '';
+      phone.style.zoom = scale;
       stage.style.display = 'flex';
       stage.style.justifyContent = 'center';
     }
