@@ -108,7 +108,7 @@ body {
 
 .block { position: relative; }
 
-/* 大卡区：容器高度按原页面 310rpx 版位加下方间距 */
+/* 大卡高度由 688×456rpx 运营图等比撑开 */
 .daily {
   background: #fff;
   padding: 0 0 2px;
@@ -121,7 +121,7 @@ body {
   cursor: pointer;
 }
 
-/* 两张并排卡片：按 340rpx × 408rpx 版位与实际左右间距换算 */
+/* 两张并排卡片：340×456rpx，保留左右间距 */
 .cards {
   display: flex;
   align-items: flex-start;
@@ -350,40 +350,58 @@ code {
 .notes.collapsed>*:not(.notes-toggle){display:none}
 .notes.collapsed .notes-toggle{position:static;display:block;width:100%;text-align:center}
 
-/* ===== R2-02 三个入口卡片：标题区（运营图）＋ 轮播框 =====
-   比例依据 REQ-002 v2.6 第 3.1 节 rpx 版位：
-   大卡 688×310rpx，轮播框距左 332、距右 16、上下 16 → 340×278；每格车图 222 ＋ 价格条 56
-   小卡 340×408rpx，轮播框距左右 16、距顶 172、距底 16 → 308×220；每格车图 164 ＋ 价格条 56 */
+/* TASK-034：小卡照片及价格条贴左右底边；大卡标题在上、同车双图居中、价格在下。 */
 .op-card { position: relative; overflow: hidden; border-radius: 5px; cursor: pointer; }
 .daily .op-card { width: 91.74%; margin: 0 auto; }
 .screen .op-card img.op-bg { display: block; width: 100%; height: auto; margin: 0; }
-.carousel { position: absolute; overflow: hidden; border-radius: 4px; }
-.op-daily .carousel { left: 39.53%; top: 3.28%; width: 58.14%; height: 93.44%; }
-.op-small .carousel { left: 4.71%; top: 20.17%; width: 90.59%; height: 76.47%; }
+.carousel { position: absolute; overflow: hidden; border-radius: 0; }
+.op-daily .carousel { left: 0; top: calc(56 / 456 * 100%); width: 100%; height: calc(400 / 456 * 100%); }
+.op-small .carousel { left: 0; top: calc(60 / 456 * 100%); width: 100%; height: calc(396 / 456 * 100%); }
 .carousel .track { display: flex; height: 100%; will-change: transform; }
 .carousel .slide { flex: 0 0 100%; height: 100%; display: flex; flex-direction: column; }
 .carousel .pic { flex: 1 1 auto; min-height: 0; background: #f2f4f3; }
 .screen .carousel .pic img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .carousel .price-bar { position: relative; flex: 0 0 auto; background: #128132; overflow: hidden; }
-.op-daily .price-bar { height: 12.28%; }
-.op-small .price-bar { height: 15.38%; }
+.op-daily .price-bar { width: 100%; height: calc(56 / 400 * 100%); }
+.op-small .price-bar { height: calc(56 / 396 * 100%); }
 .carousel .price-bar::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 42%;
   background: linear-gradient(90deg, #4c9c66, #1e6b37); clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%); }
 .carousel .price-bar .big { position: absolute; left: 6%; top: 0; bottom: 0; z-index: 1; display: flex; align-items: center;
-  font-size: 15.6px; color: #fff700; white-space: nowrap; }                /* 30rpx */
-.carousel .price-bar .ref { position: absolute; right: 5%; top: 0; bottom: 0; max-width: 52%; display: flex; align-items: center;
-  font-size: 10.4px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 20rpx */
+  font-size: 13px; color: #fff700; white-space: nowrap; }                /* 25rpx，标准宽度下 13px */
+.carousel .price-bar .ref { position: absolute; right: 4%; top: 0; bottom: 0; max-width: 44%; display: flex; align-items: center;
+  font-size: 9px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 约17.3rpx，标准宽度下 9px */
 .carousel .price-bar .ref s { margin-left: 3px; }
 .carousel .dots { position: absolute; left: 0; right: 0; display: flex; justify-content: center; gap: 4px; pointer-events: none; }
-.op-daily .dots { bottom: calc(12.28% + 5px); }
-.op-small .dots { bottom: calc(15.38% + 5px); }
+.op-daily .dots { bottom: calc(56 / 400 * 100% + 5px); }
+.op-small .dots { bottom: calc(56 / 396 * 100% + 5px); }
 .carousel .dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, .55); box-shadow: 0 0 2px rgba(0,0,0,.35); }
 .carousel .dots i.on { background: #fff; }
 
 /* R3-04 顶部视频区：高度由屏宽 56% 调为 44%。样稿底图含状态栏与胶囊，从下方截掉一截，底部重画播放控制条 */
-.hv { position: relative; overflow: hidden; aspect-ratio: 851 / 319; }
+.hv { position: relative; overflow: hidden; aspect-ratio: 750 / 238.5; }
 .screen .hv img.hv-img { width: 100%; height: auto; }
 .hv-ctrl { position: absolute; left: 4%; right: 3%; bottom: 5%; display: flex; align-items: center; gap: 8px; color: #fff; font-size: 12px; text-shadow: 0 0 2px rgba(0,0,0,.4); }
 .hv-ico { width: 16px; height: 16px; flex: none; }
 .hv-bar { flex: 1; height: 2px; background: rgba(255,255,255,.45); position: relative; }
 .hv-bar b { position: absolute; left: 0; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+
+/* 双图每张占一半，以1:1正方形版位连续铺满，不留内边距。 */
+.op-daily .pic.pair { display:flex; align-items:stretch; gap:0; padding:0; background:#fff; }
+.screen .op-daily .pic.pair img { width:50%; height:100%; object-fit:cover; margin:0; border:0; border-radius:0; }
+
+.screen .op-daily .pic:not(.pair) img { width:50%; object-fit:cover; margin:0; }
+.op-daily .pic { background:#fff; }
+
+.op-daily .dots i { background:#c8d1cb; box-shadow:none; }
+.op-daily .dots i.on { background:#128132; }
+
+/* TASK-035：旧切图姓名被截断，绿色卡改为完整文字，压缩为48px。 */
+.shop-block { padding: 0; }
+.shop-card { width:91.74%; height:48px; margin:0 auto; border-radius:0 0 5px 5px; background:linear-gradient(115deg,#208e43,#0d7d2d); color:#fff; padding:4px 12px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; line-height:13px; }
+.shop-card strong { font-size:13px; font-weight:500; line-height:14px; }
+.shop-card span { font-size:10px; white-space:nowrap; }
+.shop-card .shop-phone { font-size:11px; letter-spacing:1px; }
+
+/* CHG-D037：按这两张示例照片分别取景，侧前图保留左侧车头。 */
+.screen .op-daily .pic.pair img[src*="audi-a6l-side.png"] { object-position:0% 50%; }
+.screen .op-daily .pic.pair img[src*="audi-a6l-front.png"] { object-position:48% 50%; }

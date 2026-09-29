@@ -709,15 +709,15 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .top-until{color:#d46b08;font-weight:600;white-space:nowrap}
 
 /* R3-09 车辆列表固定一行一台：左图右文，照用户样例（00-原始需求/车辆列表样例-2026-09-29.jpg）只改排版，字段与价格颜色不变 */
-.l8-list.one{margin:0 15.6px}
+.l8-list.one{margin:0 8px}
 .l8-list.one .l8-item{height:auto;min-height:0;margin:0;padding:12.5px 0;background:#fff;border-radius:0;box-shadow:none;border-bottom:1px solid #f0f0f0;align-items:flex-start}
-.l8-list.one .l8-img{margin-left:0;height:auto;flex:none;width:124.8px;height:104px;border-radius:5px;overflow:hidden;background:#f5f6f7}
+.l8-list.one .l8-img{margin-left:0;height:auto;flex:none;width:104px;height:104px;border-radius:5px;overflow:hidden;background:#fff}
 .l8-screen .l8-list.one .l8-img img.l8-pic{width:100%;height:100%;object-fit:cover}
-.l8-screen .l8-list.one .l8-img.fit img.l8-pic{object-fit:contain}
+.l8-screen .l8-list.one .l8-img.fit img.l8-pic{object-fit:cover}
 .l8-screen .l8-list.one .l8-img img.l8-badge{position:absolute;left:0;top:0;width:24px;height:33px;object-fit:fill}
 .l8-list.one .l8-video{right:6px;bottom:6px}
 .l8-list.one .l8-info{margin-left:12.5px;justify-content:flex-start;padding-right:0}
-.l8-list.one .l8-name{font-weight:600}
+.l8-list.one .l8-name{font-size:14px;line-height:19px;font-weight:500}
 .l8-list.one .l8-p1{margin-top:4px}
 .l8-list.one .l8-p2{margin-top:2px;line-height:26px}
 
@@ -726,3 +726,32 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .d2-fav svg{width:19px;height:19px;fill:none;stroke:#333;stroke-width:1.6;stroke-linejoin:round}
 .d2-fav.on{color:#f5a623}
 .d2-fav.on svg{fill:#f5a623;stroke:#f5a623}
+
+/* TASK-035：仅详情顶部车图为正方形；商品详情正文图片保持原比例。 */
+.d2-swiper, .d-legacy-hero { width:100%; aspect-ratio:1; overflow:hidden; }
+.d-screen .d2-swiper > img, .d-screen .d-legacy-hero > img { width:100%; height:100%; object-fit:cover; object-position:center; }
+.d-legacy-tail { position:relative; width:100%; aspect-ratio:1179 / 1037; overflow:hidden; }
+.d-screen .d-legacy-tail > img { position:absolute; width:100%; height:auto; top:0; margin-top:calc(-1261 / 1179 * 100%); }
+#view-contact .d-fab { top:610.42px; }
+#view-contact2 .d2-fab { top:633.42px; }
+
+/* CHG-D038：原版详情的实拍示例，价格/车型重建在原图对应尺寸内。 */
+#view-contact .d-legacy-hero > img { object-position:48% 50%; }
+#view-contact .d-real-price { position:relative; width:100%; aspect-ratio:1179 / 160; background:linear-gradient(to bottom,#fff 0 12px,#128132 12px); color:#fff; }
+#view-contact .d-real-price::before { content:""; position:absolute; inset:0 auto 0 0; width:138px; background:linear-gradient(90deg,#4c9c66,#1e6b37); clip-path:polygon(0 0,91% 0,100% 100%,0 100%); }
+#view-contact .d-real-big { position:absolute; left:18px; top:0; bottom:0; display:flex; align-items:center; color:#fff200; font-size:25px; }
+#view-contact .d-real-lines { position:absolute; left:172px; top:12px; bottom:0; display:flex; flex-direction:column; justify-content:center; font-size:12.5px; line-height:1.35; }
+#view-contact .d-real-lines p { margin:0; }
+#view-contact .d-real-lines p:last-child { color:#fff200; }
+#view-contact .d-real-model { width:100%; aspect-ratio:1179 / 249; position:relative; padding:20px; display:flex; align-items:flex-start; gap:8px; }
+#view-contact .d-real-model::after { content:""; position:absolute; bottom:0; left:20px; right:20px; border-bottom:1px solid #dedede; }
+#view-contact .d-real-model-tag { flex:none; margin-top:3px; background:#ffc000; color:#1f1f1f; font-size:10.5px; font-weight:700; border-radius:3px; padding:2px 3px; line-height:1.2; }
+#view-contact .d-real-model-name { color:#111; font-size:16.5px; line-height:1.45; }
+
+/* CHG-D041：共用实拍轮播；尺寸不改变，正文照片保持原比例。 */
+.d-legacy-hero { position:relative; }
+.d-screen .demo-photo,.d-screen .demo-video { width:100%; height:100%; object-fit:cover; }
+.demo-prev,.demo-next { position:absolute; top:45%; width:26px; height:38px; border:0; border-radius:4px; background:rgba(0,0,0,.23); color:white; font-size:28px; line-height:1; cursor:pointer; }
+.demo-prev { left:8px; } .demo-next { right:8px; }
+.demo-photo[hidden],.demo-video[hidden],.demo-prev[hidden],.demo-next[hidden],.d2-info[hidden],.d2-media[hidden],.d2-video[hidden] { display:none!important; }
+#view-contact .d-real-model { height:auto; min-height:82px; aspect-ratio:auto; padding:16px 20px; }

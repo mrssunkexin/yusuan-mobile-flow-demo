@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>预蒜小程序 · 手机端流程演示</title>
-<link rel="stylesheet" href="styles.css?v=6.9.0">
+<link rel="stylesheet" href="styles.css?v=6.14.0">
 <link rel="stylesheet" href="mobile-flow.css?v=3">
 </head>
 <body class="mobile-app">
@@ -13,7 +13,7 @@
 
   <section class="view" id="view-home002">
     <div class="embedded-prototype">
-      <iframe id="home002-frame" src="req-002-home.html?v=6.0.1" title="REQ-002 小程序首页改造"></iframe>
+      <iframe id="home002-frame" src="req-002-home.html?v=5.6.0" title="REQ-002 小程序首页改造"></iframe>
     </div>
   </section>
 
@@ -105,7 +105,7 @@
           <span class="d-label">当前身份</span>
           <div class="seg2" id="d2-role"><button data-role="agent" class="on">一级代理商</button><button data-role="agent2">二级代理商</button><button data-role="customer">C 端客户</button></div>
           <span class="d-label">车源类型</span>
-          <div class="seg2" id="d2-source"><button data-source="inventory" class="on">库存车</button><button data-source="firsthand">一手车源</button></div>
+          <div class="seg2" id="d2-source"><button data-source="inventory" class="on">库存车</button><button data-source="firsthand">一手车源</button><button data-source="special_price">特价车</button></div>
         </div>
         <div class="d-phone">
           <div class="d-screen">
@@ -113,11 +113,7 @@
               <img src="assets/req-003/detail-nav.png?v=1" alt="导航栏">
               <button type="button" id="d2-back" style="position:absolute;left:0;top:0;width:20%;height:100%;background:transparent;border:0"></button>
             </div>
-            <div class="d2-swiper">
-              <img src="assets/req-003/detail-car.png?v=1" alt="车辆图片">
-              <span class="d2-video" id="d2-video">▶ 含视频</span>
-              <span class="d2-media" id="d2-media"></span>
-            </div>
+            <div class="d2-swiper"></div>
             <div class="d2-price">
               <div class="d2-price-big" id="d2-big"></div>
               <div class="d2-price-lines">
@@ -290,13 +286,15 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="modal-root"></div>
+<script src="demo-cars.js?v=1.0.0"></script>
+<script src="demo-car-ui.js?v=1.0.0"></script>
 <script src="logic.js?v=6.3.0"></script>
-<script src="app.js?v=5.5.2"></script>
-<script src="req-003-fav.js?v=1.0.0"></script>
-<script src="req-003-detail2.js?v=5.3.0"></script>
-<script src="req-008-list.js?v=1.1.1"></script>
+<script src="app.js?v=5.6.0"></script>
+<script src="req-003-fav.js?v=1.1.0"></script>
+<script src="req-003-detail2.js?v=5.4.0"></script>
+<script src="req-008-list.js?v=1.5.0"></script>
 <script src="req-009-login.js?v=1.4.1"></script>
 <script src="req-010-clue.js?v=1.2.0"></script>
-<script src="mobile-flow.js?v=4"></script>
+<script src="mobile-flow.js?v=5"></script>
 </body>
 </html>

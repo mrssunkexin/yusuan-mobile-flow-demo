@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>预蒜 · REQ-002 小程序首页改造</title>
-  <link rel="stylesheet" href="req-002-home.css?v=5.0.1">
+  <link rel="stylesheet" href="req-002-home.css?v=5.6.0">
 </head>
 <body>
 <div class="wrap">
@@ -25,15 +25,15 @@
 
       <div class="screen" id="screen">
 
-        <div class="block" data-info="顶部视频／轮播（R3-04）：高度由屏宽的 56% 调为 44%，视频按新比例居中裁掉上下，不留黑边。">
+        <div class="block" data-info="顶部视频／轮播（R3-04）：本轮压缩到标准宽度下约124px，视频控制条保留。">
           <div class="hv">
             <img class="hv-img" src="assets/req-002/video.png?v=4" alt="顶部视频区域">
             <div class="hv-ctrl"><svg viewBox="0 0 20 20" class="hv-ico"><path d="M5 3l12 7-12 7z" fill="#fff"/></svg><span>00:00</span><i class="hv-bar"><b></b></i><span>00:56</span><svg viewBox="0 0 24 24" class="hv-ico"><path d="M4 9h4l5-4v14l-5-4H4z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 9l5 6M21 9l-5 6" stroke="#fff" stroke-width="1.6"/></svg><svg viewBox="0 0 24 24" class="hv-ico"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="#fff" stroke-width="1.6"/></svg></div>
           </div>
         </div>
 
-        <div class="block" data-info="门店信息卡：本次不改动。">
-          <img src="assets/req-002/shopcard.png?v=4" alt="门店信息卡">
+        <div class="block shop-block" data-info="门店信息卡压缩高度，姓名、地址、电话完整显示。">
+          <div class="shop-card"><strong>孙可鑫</strong><span>全国1000余家线下【交车中心】均可交付</span><span class="shop-phone">☎ 18686636658</span></div>
         </div>
 
         <div class="block" data-info="五个圆形快捷入口（特价车、库存车、包牌包税、精品商城、积分商城）：不属于本次范围，指向由后台配置，功能做完再配。">
@@ -41,8 +41,8 @@
         </div>
 
         <div class="daily block">
-          <div class="op-card op-daily outline" data-info="①「每天一款特价车」（R3-03／R3-08）：左侧标题区收窄、文字画小，右侧轮播改为正方形车图，轮播特价车列表页前 5 台车。点卡片任意位置 → 进入特价车列表页（带入口类型），不进详情。">
-            <img class="op-bg" src="assets/req-002/ops-daily-v2.png?v=1" alt="每天一款特价车 运营图">
+          <div class="op-card op-daily outline" data-info="①「每天一款特价车」（R3-03／R3-08）：通栏标题，中间同车两张正方形照片紧挨铺满，底部通栏价格条，轮播特价车列表页前 5 台车。点卡片任意位置 → 进入特价车列表页（带入口类型），不进详情。">
+            <img class="op-bg" src="assets/req-002/ops-daily-v7.png?v=1" alt="每天一款特价车 运营图">
             <div class="carousel" data-entry="special"></div>
           </div>
           <span class="marker" style="right:22px; top:6px;">① 标题固定 · 前 5 台轮播</span>
@@ -50,11 +50,11 @@
 
         <div class="cards block">
           <div class="op-card op-small left outline" data-info="②「每天一款一手车源」：上部标题区压矮、文字画小（R3-03），下部正方形车图轮播一手车源列表页前 5 台车（R3-08）；置顶的车排在最前（R3-01）。点卡片任意位置 → 进入一手车源列表页（带入口类型），不进详情。">
-            <img class="op-bg" src="assets/req-002/ops-firsthand-v2.png?v=1" alt="每天一款一手车源 运营图">
+            <img class="op-bg" src="assets/req-002/ops-firsthand-v4.png?v=1" alt="每天一款一手车源 运营图">
             <div class="carousel" data-entry="firsthand"></div>
           </div>
           <div class="op-card op-small right outline" data-info="③「每天一款库存车」：上部标题区压矮、文字画小（R3-03），下部正方形车图轮播库存车列表页前 5 台车（R3-08）；置顶的车排在最前（R3-01）。点卡片任意位置 → 进入库存车列表页（带入口类型），不进详情。">
-            <img class="op-bg" src="assets/req-002/ops-inventory-v2.png?v=1" alt="每天一款库存车 运营图">
+            <img class="op-bg" src="assets/req-002/ops-inventory-v4.png?v=1" alt="每天一款库存车 运营图">
             <div class="carousel" data-entry="inventory"></div>
           </div>
           <span class="marker" style="left:14px; top:94px;">② 一手车源 · 轮播</span>
@@ -88,15 +88,16 @@
 
   <div class="notes" id="notes-box">
     <h2>这一版做了什么</h2>
-    <p><b>第三轮（R3，2026-09-29）</b>：三张卡片文字区画小、车图改为正方形并放大（R3-03／R3-08）；顶部视频区高由屏宽 56% 调为 44%（R3-04）；置顶车随列表页排序优先进入轮播（R3-01）。</p>
-    <p>在上一版（用户已放行）基础上改第二轮两条：三个车入口改为「标题固定＋前 5 台车图轮播」（R2-02），公告改为红色喇叭、淡红底（R2-01）。点击手机里的模块会说明该模块怎么处理。完整规则见 REQ-002 v2.6 第 3 节。</p>
+    <p><b>本轮反馈（TASK-035）</b>：390×844 标准画面从顶部到三张卡片、公告和导航一屏全展示，无需上下滑动；375×667 小屏保留滚动。小卡正方形车图贴边、大卡通栏标题、正方形双图紧挨、通栏价格条。三类卡片均使用各自列表前5台车辆；大卡每格展示同车两张实拍，小卡展示首张。</p>
+    <p><b>第三轮（R3，2026-09-29）</b>：三张卡片文字区画小、车图改为正方形并放大（R3-03／R3-08）；顶部视频与绿色信息区本轮再压缩，姓名、地址、电话完整显示（R3-04）；置顶车随列表页排序优先进入轮播（R3-01）。</p>
+    <p>在上一版（用户已放行）基础上改第二轮两条：三个车入口改为「标题固定＋前 5 台车图轮播」（R2-02），公告改为红色喇叭、淡红底（R2-01）。点击手机里的模块会说明该模块怎么处理。完整规则见 REQ-002 v2.15 第 3 节。</p>
 
     <table>
       <tr><th>本次改动</th><th class="what">位置</th><th>怎么改</th></tr>
       <tr>
         <td><span class="flag">①</span>轮播</td>
         <td>「每天一款特价车」大卡</td>
-        <td>左侧标题固定（运营图），右侧轮播特价车列表页前 5 台车。每格＝车的第一张图＋价格条。点卡片任意位置进入特价车列表页。</td>
+        <td>标题固定（运营图）、铺满大卡宽度，中间同车双图各裁为正方形，底部共用通栏价格条；业务按特价车列表前5台取车。每格＝同一辆车前两张图片并排＋共用价格条；只有一张时单图显示。点卡片任意位置进入特价车列表页。</td>
       </tr>
       <tr>
         <td><span class="flag">②</span>轮播</td>
@@ -122,7 +123,7 @@
 
     <h2>轮播每一格</h2>
     <ul>
-      <li><b>车图</b>：这台车的第一张图片，用缩略图，居中裁切铺满。</li>
+      <li><b>车图</b>：特价车取同一辆车的前两张图片紧挨并排、铺满正方形图片框；按照片调整取景，优先保留车头，无上下白边；只有一张时单图显示。一手车源、库存车取第一张正方形照片，两侧与底部不露围框。</li>
       <li><b>价格条</b>：左边大字是实际售价，只显示整数万位，如「10.XX万」；右边一行「指导价 11.98万」带删除线；不放「预蒜价」（和大字是同一个数）。页面显示时现拼，不生成新图片。</li>
       <li><b>滚动</b>：每 3 秒换一格，循环，带小圆点。不足 5 台有几台放几台；只有 1 台不滚动；没有车留空。</li>
       <li><b>取哪 5 台</b>：直接取该入口列表页的前 5 条，列表页怎么排首页就怎么排。</li>
@@ -130,16 +131,16 @@
 
     <h2>不改动的部分</h2>
     <ul>
-      <li>门店信息卡、五个圆形快捷入口、底部导航保持现状；顶部视频／轮播只调矮（R3-04）。</li>
-      <li>三个卡片的位置和大小不变。</li>
+      <li>五个圆形快捷入口、底部导航保持现状；顶部视频调矮，绿色门店卡压缩并完整展示文字。</li>
+      <li>三个卡片排列顺序不变，版位压缩至大卡 688×456rpx、小卡 340×456rpx；大卡通栏标题、正方形双图紧挨、通栏价格，小卡正方形车图贴边。</li>
       <li>现有首页在圆形入口和大卡之间还有一块「预售车轮播」，后台配了预售车才显示。本次不动它，这里不画这块。</li>
     </ul>
 
     <h2>本次改动的边界</h2>
     <ul>
       <li>本地静态页面，不连接任何接口，不产生业务数据写入。</li>
-      <li>三个卡片的底图是本次做好的三张新运营图（TASK-026 运营图，已确认）；上线需运营在后台把三个卡片位的图换成这三张。</li>
-      <li>轮播里的车图和价格是本地固定数据，车图取自现有运营图和详情页截图；价格条背景此处用颜色模拟，开发时用详情页同一张背景图（配置 <code>car_sale_price01</code>）。</li>
+      <li>三个卡片的底图是本次做好的三张运营图（大卡本次重出，小卡沿用TASK-034物料，待用户审阅）；上线需运营在后台把三个卡片位的图换成这三张。</li>
+      <li>轮播里的车图和价格是本地固定数据，首格为传祺M6 MAX完整车型，全部车辆使用对应车型实拍图组，来源见TASK-035；三张卡片全部填有数值的示例价，仅用于样稿排版，不是实际报价；价格条背景此处用颜色模拟，开发时用详情页同一张背景图（配置 <code>car_sale_price01</code>）。</li>
       <li>公告文案是本地固定数据；公告和轮播都是真的在滚动。</li>
     </ul>
   </div>
@@ -147,6 +148,7 @@
   </div>
 </div>
 
+<script src="demo-cars.js?v=1.0.0"></script>
 <script>
 (function () {
   var phone = document.getElementById('phone');
@@ -202,25 +204,19 @@
     box.insertBefore(b, box.firstChild);
   })();
 
-  // 三个入口轮播：每格＝车的第一张图＋价格条；演示数据，各入口取列表页前 5 台
-  var A = 'assets/req-002/';
-  var CARS = {
-    // R3-08：车辆照片上传时已裁成正方形，轮播格也是正方形
-    special:   [['sq-car-b.jpg', '9.XX万', '9.98万'], ['sq-car-d.jpg', '82.XX万', ''], ['sq-car-a.jpg', '285.XX万', ''], ['sq-car-c.jpg', '77.XX万', ''], ['sq-car-e.jpg', '62.XX万', '']],
-    firsthand: [['sq-car-c.jpg', '76.XX万', ''], ['sq-car-b.jpg', '9.XX万', '9.98万'], ['sq-car-e.jpg', '61.XX万', ''], ['sq-car-a.jpg', '283.XX万', ''], ['sq-car-d.jpg', '81.XX万', '']],
-    inventory: [['sq-car-d.jpg', '80.XX万', ''], ['sq-car-a.jpg', '279.XX万', ''], ['sq-car-b.jpg', '8.XX万', '9.98万'], ['sq-car-e.jpg', '60.XX万', ''], ['sq-car-c.jpg', '75.XX万', '']]
-  };
+  // 三个入口轮播：每格＝同一辆车前两张图片并排＋共用价格条；只有一张时单图显示；演示数据，各入口取列表页前 5 台
   var q = new URLSearchParams(location.search);
 
   function buildCarousel(box) {
-    var list = CARS[box.getAttribute('data-entry')].slice(0, 5);
+    var list = window.DemoCars.home(box.getAttribute('data-entry'));
     var n = q.get('n') !== null ? Math.max(0, Math.min(5, parseInt(q.get('n'), 10) || 0)) : 5;
     list = list.slice(0, n);
     if (!list.length) return;                       // 没有在售车：轮播框留空
     function slide(c) {
-      return '<div class="slide"><div class="pic"><img src="' + A + c[0] + '?v=1" alt="车图"></div>' +
-        '<div class="price-bar"><span class="big">' + c[1] + '</span>' +
-        '<span class="ref">指导价 ' + (c[2] ? '<s>' + c[2] + '</s>' : '暂无') + '</span></div></div>';
+      var pair=box.getAttribute('data-entry')==='special' && c.photos.length>1;
+      var pics=(pair?c.photos.slice(0,2):c.photos.slice(0,1)).map(function(p){return '<img src="'+p.src+'" alt="'+c.name+'" style="object-position:'+p.position+'">';}).join('');
+      return '<div class="slide" data-car-id="'+c.id+'"><div class="pic'+(pair?' pair':'')+'">'+pics+'</div>'+
+        '<div class="price-bar"><span class="big">'+c.sale+'</span><span class="ref">指导价 <s>'+c.ref+'</s></span></div></div>';
     }
     var html = list.map(slide).join('');
     if (list.length > 1) html += slide(list[0]);       // 末尾接第一格，循环无缝

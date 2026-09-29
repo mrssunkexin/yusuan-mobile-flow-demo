@@ -4,33 +4,9 @@
 (function () {
   'use strict';
 
-  var CARS = {
-    inventory: {
-      name: '广汽传祺 传祺M6 MAX 2026款 1.5T DCT 尊荣版',
-      sale: '10.XX万', ref: '11.98万', srcLabel: '库存车',
-      colorOut: '珍珠白', colorIn: '曜石黑', vtypes: ['运损车'], region: '广东省 广州市',
-      labels: ['现车', '可分期', '支持置换'],
-      remark: '左后门运输中有轻微划痕，已原厂修复，不影响使用；手续齐全，可当天提车。',
-      media: 6, video: true,
-      // R3-07：商品详情只有图片
-      blocks: ['assets/req-003/detail-car-front.png?v=1', 'assets/req-008/list-car-1.png'],
-      contact: { name: '张伟', phone: '138 0000 1234', from: '车源登记人' },
-      baseCount: 2
-    },
-    firsthand: {
-      name: '广汽传祺 传祺M6 MAX 2026款 1.5T DCT 尊荣版',
-      sale: '11.XX万', ref: '11.98万', srcLabel: '一手车源',
-      colorOut: '星河灰', colorIn: '云岩棕', vtypes: ['包牌包税'], region: '江苏省 南京市',
-      labels: ['现车', '全国可上牌'],
-      remark: '4S 店现车，价格含购置税与上牌费用。',
-      media: 4, video: false,
-      blocks: ['assets/req-003/detail-car-front.png?v=1'],
-      contact: { name: '李静', phone: '138 0000 5678', from: '4S 车源统一联系人' },
-      baseCount: 1
-    }
-  };
-
-  var state = { role: 'agent', source: 'inventory', marked: false };
+  var state = { role: 'agent', source: 'inventory', carId:'inventory-m6', marked: false };
+  var marks={};
+  var refreshFav=function(){};
 
   function $(s) { return document.querySelector(s); }
 
@@ -48,7 +24,7 @@
     setTimeout(function () { el.classList.remove('show'); }, 1800);
   }
 
-  function car() { return CARS[state.source]; }
+  function car() { return window.DemoCars.get(state.carId); }
 
   function render() {
     document.querySelectorAll('#d2-role button').forEach(function (b) {
@@ -59,8 +35,8 @@
     });
 
     var c = car();
-    $('#d2-media').textContent = '1/' + c.media;
-    $('#d2-video').hidden = !c.video;
+    window.DemoCarUI.gallery(document.querySelector('#view-contact2 .d2-swiper'),c,c.source!=='special_price');
+    document.querySelector('#view-contact2 .d2-info').hidden=c.source==='special_price';
     $('#d2-big').textContent = c.sale;
     $('#d2-ref').textContent = c.ref;
     $('#d2-sale').textContent = c.sale;
@@ -68,7 +44,7 @@
     $('#d2-src').textContent = c.srcLabel;
     $('#d2-color-out').textContent = c.colorOut;
     $('#d2-color-in').textContent = c.colorIn;
-    $('#d2-vtypes').textContent = c.vtypes.join('、');
+    $('#d2-vtypes').textContent = c.vtypes.join('、') || '普通车';
     $('#d2-region').textContent = c.region;
     $('#d2-labels').innerHTML = c.labels.map(function (l) {
       return '<span class="d2-label">' + esc(l) + '</span>';
@@ -79,9 +55,9 @@
     }).join('');
 
     // R3-12：浮钮只给一级代理商；二级代理商、C 端客户整个不渲染
-    $('#d2-fab').hidden = state.role !== 'agent';
-    renderFav();
-    if (state.role !== 'agent') closeSheet();
+    $('#d2-fab').hidden = state.role !== 'agent' || c.source === 'special_price';
+    refreshFav();
+    if ($('#d2-fab').hidden) closeSheet();
     renderSheet();
   }
 
@@ -107,34 +83,19 @@
     $('#d2-dc-ok').addEventListener('click', function () { close(); onOk(); });
   }
 
-  // R3-11 收藏：底部固定栏「返回首页」右侧。收藏记录放在 window.__favStore，「我的收藏」页读同一份
-  var FAV = window.__favStore = window.__favStore || { items: [] };
-  function favKey() { return 'car-' + state.source; }
-  function isFav() { return FAV.items.some(function (x) { return x.key === favKey(); }); }
-  function renderFav() {
-    var b = $('#d2-fav'); if (!b) return;
-    var on = isFav();
-    b.classList.toggle('on', on);
-    b.querySelector('.d2-fav-t').textContent = on ? '已收藏' : '收藏';
-  }
-  function toggleFav() {
-    var c = car();
-    if (isFav()) {
-      FAV.items = FAV.items.filter(function (x) { return x.key !== favKey(); });
-      toast('已取消收藏');
-    } else {
-      FAV.items.unshift({ key: favKey(), source: state.source, name: c.name, sale: c.sale, ref: c.ref, img: 'assets/req-008/list-car-1.png' });
-      toast('已收藏');
-    }
-    renderFav();
-  }
-
   function openSheet() {
-    if (state.role !== 'agent') return;
+    if (state.role !== 'agent' || state.source === 'special_price') return;
     $('#d2-sheet').hidden = false;
     renderSheet();
   }
   function closeSheet() { var s = $('#d2-sheet'); if (s) s.hidden = true; }
+
+  function selectCar(id) {
+    var c=window.DemoCars.get(id);if(!c)return;
+    state.carId=id;state.source=c.source;state.marked=!!marks[id];closeSheet();render();
+    document.querySelector('#view-contact2 .d-screen').scrollTop=0;
+  }
+  window.__setDetailCar=selectCar;
 
   function bind() {
     if (!$('#view-contact2')) return;
@@ -145,10 +106,10 @@
     });
     $('#d2-source').addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b) return;
-      state.source = b.dataset.source; state.marked = false; render();
+      var source=b.dataset.source; window.DemoCarUI.select(source==='inventory'?'inventory-m6':window.DemoCars.list(source)[0].id);
     });
     $('#d2-fab').addEventListener('click', openSheet);
-    if ($('#d2-fav')) $('#d2-fav').addEventListener('click', toggleFav);
+    refreshFav=window.DemoCarUI.bindFavorite($('#d2-fav'),car);
     $('#d2-close').addEventListener('click', closeSheet);
     $('#d2-mask').addEventListener('click', closeSheet);
     $('#d2-c-tel').addEventListener('click', function () {
@@ -156,9 +117,9 @@
     });
     $('#d2-mark').addEventListener('click', function () {
       if (state.marked) {
-        confirmBox('是否确认取消？', function () { state.marked = false; renderSheet(); toast('已取消标记'); });
+        confirmBox('是否确认取消？', function () { state.marked = false; marks[state.carId]=false; renderSheet(); toast('已取消标记'); });
       } else {
-        confirmBox('是否确认已售？', function () { state.marked = true; renderSheet(); toast('已标记为疑似已售'); });
+        confirmBox('是否确认已售？', function () { state.marked = true; marks[state.carId]=true; renderSheet(); toast('已标记为疑似已售'); });
       }
     });
 
@@ -167,7 +128,8 @@
     // 便于核验时直接打开到同一状态
     var q = new URLSearchParams(location.search);
     if (q.get('d2role') === 'customer') { state.role = 'customer'; render(); }
-    if (q.get('d2src') === 'firsthand') { state.source = 'firsthand'; render(); }
+    if (q.get('d2src')) { var rows=window.DemoCars.list(q.get('d2src')); if(rows.length)selectCar(rows[0].id); }
+    if(q.get('car')&&window.DemoCars.get(q.get('car')))selectCar(q.get('car'));
     if (q.get('d2sheet') === '1') { openSheet(); }
   }
 

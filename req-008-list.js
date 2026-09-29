@@ -1,5 +1,5 @@
 /* REQ-008 小程序车辆列表页改造 样稿
-   依据：REQ-008 v1.1；页面结构与尺寸照线上「我要寻车」列表页（00-原始需求/车辆列表页.PNG、mall-portal-itu/pages/shop/list.vue）。
+   依据：REQ-008 v1.6；页面结构与尺寸照线上「我要寻车」列表页（00-原始需求/车辆列表页.PNG、mall-portal-itu/pages/shop/list.vue）。
    本地演示数据，不连接接口。元素 id 统一以 l8- 开头。上传天数按浏览器今天的日期实时计算。*/
 (function () {
   'use strict';
@@ -10,35 +10,6 @@
   var CATS = ['运损车', '包牌包税'];
   // 特价车：品牌来自现有商品品牌列表；车源：车型目录品牌＋最前面「其他品牌」
   var BRANDS = [['B', ['奔驰', '比亚迪']], ['C', ['长安']], ['F', ['丰田']], ['G', ['广汽传祺']], ['H', ['红旗']]];
-
-  function car(o) { return o; }
-  // days：距今天几天（特价车＝修改时间，车源＝最近一次上架时间）
-  var DATA = {
-    special_price: [
-      car({ name: '2026款传祺M6MAX 1.5T DCT 尊荣版（运损车）', img: A8 + 'list-car-1.png', brand: '广汽传祺', badge: 1, chip: '10万–15万', ref: '11.98万', sale: '10.XX万', days: 0, cats: ['运损车'] }),
-      car({ name: '2026款传祺M8 HEV 至尊版（运损车）', img: A8 + 'list-car-2.png', brand: '广汽传祺', badge: 1, chip: '20万–30万', ref: '23.98万', sale: '22.XX万', days: 1, cats: ['运损车'] }),
-      car({ name: '2026款丰田RAV4 2.0L 两驱豪华版', img: A8 + 'list-car-3.png', brand: '丰田', badge: 1, chip: '15万–20万', ref: '17.98万', sale: '13.XX万', days: 3, cats: ['包牌包税'] }),
-      car({ name: '2026款红旗H5 2.0T 自动旗畅Pro版', img: A8 + 'list-car-4.png', brand: '红旗', badge: 1, chip: '15万–20万', ref: '17.98万', sale: '11.XX万', days: 12, cats: ['包牌包税'] }),
-      car({ name: '2025款奔驰C260L 运动版', img: A2 + 'car-a.jpg', brand: '奔驰', badge: 0, chip: '', ref: '35.35万', sale: '34.XX万', days: 30, cats: [], video: 1 }),
-      car({ name: '2026款长安启源A07 550优享型', img: A2 + 'car-e.jpg', brand: '长安', badge: 0, chip: '', ref: '16.59万', sale: '9.XX万', days: 99, cats: [] }),
-      car({ name: '2021款比亚迪唐DM 2.0T 四驱高性能版', img: A2 + 'car-c.jpg', brand: '比亚迪', badge: 0, chip: '20万–30万', ref: '28.98万', sale: '27.XX万', days: 120, cats: ['包牌包税'] })
-    ],
-    // 车源演示图为实拍车按正方形裁出（R3-08），车名、价格与照片一致
-    firsthand: [
-      car({ name: '比亚迪 元UP 2027款 飞驰 401KM 活力版', img: A2 + 'sq-car-b.jpg', brand: '比亚迪', badge: 1, chip: '10万–15万', ref: '9.98万', sale: '9.XX万', days: 0, cats: ['包牌包税'] }),
-      car({ name: '丰田 普拉多 2026款 2.4T 霸道2800 ADV 顶配', img: A2 + 'sq-car-c.jpg', brand: '丰田', badge: 0, chip: '', ref: '', sale: '77.XX万', days: 2, cats: [] }),
-      car({ name: '丰田 兰德酷路泽 2026款 4000 GXR 8气 20轮', img: A2 + 'sq-car-d.jpg', brand: '丰田', badge: 1, chip: '', ref: '', sale: '82.XX万', days: 11, cats: ['运损车'], video: 1 }),
-      car({ name: '丰田 兰德酷路泽LC76 2025款 2.8T 自动 柴油', img: A2 + 'sq-car-e.jpg', brand: '丰田', badge: 0, chip: '', ref: '', sale: '62.XX万', days: 20, cats: ['运损车'], top: 2 }),
-      car({ name: '奔驰 G级AMG 2026款 AMG G63', img: A2 + 'sq-car-a.jpg', brand: '奔驰', badge: 0, chip: '', ref: '', sale: '285.XX万', days: 45, cats: [] })
-    ],
-    inventory: [
-      car({ name: '丰田 兰德酷路泽LC76 2025款 2.8T 自动 柴油', img: A2 + 'sq-car-e.jpg', brand: '丰田', badge: 1, chip: '', ref: '', sale: '61.XX万', days: 0, cats: ['运损车'] }),
-      car({ name: '奔驰 G级AMG 2026款 AMG G63', img: A2 + 'sq-car-a.jpg', brand: '奔驰', badge: 0, chip: '', ref: '', sale: '283.XX万', days: 5, cats: [] }),
-      car({ name: '比亚迪 元UP 2027款 飞驰 401KM 活力版', img: A2 + 'sq-car-b.jpg', brand: '', manual: 1, badge: 0, chip: '10万–15万', ref: '', sale: '8.XX万', days: 9, cats: [] }),
-      car({ name: '丰田 普拉多 2026款 2.4T 霸道2800 ADV 顶配', img: A2 + 'sq-car-c.jpg', brand: '丰田', badge: 1, chip: '', ref: '', sale: '76.XX万', days: 19, cats: ['运损车', '包牌包税'] }),
-      car({ name: '丰田 兰德酷路泽 2026款 4000 GXR 8气 20轮', img: A2 + 'sq-car-d.jpg', brand: '丰田', badge: 0, chip: '', ref: '', sale: '81.XX万', days: 21, cats: [], video: 1, top: 1 })
-    ]
-  };
 
   // R3-09：固定一行一台车，去掉列表／宫格切换
   var state = { entry: 'special_price', kw: '', brand: '', otherBrand: false, price: '全部', cats: [], draftCats: [], empty: false };
@@ -65,7 +36,7 @@
 
   function list() {
     if (state.empty) return [];
-    return DATA[state.entry].filter(function (c) {
+    return window.DemoCars.list(state.entry).filter(function (c) {
       if (state.kw && c.name.indexOf(state.kw) < 0) return false;
       if (state.otherBrand && !c.manual) return false;
       if (state.brand && c.brand !== state.brand) return false;
@@ -91,10 +62,9 @@
     box.classList.remove('grid'); box.classList.add('one');
     var rows = list();
     box.innerHTML = rows.map(function (c) {
-      // 车源照片登记时已裁成正方形，放进图框居中裁满；特价车用 PC 商品图，完整显示不裁
-      return '<div class="l8-item" data-src="' + state.entry + '">' +
-        '<div class="l8-img' + (state.entry === 'special_price' ? ' fit' : '') + '"><img class="l8-pic" src="' + c.img + '" alt="车图">' +
-        (c.badge ? '<img class="l8-badge" src="' + A8 + 'label-icon.png" alt="角标">' : '') +
+      // 三类示例照片均按正方形取景，数据按具体车辆 ID 进入详情
+      return '<div class="l8-item" data-src="' + state.entry + '" data-car-id="' + c.id + '">' +
+        '<div class="l8-img' + (state.entry === 'special_price' ? ' fit' : '') + '"><img class="l8-pic" src="' + c.img + '" alt="' + esc(c.name) + '" style="object-position:' + c.position + '">' +
         (c.video ? '<span class="l8-video">▶</span>' : '') + '</div>' +
         '<div class="l8-info"><div class="l8-name">' + esc(c.name) + '</div>' +
         (c.chip ? '<div class="l8-chip">' + c.chip + '</div>' : '') +
@@ -177,7 +147,7 @@
 
     $('#l8-list').addEventListener('click', function (e) {
       var it = e.target.closest('.l8-item'); if (!it) return;
-      toast(it.dataset.src === 'special_price' ? '进入商品详情（特价车，沿用现状）' : '进入车源详情（带 sourceType=' + it.dataset.src + '）');
+      window.DemoCarUI.open(it.dataset.carId);
     });
 
     render();

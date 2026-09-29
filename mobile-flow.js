@@ -35,16 +35,10 @@
         }, 30);
       }
     }
-    if (view === 'list008' && opts.entry) {
-      setTimeout(function () { click('#l8-entry [data-entry="' + opts.entry + '"]'); }, 30);
+    if (view === 'list008' && opts.entry && !opts.restore) {
+      setTimeout(function () { click('#l8-entry [data-entry="' + window.DemoCars.normalize(opts.entry) + '"]'); }, 30);
     }
-    if (view === 'contact2') {
-      var source = opts.source === 'firsthand' ? 'firsthand' : 'inventory';
-      setTimeout(function () {
-        click('#d2-source [data-source="' + source + '"]');
-        click('#d2-role [data-role="agent"]');
-      }, 30);
-    }
+    if (view === 'contact2' && opts.carId && !opts.restore && window.__setDetailCar) window.__setDetailCar(opts.carId);
     if (view === 'fav' && window.__renderFav) window.__renderFav();
     window.scrollTo(0, 0);
   }
@@ -60,7 +54,7 @@
     stack.pop();
     var top = stack[stack.length - 1];
     realShow(top.view);
-    afterShow(top.view, top.opts);
+    afterShow(top.view, Object.assign({},top.opts,{restore:true}));
   }
 
   window.__mobileNav = function (action) {
@@ -121,17 +115,9 @@
     if (invBack) invBack.addEventListener('click', back);
   }
 
-  // 车辆列表页格子点击 → 车源详情（特价车沿用现状商品详情，不在本次范围，保留原提示）；
+  // 列表点击由统一车辆资料模块按 ID 跳转；
   // 列表页、详情页左上角返回箭头 → 回上一页
   function bindListClick() {
-    var list = document.getElementById('l8-list');
-    if (list) list.addEventListener('click', function (e) {
-      var it = e.target.closest('.l8-item');
-      if (!it) return;
-      if (it.dataset.src === 'special_price') return; // 保留原有提示，不跳转
-      e.stopImmediatePropagation();
-      goto('contact2', { source: it.dataset.src });
-    }, true);
     var l8Back = document.getElementById('l8-top-back');
     if (l8Back) l8Back.addEventListener('click', back);
     var d2Back = document.getElementById('d2-back');

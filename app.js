@@ -90,9 +90,9 @@
     { id:'hq-2', name:'总部人员B', phone:'13900000002', wecom:true, active:true }
   ];
   const catalog = {
-    奥迪:{ A6L:[{name:'2026款 45 TFSI quattro 尊享动感型',price:459800,photos:['catalog:a6l-1','catalog:a6l-2']},{name:'2026款 40 TFSI 豪华型',price:429800,photos:['catalog:a6l-3']}], Q5L:[{name:'2026款 45 TFSI 尊享版',price:488800,photos:['catalog:q5l-1']}] },
-    宝马:{ X3:[{name:'2026款 xDrive 30L 尊享型',price:449900,photos:['catalog:x3-1','catalog:x3-2']}], '5系':[{name:'2026款 530Li 领先型',price:489900,photos:['catalog:530li-1']}] },
-    奔驰:{ GLC:[{name:'2026款 GLC 300 L 动感型',price:478800,photos:['catalog:glc-1']}], 'E级':[{name:'2026款 E 300 L 豪华型',price:529800,photos:['catalog:e300l-1']}] }
+    奥迪:{ A6L:[{name:'2026款 45 TFSI quattro 尊享动感型',price:459800,photos:[]},{name:'2026款 40 TFSI 豪华型',price:429800,photos:[]}], Q5L:[{name:'2026款 45 TFSI 尊享版',price:488800,photos:[]}] },
+    宝马:{ X3:[{name:'2026款 xDrive 30L 尊享型',price:449900,photos:[]}], '5系':[{name:'2026款 530Li 领先型',price:489900,photos:[]}] },
+    奔驰:{ GLC:[{name:'2026款 GLC 300 L 动感型',price:478800,photos:[]}], 'E级':[{name:'2026款 E 300 L 豪华型',price:529800,photos:[]}] }
   };
 
   function showView(view, syncHash = true) {
@@ -257,7 +257,7 @@
     const brand=vehicle?.brand||selection?.brand||'',model=vehicle?.model||selection?.model||'',variantName=vehicle?.variant||selection?.variant?.name||'';
     const reference=vehicle?.referencePrice??selection?.variant?.price??'',sale=vehicle?.salePrice??selection?.variant?.price??'';
     if(vehicle)state.photos=vehicle.photos?.length?vehicle.photos.slice():['demo-existing'];
-    else if(selection)state.photos=logic.mergeVehiclePhotos(state.photos,selection.variant.photos||[]);
+    let sourcePhotos=selection?(selection.variant.photos||[]).slice():[];
     const storeName=role==='4S店员工'?'杭州滨江4S店':'华东代理商';
     const organizationLabel=role==='4S店员工'?'所属4S店':'代理商／经营主体';
     const address=role==='4S店员工'?'浙江省杭州市滨江区江南大道588号':'上海市浦东新区张杨路1188号';
@@ -290,10 +290,13 @@
       `<button class="ghost" id="cancel-vehicle-form">取消</button>${!isManual&&!vehicle?'<button class="ghost" id="reselect-vehicle">重选型号</button>':''}<button class="primary" id="save-vehicle">${vehicle?'保存修改':'保存登记'}</button>`,
       ()=>bindVehicleForm());
     function bindVehicleForm(){
-    // R3-08：车辆照片一律正方形。车型来源图不是正方形时标「待裁剪」，点它进入同一裁剪页
-    const renderPhotos=()=>{ $('#photo-thumbs').innerHTML=state.photos.map((src,index)=>src==='demo-existing'?'<div class="vehicle-cover photo-thumb sq">已有照片</div>':src.startsWith('catalog:')?`<button type="button" class="photo-thumb sq pending-crop" data-crop-index="${index}">车型来源图<br><em>待裁剪</em></button>`:src.startsWith('data:video')?`<div class="vehicle-cover photo-thumb sq">视频</div>`:`<img class="photo-thumb sq" src="${src}" alt="车辆照片${index+1}">`).join('');
-      $$('[data-crop-index]').forEach((b)=>b.addEventListener('click',()=>{ const i=Number(b.dataset.cropIndex); openCropper([{src:DEMO_CAR_PHOTOS[i%DEMO_CAR_PHOTOS.length]}],(out)=>{ if(out[0]){state.photos[i]=out[0];} renderPhotos(); }); })); };
+    // 上传选图后自动裁剪；表单不设单独的待裁剪入口。
+    const renderPhotos=()=>{ $('#photo-thumbs').innerHTML=state.photos.map((src,index)=>src==='demo-existing'?'<div class="vehicle-cover photo-thumb sq">已有照片</div>':src.startsWith('data:video')?'<div class="vehicle-cover photo-thumb sq">视频</div>':`<img class="photo-thumb sq" src="${src}" alt="车辆照片${index+1}">`).join(''); };
     renderPhotos();
+    if(sourcePhotos.length){
+      const incoming=sourcePhotos; sourcePhotos=[];
+      openCropper(incoming.map((src)=>({src})),(out)=>{ state.photos=logic.mergeVehiclePhotos(state.photos,out); renderPhotos(); });
+    }
     state.formTypes=(vehicle?.types||[]).slice(); state.formLabels=(vehicle?.labels||[]).slice();
     state.formDetail=(vehicle?.detailImages||[]).slice();
     // R3-07：详情只放图片，不能写文字；可上移、下移、移除；不裁切
@@ -348,7 +351,6 @@
     if(!data.get('exterior')||!data.get('interior')){error.textContent='请选择外观颜色和内饰颜色';return;}
     if(!state.photos.length){error.textContent='请至少上传1张车辆照片';return;}
     if(!state.formTypes.length){error.textContent='请至少选择一个车辆类型';return;}
-    if(state.photos.some((p)=>p.startsWith('catalog:'))){error.textContent='请先裁剪标记为待裁剪的图片';return;}
     const decision=logic.registrationDecision({role:meta.role,contactId:state.currentContactId});
     if(!decision.allowed){error.textContent=decision.reason;return;}
     const next={brand:data.get('brand').trim(),model:data.get('model').trim(),variant:data.get('variant').trim(),
