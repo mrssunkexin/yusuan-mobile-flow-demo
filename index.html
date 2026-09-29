@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="预蒜 车源登记与 4S 店维护 页面方案">
   <title>预蒜 · 页面方案</title>
-  <link rel="stylesheet" href="styles.css?v=6.14.0">
+  <link rel="stylesheet" href="styles.css?v=6.15.0">
 </head>
 <body>
   <header class="topbar">
@@ -122,7 +122,7 @@
             <li><strong>查询区（R2-07／R2-08）</strong>：取消在售／已下架页签，改为品牌→车系→车型三级级联、车辆类型多选、状态单选三个条件，逐字段查询。</li>
             <li><strong>审核流程（R2-11）</strong>：登记提交后进入未审核；审核状态与上下架是两个互不合并的维度，只有通过才可能上架。</li>
             <li><strong>驳回通知（R2-11 细则 2）</strong>：右上角铃铛带未读角标，点开看驳回时间，点条目直接进该车修改页，原因显示在顶部。不做「被驳回的车」独立分区。</li>
-            <li><strong>登记表 18 项（R2-09／R2-12）</strong>：新增车辆类型、标签、车辆详情（图文，非富文本）、推荐；照片区支持视频。</li>
+            <li><strong>登记表 18 项（R2-09／R2-12）</strong>：车辆类型、标签、详情图片（仅图片）；照片区支持视频。推荐已由付费置顶替代。</li>
           </ul>
           <h3>第三轮（R3，2026-09-29）</h3>
           <ul>
@@ -133,7 +133,7 @@
           </ul>
           <h3>本轮新增（R2-10，2026-09-16）</h3>
           <ul><li><strong>卡片精简为 6 项</strong>：封面、车名、状态、车辆类型、价格、登记时间。去掉备注、车源类型、内外颜色与「查看」按钮；操作按钮移到价格同一行。</li><li><strong>查询区一行横排</strong>：品牌／类型／审核／上下架，点选即生效，去掉查询、重置、收起三个按钮。</li><li><strong>排序</strong>：不通过最前，其次未审核，其余按登记时间倒序。</li></ul>
-          <p class="side-info-src">完整规则见 REQ-001 需求方案 v2.5；本页不重复维护规则。</p>
+          <p class="side-info-src">完整规则见 REQ-001 需求方案 v2.7；本页不重复维护规则。</p>
         </aside>
        </div>
       </section>
@@ -573,7 +573,7 @@
   <script src="demo-cars.js?v=1.0.0"></script>
   <script src="demo-car-ui.js?v=1.0.0"></script>
   <script src="logic.js?v=6.3.0"></script>
-  <script src="app.js?v=5.6.0"></script>
+  <script src="app.js?v=5.7.0"></script>
   <script src="req-007-notice.js?v=4.9.0"></script>
   <script src="req-003-contact.js?v=5.2.0"></script>
   <script src="req-003-fav.js?v=1.1.0"></script>
