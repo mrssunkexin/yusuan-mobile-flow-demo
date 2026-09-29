@@ -1,4 +1,589 @@
 <!doctype html>
-<meta charset="utf-8">
-<meta http-equiv="refresh" content="0; url=mobile-app.html">
-<a href="mobile-app.html">进入手机端流程演示</a>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="预蒜 车源登记与 4S 店维护 页面方案">
+  <title>预蒜 · 页面方案</title>
+  <link rel="stylesheet" href="styles.css?v=6.9.0">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">页面方案</p>
+      <h1>车源登记与 4S 店维护</h1>
+    </div>
+    <div class="demo-flag"><span></span>本地页面 · 不连接业务服务</div>
+  </header>
+
+  <div class="shell">
+    <nav class="side-nav" aria-label="功能导航">
+      <button class="nav-item active" data-view="overview">待确认事项 <span></span></button>
+
+      <p class="nav-group">小程序</p>
+      <button class="nav-item" data-view="inventory"><i>REQ-001</i>车源登记 <span>本人车源 · 置顶 · R3 已改写</span></button>
+      <button class="nav-item" data-view="home002"><i>REQ-002</i>首页改造 <span>入口轮播 · R3 已改写</span></button>
+      <button class="nav-item" data-view="contact"><i>REQ-003</i>车辆详情页改造 <span>浮动钮 · 待审阅</span></button>
+      <button class="nav-item" data-view="list008"><i>REQ-008</i>车辆列表页 <span>一行一台 · 置顶 · R3 已改写</span></button>
+      <button class="nav-item" data-view="fav"><i>REQ-003</i>我的收藏 <span>R3-11 新增页</span></button>
+      <button class="nav-item" data-view="contact2"><i>REQ-003</i>详情页 · 含车辆信息 <span>另一版 · 待确认</span></button>
+      <button class="nav-item" data-view="login009"><i>REQ-009</i>4S店登录 <span>车源登记登录 · R3 已改写</span></button>
+      <button class="nav-item" data-view="clue010"><i>REQ-010</i>线索一键拨号 <span>新增拨号键 · 待审阅</span></button>
+
+      <p class="nav-group">PC 端</p>
+      <button class="nav-item" data-view="stores"><i>REQ-005</i>4S店信息维护 <span>门店配置 · 已放行</span></button>
+      <button class="nav-item" data-view="employees"><i>REQ-006</i>4S店员工维护 <span>员工与联系人 · 已放行</span></button>
+      <button class="nav-item" data-view="stock"><i>REQ-004</i>车源管理 <span>查看·审核·上下架·置顶 · R3 已改写</span></button>
+      <button class="nav-item" data-view="notice"><i>REQ-007</i>公告配置 <span>底部滚动文字 · 已放行</span></button>
+
+      <div class="scope-note">
+        <strong>本次不展开</strong>
+        员工登录、对外展示、查看售车人、转发、客户咨询。
+      </div>
+    </nav>
+
+    <main id="app" tabindex="-1">
+      <section class="view active" id="view-overview">
+        <div class="page-heading">
+          <div><p class="kicker">先看这里</p><h2>待确认事项</h2></div>
+          <span class="status-chip review" id="pending-count"></span>
+        </div>
+        <p class="pend-intro">下面这几条定了，需求才算齐，才能进开发基线。每条都写了问题、可选项和各自的代价，以及在你定之前需求按什么写。完整版在 <code>项目文档/01-需求与整体方案/待确认需求.md</code>。</p>
+        <div id="pending-body"></div>
+      </section>
+
+      <section class="view" id="view-inventory">
+       <div class="mobile-layout">
+        <div class="entry-col">
+          <p class="entry-cap">入口页 · 代理商后台</p>
+          <!-- R2-10：按线上实际页面（用户 2026-09-16 提供的真机截图）完整复刻，不再贴 Word 示意图 -->
+          <div class="mobile-stage entry-stage">
+            <div class="ph-status"><span class="ph-time">16:08</span><span class="ph-right"><i class="ph-sig"></i>5G<i class="ph-bat"></i></span></div>
+            <div class="ph-green">
+              <div class="ph-capsule"><span>•••</span><i></i></div>
+              <div class="ph-usercard">
+                <div class="ph-name">孙可鑫</div>
+                <div class="ph-line"><i class="ph-ico-loc"></i>全国1000余家线下【交车中心】均可交付</div>
+                <div class="ph-line"><i class="ph-ico-tel"></i>18686636658</div>
+              </div>
+              <button class="ph-home" type="button">返回主页</button>
+            </div>
+            <div class="ph-grid">
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>下级店铺</span></button>
+              <button class="ph-item" type="button" id="entry-clue"><img src="assets/req-001/ic-clue.png?v=1" alt=""><span>线索管理</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-share.png?v=1" alt=""><span>共享车源</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-bill.png?v=1" alt=""><span>积分账单</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>全网比价</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>招募合伙人</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-hot.png?v=1" alt=""><span>朋友圈素材</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>保养套餐</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>运营管理</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>助道学堂</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>签署合同</span></button>
+              <button class="ph-item" type="button"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>售车登记</span></button>
+              <button class="ph-item" type="button" id="entry-car-source"><img src="assets/req-001/ic-shop.png?v=1" alt=""><span>车源登记</span></button>
+            </div>
+            <div class="ph-partner">城市合伙人（0）</div>
+            <div class="ph-empty">暂无数据</div>
+            <button class="ph-logout" type="button">退出<br>后台</button>
+          </div>
+          <p class="entry-note">入口页是 <code>pages/seller/index.vue</code>。本次只在现有 12 个入口后面新增「车源登记」一个，其余入口、返回主页、城市合伙人、退出后台一概不动。点「车源登记」进右边的页面。</p>
+        </div>
+        <div class="mobile-stage">
+          <div class="mobile-head"><button class="icon-btn" aria-label="返回">‹</button><strong>车源登记</strong><button class="notify-btn" id="notify-entry" aria-label="驳回通知">🔔<span class="notify-badge" id="notify-badge" hidden>0</span></button></div>
+          <div class="inventory-actions">
+            <button class="primary" id="add-vehicle">＋ 增加车源</button>
+            <!-- R2-10：四个条件一行无边框横排，点选即生效；无查询/重置/收起按钮。形态同车辆列表页筛选栏 -->
+            <div class="filter-bar" id="query-body">
+              <button type="button" class="filter-item" id="q-car">品牌<i></i></button>
+              <button type="button" class="filter-item" id="q-type">类型<i></i></button>
+              <button type="button" class="filter-item" id="q-approve">审核<i></i></button>
+              <button type="button" class="filter-item" id="q-shelf">上下架<i></i></button>
+            </div>
+          </div>
+          <div id="vehicle-list" class="vehicle-list" aria-live="polite"></div>
+          <div id="list-footer" class="list-footer">向下滚动加载后续记录</div>
+          <!-- 手机内页面栈：小程序 navigateTo 的形态，整屏推入，不是弹窗 -->
+          <div id="m-stack" class="m-stack"></div>
+          <!-- 手机内居中确认框：对应 u-modal -->
+          <div id="m-dialog" class="m-dialog-wrap" hidden></div>
+          <!-- 手机内底部选择器：对应 u-picker -->
+          <div id="m-picker" class="m-picker-wrap" hidden></div>
+          <!-- 手机内提示条：对应 uni.showToast -->
+          <div id="m-toast" class="m-toast"></div>
+        </div>
+
+        <aside class="side-info">
+          <div class="side-info-head"><h2>REQ-001 小程序车源登记</h2><span class="chip">R3 已改写 · 待审阅</span></div>
+          <p>左侧手机内的操作是真实本地交互，数据为本地固定数据，不连接任何接口。</p>
+          <h3>本轮相对 v1.2 改了什么</h3>
+          <ul>
+            <li><strong>改名（R2-05／R2-06）</strong>：入口、页面、表单标题统一为「车源登记」，按钮为「增加车源」。车源类型名「库存车」「一手车源」不变。</li>
+            <li><strong>查询区（R2-07／R2-08）</strong>：取消在售／已下架页签，改为品牌→车系→车型三级级联、车辆类型多选、状态单选三个条件，逐字段查询。</li>
+            <li><strong>审核流程（R2-11）</strong>：登记提交后进入未审核；审核状态与上下架是两个互不合并的维度，只有通过才可能上架。</li>
+            <li><strong>驳回通知（R2-11 细则 2）</strong>：右上角铃铛带未读角标，点开看驳回时间，点条目直接进该车修改页，原因显示在顶部。不做「被驳回的车」独立分区。</li>
+            <li><strong>登记表 18 项（R2-09／R2-12）</strong>：新增车辆类型、标签、车辆详情（图文，非富文本）、推荐；照片区支持视频。</li>
+          </ul>
+          <h3>第三轮（R3，2026-09-29）</h3>
+          <ul>
+            <li><strong>付费置顶（R3-01）</strong>：去掉「推荐」。审核通过且在售的车，登记时间右侧有「置顶」按钮，点开付款面板（9.9元／7天，后台可配），付款后卡片显示「置顶至…」、按钮变「续期」。置顶车在对应车源类型列表排最前。</li>
+            <li><strong>登录手机号（R3-06）</strong>：登记表在「登记人」下方反显当前登录手机号，只读。</li>
+            <li><strong>详情图片（R3-07）</strong>：原「车辆详情」图文改为只能加图片，最多 20 张，可上移、下移、移除，不裁切。</li>
+            <li><strong>车辆照片裁成正方形（R3-08）</strong>：不是正方形的照片先进裁剪页，拖动选择保留区域（手机上可双指缩放）；车型来源图标「待裁剪」，裁完才能保存。</li>
+          </ul>
+          <h3>本轮新增（R2-10，2026-09-16）</h3>
+          <ul><li><strong>卡片精简为 6 项</strong>：封面、车名、状态、车辆类型、价格、登记时间。去掉备注、车源类型、内外颜色与「查看」按钮；操作按钮移到价格同一行。</li><li><strong>查询区一行横排</strong>：品牌／类型／审核／上下架，点选即生效，去掉查询、重置、收起三个按钮。</li><li><strong>排序</strong>：不通过最前，其次未审核，其余按登记时间倒序。</li></ul>
+          <p class="side-info-src">完整规则见 REQ-001 需求方案 v2.4；本页不重复维护规则。</p>
+        </aside>
+       </div>
+      </section>
+
+      <section class="view" id="view-stores">
+        <div class="pc-page">
+          <div class="page-heading"><div><p class="kicker">PC端</p><h2>4S店信息维护</h2></div><div class="button-row"><button class="primary" id="add-store">新增4S店</button></div></div>
+          <div class="panel toolbar"><label>4S店名称<input id="store-search" maxlength="100" placeholder="请输入4S店名称"></label><button id="query-store" class="primary">查询</button><button id="reset-store" class="ghost">重置</button></div>
+          <div class="panel table-panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>4S店名称</th><th>省市区县</th><th>详细地址</th><th>操作</th></tr></thead><tbody id="store-table-body"></tbody></table></div><div id="store-empty" class="table-empty" hidden></div><div class="pagination"><span id="store-total"></span><label>每页<select id="store-page-size"><option>20</option><option>50</option><option>100</option></select></label><button id="store-prev">上一页</button><span id="store-page"></span><button id="store-next">下一页</button></div></div>
+        </div>
+      </section>
+      <section class="view" id="view-employees">
+        <div class="pc-page">
+          <div class="page-heading"><div><p class="kicker">PC端</p><h2>4S店员工维护</h2></div><div class="button-row"><button class="ghost" id="contact-setting">车源联系人设置</button><button class="primary" id="add-employee">新增员工</button></div></div>
+          <div class="panel toolbar employee-toolbar">
+            <label>员工姓名<input id="employee-name" maxlength="50" placeholder="请输入员工姓名"></label>
+            <label>手机号<input id="employee-phone" placeholder="请输入手机号"></label>
+            <label>所属4S店<input id="employee-store-filter" list="employee-store-options" placeholder="全部门店／输入店名搜索"><datalist id="employee-store-options"></datalist></label>
+            <label>状态<select id="employee-status"><option value="">全部</option><option>启用</option><option>停用</option></select></label>
+            <button id="query-employee" class="primary">查询</button><button id="reset-employee" class="ghost">重置</button>
+          </div>
+          <div class="panel table-panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>员工姓名</th><th>手机号</th><th>所属4S店</th><th>账号状态</th><th>备注</th><th>操作</th></tr></thead><tbody id="employee-table-body"></tbody></table></div><div id="employee-empty" class="table-empty" hidden></div><div class="pagination"><span id="employee-total"></span><button id="employee-prev">上一页</button><span id="employee-page"></span><button id="employee-next">下一页</button></div></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-stock">
+        <div class="pc-page">
+          <div class="page-heading">
+            <div><p class="kicker">PC端</p><h2>车源管理</h2></div>
+            <div class="button-row"><span class="chip pend">查看、审核、上下架；不新增不修改不删除</span></div>
+          </div>
+          <div class="panel toolbar">
+            <label>登记人<input id="q-person" placeholder="请输入登记人"></label>
+            <label>所属机构<input id="q-org" placeholder="请输入机构名称"></label>
+            <label>品牌<select id="q-brand"><option value="">不限品牌</option></select></label>
+            <label>车型<select id="q-model"><option value="">不限车型</option></select></label>
+            <label>车源类型<select id="q-srctype"><option value="">全部</option><option>库存车</option><option>一手车源</option></select></label>
+            <label>审核状态<select id="pc-approve"><option value="">全部</option><option>未审核</option><option>通过</option><option>不通过</option></select></label>
+            <label>上下架<select id="pc-shelf"><option value="">全部</option><option>在售</option><option>已下架</option></select></label>
+            <label>车辆类型<select id="q-vtype"><option value="">全部</option><option>运损车</option><option>包牌包税</option><option>新能源</option><option>平行进口</option><option>库存尾款车</option></select></label>
+            <label>车辆所在地<select id="q-prov"><option value="">不限省</option></select></label>
+            <label>市<select id="q-city"><option value="">不限市</option></select></label>
+            <label>区县<select id="q-dist"><option value="">不限区县</option></select></label>
+            <label>登记时间<span class="range"><input id="q-from" type="date"><i>至</i><input id="q-to" type="date"></span></label>
+            <label>车辆 ID<input id="q-code" placeholder="请输入车辆 ID"></label>
+            <label>排序<select id="q-sort"><option value="time">登记时间倒序</option><option value="sold">疑似已售多的在前</option><option value="views">查看次数多的在前</option></select></label>
+            <button id="stock-query" class="primary">查询</button><button id="stock-reset" class="ghost">重置</button>
+          </div>
+          <div class="stat-row panel compact">
+            <div class="stat"><b id="s-total">0</b><span>车源总数</span></div>
+            <div class="stat"><b id="s-pend" style="color:#b25b00">0</b><span>未审核</span></div>
+            <div class="stat"><b id="s-on" style="color:#21a081">0</b><span>在售</span></div>
+            <div class="stat"><b id="s-off" style="color:#b73b3b">0</b><span>已下架</span></div>
+            <div class="stat"><b id="s-views">0</b><span>累计查看</span></div>
+          </div>
+          <div class="panel table-panel">
+            <div class="table-wrap"><table class="data-table"><thead><tr>
+              <th>#</th><th class="col-id">车辆 ID</th><th>车源类型</th><th>车辆类型</th><th>品牌车型</th><th>实际售价（元）</th><th>登记人</th><th>所属机构</th><th>车辆所在地</th><th>登记时间</th><th>查看</th><th>疑似已售</th><th>审核状态</th><th>上下架</th><th>置顶</th><th>操作</th>
+            </tr></thead><tbody id="stock-body"></tbody></table></div>
+            <div id="stock-empty" class="table-empty" hidden></div>
+            <div class="pagination"><span id="stock-total"></span><label>每页<select id="stock-size"><option>20</option><option>50</option><option>100</option></select></label><button id="stock-prev">上一页</button><span id="stock-page"></span><button id="stock-next">下一页</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-notice">
+        <div class="pc-page">
+          <div class="page-heading">
+            <div><p class="kicker">PC端</p><h2>公告配置</h2></div>
+            <div class="button-row"><span id="notice-count" class="chip ok"></span><button class="primary" id="notice-add">新增公告</button></div>
+          </div>
+          <div class="panel notice-tip">
+            <strong>公告是运营自己编的文案，不接真实浏览数据。</strong>
+            「尾号 9989 正在查看…」是文案示例，不是系统去查谁在看什么车。一条公告只有文案、排序值、启用状态三个字段。
+          </div>
+          <div class="panel toolbar">
+            <label>公告文案<input id="notice-search" maxlength="40" placeholder="输入关键字查询"></label>
+            <label>状态<select id="notice-status"><option value="">全部</option><option>启用</option><option>停用</option></select></label>
+            <button id="notice-query" class="primary">查询</button><button id="notice-reset" class="ghost">重置</button>
+          </div>
+          <div class="panel table-panel">
+            <div class="table-wrap"><table class="data-table"><thead><tr><th>公告文案</th><th>排序值</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody id="notice-table-body"></tbody></table></div>
+            <div id="notice-empty" class="table-empty" hidden></div>
+            <div class="pagination"><span id="notice-total"></span><label>每页<select id="notice-page-size"><option>20</option><option>50</option><option>100</option></select></label><button id="notice-prev">上一页</button><span id="notice-page"></span><button id="notice-next">下一页</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-contact">
+        <div class="mobile-layout">
+          <div class="detail-col">
+            <div class="d-toolbar">
+              <span class="d-label">当前身份</span>
+              <div class="seg2" id="d-role"><button data-role="agent" class="on">一级代理商</button><button data-role="agent2">二级代理商</button><button data-role="customer">C 端客户</button></div>
+              <span class="d-label">车源类型</span>
+              <div class="seg2" id="d-source"><button data-source="inventory" class="on">库存车</button><button data-source="firsthand">一手车源</button><button data-source="special">特价车</button></div>
+              <label class="d-check"><input type="checkbox" id="d-nocontact"> 模拟统一联系人未配置</label>
+            <label><input type="checkbox" id="d-offline"> 车辆已下架（看标记清零）</label>
+            </div>
+            <p class="d-why" id="d-why" hidden></p>
+
+            <div class="d-phone">
+              <div class="d-screen"><img src="assets/req-003/detail-body.png?v=1" alt="车辆详情页现状"></div>
+
+              <div class="m-dialog-wrap" id="d-confirm" hidden></div>
+              <button class="d-fab" id="d-fab" title="联系登记人">
+                <span class="d-fab-ico">☎</span><span class="d-fab-txt">登记人</span>
+              </button>
+
+              <div class="d-tabbar"><img src="assets/req-003/detail-tabbar.png?v=1" alt="底部固定栏"></div>
+
+              <div class="d-sheet-wrap" id="d-sheet" hidden>
+                <div class="d-mask" id="d-mask"></div>
+                <div class="d-sheet">
+                  <div class="d-sheet-head"><b>登记人</b><button class="d-x" id="d-close">×</button></div>
+                  <div class="d-row"><span class="d-k">姓名</span><span class="d-v" id="d-name"></span></div>
+                  <div class="d-row"><span class="d-k">来源</span><span class="d-v d-from" id="d-from"></span></div>
+                  <div class="d-row"><span class="d-k">手机号</span><a class="d-v d-tel" id="d-tel"></a></div>
+                  <div class="d-hr"></div>
+                  <div class="d-sold">
+                    <button class="d-mark" id="d-mark"></button>
+                    <p class="d-markcount" id="d-markcount"></p>
+                    <p class="d-soldtip">如果您觉得该车已售，请点击【疑似已售】标记</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="side-info">
+            <div class="side-info-head"><h2>REQ-003 小程序车辆详情页改造</h2><span class="chip pend">待审阅</span></div>
+            <p>详情页现有布局和内容一行不改，只在车型名右侧的白底处叠一个浮动圆钮。左边手机里的底图就是线上现状截图（SRC-002 参考图），钮和弹窗是叠上去的。</p>
+            <h3>用上面的开关看三种情况</h3>
+            <ul>
+              <li><b>一级代理商 + 库存车</b>：弹窗显示登记人，手机号可点拨打。浮钮已按 R2-15 上移到车型名右侧的浅色区，不压顶部绿色价格条与底部绿色横幅。</li>
+              <li><b>一级代理商 + 一手车源</b>：显示总部统一联系人，不显示实际上传的员工。勾选「未配置」可看兜底显示。</li>
+              <li><b>C 端客户</b>或<b>特价车</b>：浮动钮直接不渲染，页面与现在完全一致。</li>
+            </ul>
+            <h3>疑似已售</h3>
+            <ul>
+              <li>一人一个状态：点一下标记，再点一下取消，不会重复累加。<b>两个动作都要二次确认（R2-16）。</b></li>
+              <li>按钮下方「n 人标记」是当前处于已标记状态的人数。<b>只能取消自己标的，没有任何入口取消别人的（R2-16）。</b></li>
+              <li>只有一级代理商能点、能看（R3-12），二级代理商和客户看不到这个数字。二级代理商是否另给标记入口待确认（PENDING-021）。</li>
+              <li>标记不改变车辆状态，不自动下架。登记人在自己的车源登记里能看到，总部在 PC 车源管理里排查（REQ-004）。<b>车辆一经下架，标记即清零（R2-19）。</b></li>
+            </ul>
+            <p class="side-info-src">完整规则见 REQ-003 需求方案 v2.2。另含车源详情读取、线索写入与线索读取，属后台行为，页面上看不到。</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="view-contact2">
+        <div class="mobile-layout">
+          <div class="detail-col">
+            <div class="d-toolbar">
+              <span class="d-label">当前身份</span>
+              <div class="seg2" id="d2-role"><button data-role="agent" class="on">一级代理商</button><button data-role="agent2">二级代理商</button><button data-role="customer">C 端客户</button></div>
+              <span class="d-label">车源类型</span>
+              <div class="seg2" id="d2-source"><button data-source="inventory" class="on">库存车</button><button data-source="firsthand">一手车源</button></div>
+            </div>
+
+            <div class="d-phone">
+              <div class="d-screen">
+                <img src="assets/req-003/detail-nav.png?v=1" alt="导航栏">
+                <div class="d2-swiper">
+                  <img src="assets/req-003/detail-car.png?v=1" alt="车辆图片">
+                  <span class="d2-video" id="d2-video">▶ 含视频</span>
+                  <span class="d2-media" id="d2-media"></span>
+                </div>
+                <div class="d2-price">
+                  <div class="d2-price-big" id="d2-big"></div>
+                  <div class="d2-price-lines">
+                    <p>指导价: <s id="d2-ref"></s></p>
+                    <p class="d2-yellow">预蒜价: <span id="d2-sale"></span></p>
+                  </div>
+                </div>
+                <div class="d2-model"><span class="d2-model-tag">车型:</span><span class="d2-model-name" id="d2-name"></span></div>
+                <div class="d2-info">
+                  <div class="d2-info-head"><b>车辆信息</b><span class="d2-src" id="d2-src"></span></div>
+                  <dl class="d2-grid">
+                    <div><dt>外观颜色</dt><dd id="d2-color-out"></dd></div>
+                    <div><dt>内饰颜色</dt><dd id="d2-color-in"></dd></div>
+                    <div><dt>车辆类型</dt><dd id="d2-vtypes"></dd></div>
+                    <div><dt>所在地区</dt><dd id="d2-region"></dd></div>
+                  </dl>
+                  <div class="d2-row"><span class="d2-k">标签</span><div class="d2-labels" id="d2-labels"></div></div>
+                  <div class="d2-row"><span class="d2-k">备注</span><p class="d2-remark" id="d2-remark"></p></div>
+                </div>
+                <img src="assets/req-003/detail-shop.png?v=1" alt="我附近门店">
+                <img src="assets/req-003/detail-adv.png?v=1" alt="购车优势">
+                <div class="d2-detail">
+                  <div class="d2-detail-head">商品详情</div>
+                  <div class="d2-blocks" id="d2-blocks"></div>
+                </div>
+              </div>
+
+              <div class="m-dialog-wrap" id="d2-confirm" hidden></div>
+              <button class="d-fab d2-fab" id="d2-fab" title="联系登记人">
+                <span class="d-fab-ico">☎</span><span class="d-fab-txt">登记人</span>
+              </button>
+
+              <div class="d-tabbar"><img src="assets/req-003/detail-tabbar.png?v=1" alt="底部固定栏"><button type="button" class="d2-fav" id="d2-fav"><svg viewBox="0 0 24 24"><path d="M12 3.2l2.6 5.5 6 .8-4.4 4.1 1.1 5.9L12 16.6l-5.3 2.9 1.1-5.9L3.4 9.5l6-.8z"/></svg><span class="d2-fav-t">收藏</span></button></div>
+
+              <div class="d-sheet-wrap" id="d2-sheet" hidden>
+                <div class="d-mask" id="d2-mask"></div>
+                <div class="d-sheet">
+                  <div class="d-sheet-head"><b>登记人</b><button class="d-x" id="d2-close">×</button></div>
+                  <div class="d-row"><span class="d-k">姓名</span><span class="d-v" id="d2-c-name"></span></div>
+                  <div class="d-row"><span class="d-k">来源</span><span class="d-v d-from" id="d2-c-from"></span></div>
+                  <div class="d-row"><span class="d-k">手机号</span><a class="d-v d-tel" id="d2-c-tel"></a></div>
+                  <div class="d-hr"></div>
+                  <div class="d-sold">
+                    <button class="d-mark" id="d2-mark"></button>
+                    <p class="d-markcount" id="d2-markcount"></p>
+                    <p class="d-soldtip">如果您觉得该车已售，请点击【疑似已售】标记</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="side-info">
+            <div class="side-info-head"><h2>车辆详情页 · 含车辆信息</h2><span class="chip pend">待确认</span></div>
+            <p>另一版做法：在「车型」下面加一块「车辆信息」，把登记时填的信息给看车的人看。原来那版「车辆详情页改造」保留不动，两版对比着看。</p>
+            <h3>展示了什么</h3>
+            <ul>
+              <li><b>顶部轮播</b>：登记时上传的全部照片和视频，右下角显示张数。</li>
+              <li><b>价格条</b>：大字和「预蒜价」是实际售价，「指导价」是参考价。</li>
+              <li><b>车型</b>：品牌＋车系＋车型。</li>
+              <li><b>车辆信息</b>：车源类型、外观颜色、内饰颜色、车辆类型、所在地区（省市）、标签、备注。</li>
+              <li><b>商品详情</b>：登记时填的文字和图片，按填写顺序。</li>
+            </ul>
+            <h3>不展示什么，为什么</h3>
+            <ul>
+              <li><b>登记人姓名和电话</b>：客户咨询由转发人承接，只有一级代理商点「登记人」浮钮才看得到（R3-12）。</li>
+              <li><b>代理商或 4S 店名称、详细地址</b>：客户看到后可以绕开转发人直接找过去，所以地区只显示到省市。</li>
+              <li><b>登记时间</b>：上传天数放在列表卡片上（车辆列表页那几条还没定），详情页先不放。</li>
+              <li><b>审核状态、推荐</b>：对看车的人没有用。</li>
+            </ul>
+            <h3>其余不变</h3>
+            <ul>
+              <li>我附近门店、购车优势、底部栏沿用现状。</li>
+              <li>「登记人」浮钮放在「车辆信息」标题右侧的白底处，只有一级代理商看得到（R3-12）；弹窗与原来那版一致。</li>
+              <li><b>第三轮</b>：商品详情只显示图片（R3-07）；底部栏「返回首页」右侧新增「收藏」，点后变橙色「已收藏」，「我的」页第 5 个入口「我的收藏」能看到（R3-11）。</li>
+            </ul>
+            <p class="side-info-src">要不要采用这一版，列在「待确认事项」里。图片取自线上详情页截图。</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="view-list008">
+        <div class="mobile-layout">
+          <div class="detail-col">
+            <div class="d-toolbar">
+              <span class="d-label">从首页哪个卡片进入</span>
+              <div class="seg2" id="l8-entry"><button data-entry="special_price" class="on">特价车</button><button data-entry="firsthand">一手车源</button><button data-entry="inventory">库存车</button></div>
+              <label class="d-check"><input type="checkbox" id="l8-empty"> 模拟无数据</label>
+            </div>
+
+            <div class="d-phone l8-phone">
+              <div class="l8-top">
+                <img class="l8-status" src="assets/req-008/nav-status.png?v=2" alt="状态栏">
+                <div class="l8-navrow"><img class="l8-back" src="assets/req-008/nav-back.png?v=2" alt="返回"><span class="l8-title" id="l8-title">特价车</span><img class="l8-capsule" src="assets/req-008/nav-capsule.png?v=2" alt="胶囊按钮"></div>
+              </div>
+              <div class="l8-screen" id="l8-screen">
+                <div class="l8-search">
+                  <div class="l8-input"><span class="l8-mag" aria-hidden="true"></span><input id="l8-kw" placeholder="找到您的爱车"></div>
+                  <button type="button" class="l8-sbtn" id="l8-search">搜索</button>
+                </div>
+                <img class="l8-banner" src="assets/req-008/banner.png?v=1" alt="横幅">
+                <div class="l8-filter">
+                  <span class="l8-f" id="l8-f-brand"><span class="t">全部</span><i></i></span>
+                  <span class="l8-f" id="l8-f-price"><span class="t">价格</span><i></i></span>
+                  <span class="l8-f" id="l8-f-cat"><span class="t">类别</span><i></i></span>
+                </div>
+                <div class="l8-list grid" id="l8-list"></div>
+                <div class="l8-emptybox" id="l8-emptybox" hidden><div class="l8-empty-ico"></div>没有搜索结果</div>
+                <div class="l8-more" id="l8-more">没有更多数据了</div>
+              </div>
+
+              <div class="l8-page" id="l8-brand-page" hidden>
+                <div class="l8-top">
+                  <img class="l8-status" src="assets/req-008/nav-status.png?v=2" alt="状态栏">
+                  <div class="l8-navrow"><img class="l8-back" id="l8-brand-back" src="assets/req-008/nav-back.png?v=2" alt="返回"><span class="l8-title">选择品牌</span><img class="l8-capsule" src="assets/req-008/nav-capsule.png?v=2" alt="胶囊按钮"></div>
+                </div>
+                <div class="l8-brand-list" id="l8-brand-list"></div>
+              </div>
+
+              <div class="l8-sheet-wrap" id="l8-price-sheet" hidden>
+                <div class="l8-mask" id="l8-price-mask"></div>
+                <div class="l8-sheet">
+                  <div class="l8-pick-head"><button type="button" id="l8-price-cancel">取消</button><button type="button" class="ok" id="l8-price-ok">确定</button></div>
+                  <div class="l8-price-opts" id="l8-price-opts"></div>
+                </div>
+              </div>
+
+              <div class="l8-sheet-wrap" id="l8-cat-sheet" hidden>
+                <div class="l8-mask" id="l8-cat-mask"></div>
+                <div class="l8-sheet">
+                  <div class="l8-cat-title">选择类别</div>
+                  <div class="l8-cat-opts" id="l8-cat-opts"></div>
+                  <div class="l8-cat-foot"><button type="button" id="l8-cat-reset">重置</button><button type="button" class="ok" id="l8-cat-ok">确定</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="side-info">
+            <div class="side-info-head"><h2>REQ-008 小程序车辆列表页改造</h2><span class="chip pend">待审阅</span></div>
+            <p>照线上「我要寻车」列表页做，三个入口共用同一页。用上面的按钮切换从首页哪个卡片进入。</p>
+            <h3>这次改了什么</h3>
+            <ul>
+              <li><b>标题</b>：按入口显示「特价车／一手车源／库存车」。</li>
+              <li><b>显示哪些车</b>：特价车显示 PC 维护的全部在售车；一手车源、库存车只显示审核通过且上架的车。</li>
+              <li><b>排序</b>：特价车照旧按修改时间；一手车源、库存车按最近一次上架时间。都是新的在前，没有排序下拉。</li>
+              <li><b>上传天数</b>：每个格子最后一行。当天「当天上传」，之后「上传一天」「上传十二天」…满 100 天用数字。</li>
+              <li><b>类别</b>：筛选栏新增，点开可多选，点「确定」才生效，带任一类别就显示。</li>
+              <li><b>其他品牌</b>：一手车源、库存车点「全部」选品牌时，最前面有「其他品牌」，看手写品牌的车。</li>
+              <li><b>一行一台（R3-09）</b>：照用户样例改为左侧车图、右侧信息，去掉列表／宫格切换；字段和绿色预蒜价不变。</li>
+              <li><b>置顶（R3-01）</b>：一手车源、库存车里付费置顶的车排最前。</li>
+            </ul>
+            <h3>照旧不改</h3>
+            <ul>
+              <li>搜索、价格筛选、横幅、格子里的角标与价格（角标去不去待 PENDING-017）。</li>
+              <li>车源格子和特价车格子内容一样，不显示店名、地区。</li>
+            </ul>
+            <h3>后期统一确认</h3>
+            <ul>
+              <li>价格筛选按标签还是按售价（PENDING-016）；格子上取哪个标签（PENDING-017）；车源图片缩略图（PENDING-014）；类别清单（PENDING-008）。</li>
+            </ul>
+            <p class="side-info-src">上传天数按今天日期实时计算。类别选项为本地取值。完整规则见 REQ-008 需求方案 v1.3。</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="view-login009">
+        <div class="mobile-layout">
+          <div class="detail-col">
+            <div class="d-toolbar">
+              <span class="d-label">试填账号</span>
+              <div class="seg2"><button type="button" data-fill="13800001234|07123x">启用员工</button><button type="button" data-fill="13800005678|224567">停用员工</button><button type="button" data-fill="13900001111|123456">未开通手机号</button><button type="button" data-fill="13600001111|123456">代理商手机号</button></div>
+              <button type="button" class="seg2-reset" id="l9-reset">回到商户登录</button>
+              <label class="d-check"><input type="checkbox" id="l9-mark"> 标注本次新增</label>
+            </div>
+            <div class="d-phone l9-phone" id="l9-phone"></div>
+          </div>
+
+          <aside class="side-info">
+            <div class="side-info-head"><h2>REQ-009 小程序 4S 店登录</h2><span class="chip pend">待审阅</span></div>
+            <p>商户登录页照线上做，只加一个按钮。在手机里点「车源登记登录」走一遍：商户登录 → 车源登记登录 → 登录成功直接打开车源登记页（REQ-001）。</p>
+            <h3>这次改了什么</h3>
+            <ul>
+              <li><b>商户登录页</b>：「登录」下方加一个白底绿字「车源登记登录」按钮，其他不变。</li>
+              <li><b>车源登记登录页</b>（R3-05 改版）：不要顶部轮播图，另做布局，色系与商户登录页一致。上方浅绿标题区（logo、「车源登记」、一句使用说明），下方白色卡片放手机号、密码和登录按钮，卡片下方提示代理商、商家走验证码登录。左上角返回回到商户登录页。</li>
+              <li><b>密码</b>：身份证号后六位，末位 X 大小写都行；输错不限次数。</li>
+              <li><b>登录后</b>：直接进车源登记页，不经过代理商后台首页；在车源登记页点返回，回到商户登录页。</li>
+              <li><b>4S 员工误用验证码登录</b>：提示「4S店员工请点击下方【车源登记登录】」。</li>
+              <li><b>代理商、商家误入车源登记登录</b>：提示「代理商、商家请返回上一页，用手机号验证码登录」。</li>
+            </ul>
+            <h3>可试填的账号</h3>
+            <ul>
+              <li>启用员工：13800001234，密码 07123X</li>
+              <li>停用员工：13800005678</li>
+              <li>未开通：13900001111</li>
+              <li>代理商：13600001111</li>
+            </ul>
+            <h3>后期统一确认</h3>
+            <ul>
+              <li>4S 员工在哪里退出登录（PENDING-019），确认前不做。</li>
+              <li>PC「4S店信息维护」「4S店员工维护」是否同步改名（PENDING-020）。</li>
+            </ul>
+            <p class="side-info-src">不连接接口。完整规则见 REQ-009 需求方案 v1.2。</p>
+          </aside>
+        </div>
+      </section>
+
+  <section class="view" id="view-fav">
+        <div class="mobile-layout"><div class="detail-col">
+          <div class="d-phone l8-phone">
+            <div class="l8-top">
+              <img class="l8-status" src="assets/req-008/nav-status.png?v=2" alt="状态栏">
+              <div class="l8-navrow"><img class="l8-back" id="fav-back" src="assets/req-008/nav-back.png?v=2" alt="返回"><span class="l8-title">我的收藏</span><img class="l8-capsule" src="assets/req-008/nav-capsule.png?v=2" alt="胶囊按钮"></div>
+            </div>
+            <div class="l8-screen" style="background:#fff">
+              <div class="l8-list one" id="fav-list"></div>
+              <div class="l8-emptybox" id="fav-empty" hidden><div class="l8-empty-ico"></div>还没有收藏的车</div>
+              <div class="l8-more" id="fav-more">没有更多数据了</div>
+            </div>
+          </div>
+        </div></div>
+      </section>
+
+      <section class="view" id="view-clue010">
+        <div class="mobile-layout">
+          <div class="detail-col">
+            <div class="d-toolbar">
+              <span class="d-label">手机系统</span>
+              <div class="seg2" id="l10-os"><button type="button" data-os="ios" class="on">苹果</button><button type="button" data-os="android">安卓</button></div>
+              <label class="d-check"><input type="checkbox" id="l10-nophone"> 第 2 条没有手机号</label>
+              <label class="d-check"><input type="checkbox" id="l10-mark"> 标注本次新增</label>
+            </div>
+            <div class="d-phone l10-phone" id="l10-phone"></div>
+          </div>
+
+          <aside class="side-info">
+            <div class="side-info-head"><h2>REQ-010 小程序线索一键拨号</h2><span class="chip pend">待审阅</span></div>
+            <p>照线上「销售线索」页做（代理商后台 → 线索管理）。</p>
+            <h3>这次改了什么</h3>
+            <ul>
+              <li><b>拨号键</b>：在现有卡片范围内的右下角加一个绿色「拨号」按钮，和最后一行文字同高，卡片大小不变；最后一行文字太长时在按钮左边换行。</li>
+              <li><b>点了之后</b>：和现在点手机号一样。苹果手机弹出系统拨打确认；安卓先弹「手机号／呼叫」，点「呼叫」再拨。用上面的按钮切换两种手机看。</li>
+              <li><b>没有手机号</b>：不显示拨号键。勾「第 2 条没有手机号」看效果。</li>
+            </ul>
+            <h3>照旧不改</h3>
+            <ul>
+              <li>点手机号仍能拨号；卡片其他内容、筛选、线索数量都不变。</li>
+              <li>9.9元查车线索卡片点「拨号」只拨号，不进入详情。</li>
+            </ul>
+            <p class="side-info-src">不连接接口、不真实拨号。完整规则见 REQ-010 需求方案 v1.1（含线索页现在读取的数据）。</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="view-home002">
+        <div class="embedded-prototype">
+          <iframe id="home002-frame" src="req-002-home.html?v=6.0.1" title="REQ-002 小程序首页改造"></iframe>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="modal-root"></div>
+  <script src="logic.js?v=6.3.0"></script>
+  <script src="app.js?v=5.5.2"></script>
+  <script src="req-007-notice.js?v=4.9.0"></script>
+  <script src="req-003-contact.js?v=5.1.0"></script>
+  <script src="req-003-fav.js?v=1.0.0"></script>
+  <script src="req-003-detail2.js?v=5.3.0"></script>
+  <script src="req-008-list.js?v=1.1.1"></script>
+  <script src="req-009-login.js?v=1.4.1"></script>
+  <script src="req-010-clue.js?v=1.2.0"></script>
+  <script src="req-004-stock.js?v=5.0.0"></script>
+  <script src="req-pending.js?v=5.1.0"></script>
+  <script>
+    // REQ-002 样稿按自身真实高度撑开，避免内层滚动条或底部空白
+    window.addEventListener('message', function (e) {
+      if (!e.data || e.data.type !== 'req002-height') return;
+      var frame = document.getElementById('home002-frame');
+      if (frame) frame.style.height = e.data.height + 'px';
+    });
+  </script>
+</body>
+</html>

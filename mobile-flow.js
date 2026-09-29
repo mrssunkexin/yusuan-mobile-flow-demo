@@ -45,6 +45,7 @@
         click('#d2-role [data-role="agent"]');
       }, 30);
     }
+    if (view === 'fav' && window.__renderFav) window.__renderFav();
     window.scrollTo(0, 0);
   }
 
@@ -88,6 +89,9 @@
     if (admin) admin.addEventListener('click', function () { goto('login009', {}); });
     var tabHome = document.getElementById('mu-tab-home');
     if (tabHome) tabHome.addEventListener('click', function () { goto('home002', {}); });
+    // R3-11：「我的」第 5 个入口「我的收藏」
+    var fav = document.getElementById('mu-fav');
+    if (fav) fav.addEventListener('click', function () { goto('fav', {}); });
     // 「我要比价」等其余按钮不在本次范围，不绑定，保持点了没反应
   }
 

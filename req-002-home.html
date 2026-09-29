@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>预蒜 · REQ-002 小程序首页改造</title>
-  <link rel="stylesheet" href="req-002-home.css?v=4.0.0">
+  <link rel="stylesheet" href="req-002-home.css?v=5.0.1">
 </head>
 <body>
 <div class="wrap">
@@ -25,8 +25,11 @@
 
       <div class="screen" id="screen">
 
-        <div class="block" data-info="顶部视频／轮播：本次不改动。">
-          <img src="assets/req-002/video.png?v=4" alt="顶部视频区域">
+        <div class="block" data-info="顶部视频／轮播（R3-04）：高度由屏宽的 56% 调为 44%，视频按新比例居中裁掉上下，不留黑边。">
+          <div class="hv">
+            <img class="hv-img" src="assets/req-002/video.png?v=4" alt="顶部视频区域">
+            <div class="hv-ctrl"><svg viewBox="0 0 20 20" class="hv-ico"><path d="M5 3l12 7-12 7z" fill="#fff"/></svg><span>00:00</span><i class="hv-bar"><b></b></i><span>00:56</span><svg viewBox="0 0 24 24" class="hv-ico"><path d="M4 9h4l5-4v14l-5-4H4z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 9l5 6M21 9l-5 6" stroke="#fff" stroke-width="1.6"/></svg><svg viewBox="0 0 24 24" class="hv-ico"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="#fff" stroke-width="1.6"/></svg></div>
+          </div>
         </div>
 
         <div class="block" data-info="门店信息卡：本次不改动。">
@@ -38,20 +41,20 @@
         </div>
 
         <div class="daily block">
-          <div class="op-card op-daily outline" data-info="①「每天一款特价车」：左侧标题是运营图，右侧轮播特价车列表页前 5 台车。点卡片任意位置 → 进入特价车列表页（带入口类型），不进详情。">
-            <img class="op-bg" src="assets/req-002/ops-daily.png?v=1" alt="每天一款特价车 运营图">
+          <div class="op-card op-daily outline" data-info="①「每天一款特价车」（R3-03／R3-08）：左侧标题区收窄、文字画小，右侧轮播改为正方形车图，轮播特价车列表页前 5 台车。点卡片任意位置 → 进入特价车列表页（带入口类型），不进详情。">
+            <img class="op-bg" src="assets/req-002/ops-daily-v2.png?v=1" alt="每天一款特价车 运营图">
             <div class="carousel" data-entry="special"></div>
           </div>
           <span class="marker" style="right:22px; top:6px;">① 标题固定 · 前 5 台轮播</span>
         </div>
 
         <div class="cards block">
-          <div class="op-card op-small left outline" data-info="②「每天一款一手车源」：上部标题是运营图，下部轮播一手车源列表页前 5 台车。点卡片任意位置 → 进入一手车源列表页（带入口类型），不进详情。">
-            <img class="op-bg" src="assets/req-002/ops-firsthand.png?v=1" alt="每天一款一手车源 运营图">
+          <div class="op-card op-small left outline" data-info="②「每天一款一手车源」：上部标题区压矮、文字画小（R3-03），下部正方形车图轮播一手车源列表页前 5 台车（R3-08）；置顶的车排在最前（R3-01）。点卡片任意位置 → 进入一手车源列表页（带入口类型），不进详情。">
+            <img class="op-bg" src="assets/req-002/ops-firsthand-v2.png?v=1" alt="每天一款一手车源 运营图">
             <div class="carousel" data-entry="firsthand"></div>
           </div>
-          <div class="op-card op-small right outline" data-info="③「每天一款库存车」：上部标题是运营图，下部轮播库存车列表页前 5 台车。点卡片任意位置 → 进入库存车列表页（带入口类型），不进详情。">
-            <img class="op-bg" src="assets/req-002/ops-inventory.png?v=1" alt="每天一款库存车 运营图">
+          <div class="op-card op-small right outline" data-info="③「每天一款库存车」：上部标题区压矮、文字画小（R3-03），下部正方形车图轮播库存车列表页前 5 台车（R3-08）；置顶的车排在最前（R3-01）。点卡片任意位置 → 进入库存车列表页（带入口类型），不进详情。">
+            <img class="op-bg" src="assets/req-002/ops-inventory-v2.png?v=1" alt="每天一款库存车 运营图">
             <div class="carousel" data-entry="inventory"></div>
           </div>
           <span class="marker" style="left:14px; top:94px;">② 一手车源 · 轮播</span>
@@ -85,6 +88,7 @@
 
   <div class="notes" id="notes-box">
     <h2>这一版做了什么</h2>
+    <p><b>第三轮（R3，2026-09-29）</b>：三张卡片文字区画小、车图改为正方形并放大（R3-03／R3-08）；顶部视频区高由屏宽 56% 调为 44%（R3-04）；置顶车随列表页排序优先进入轮播（R3-01）。</p>
     <p>在上一版（用户已放行）基础上改第二轮两条：三个车入口改为「标题固定＋前 5 台车图轮播」（R2-02），公告改为红色喇叭、淡红底（R2-01）。点击手机里的模块会说明该模块怎么处理。完整规则见 REQ-002 v2.6 第 3 节。</p>
 
     <table>
@@ -126,7 +130,7 @@
 
     <h2>不改动的部分</h2>
     <ul>
-      <li>顶部视频／轮播、门店信息卡、五个圆形快捷入口、底部导航，全部保持现状。</li>
+      <li>门店信息卡、五个圆形快捷入口、底部导航保持现状；顶部视频／轮播只调矮（R3-04）。</li>
       <li>三个卡片的位置和大小不变。</li>
       <li>现有首页在圆形入口和大卡之间还有一块「预售车轮播」，后台配了预售车才显示。本次不动它，这里不画这块。</li>
     </ul>
@@ -201,9 +205,10 @@
   // 三个入口轮播：每格＝车的第一张图＋价格条；演示数据，各入口取列表页前 5 台
   var A = 'assets/req-002/';
   var CARS = {
-    special:   [['car-e.jpg', '9.XX万', '16.59万'], ['car-c.jpg', '27.XX万', '28.98万'], ['car-a.jpg', '34.XX万', '35.35万'], ['car-b.jpg', '8.XX万', ''], ['car-d.jpg', '10.XX万', '11.98万']],
-    firsthand: [['car-a.jpg', '33.XX万', '35.35万'], ['car-d.jpg', '11.XX万', '11.98万'], ['car-e.jpg', '14.XX万', '16.59万'], ['car-c.jpg', '26.XX万', '28.98万'], ['car-b.jpg', '8.XX万', '8.68万']],
-    inventory: [['car-d.jpg', '10.XX万', '11.98万'], ['car-b.jpg', '7.XX万', '8.68万'], ['car-a.jpg', '32.XX万', '35.35万'], ['car-e.jpg', '13.XX万', '16.59万'], ['car-c.jpg', '25.XX万', '28.98万']]
+    // R3-08：车辆照片上传时已裁成正方形，轮播格也是正方形
+    special:   [['sq-car-b.jpg', '9.XX万', '9.98万'], ['sq-car-d.jpg', '82.XX万', ''], ['sq-car-a.jpg', '285.XX万', ''], ['sq-car-c.jpg', '77.XX万', ''], ['sq-car-e.jpg', '62.XX万', '']],
+    firsthand: [['sq-car-c.jpg', '76.XX万', ''], ['sq-car-b.jpg', '9.XX万', '9.98万'], ['sq-car-e.jpg', '61.XX万', ''], ['sq-car-a.jpg', '283.XX万', ''], ['sq-car-d.jpg', '81.XX万', '']],
+    inventory: [['sq-car-d.jpg', '80.XX万', ''], ['sq-car-a.jpg', '279.XX万', ''], ['sq-car-b.jpg', '8.XX万', '9.98万'], ['sq-car-e.jpg', '60.XX万', ''], ['sq-car-c.jpg', '75.XX万', '']]
   };
   var q = new URLSearchParams(location.search);
 

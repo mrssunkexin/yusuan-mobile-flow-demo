@@ -358,15 +358,15 @@ code {
 .daily .op-card { width: 91.74%; margin: 0 auto; }
 .screen .op-card img.op-bg { display: block; width: 100%; height: auto; margin: 0; }
 .carousel { position: absolute; overflow: hidden; border-radius: 4px; }
-.op-daily .carousel { left: 48.26%; top: 5.16%; width: 49.42%; height: 89.68%; }
-.op-small .carousel { left: 4.71%; top: 42.16%; width: 90.59%; height: 53.92%; }
+.op-daily .carousel { left: 39.53%; top: 3.28%; width: 58.14%; height: 93.44%; }
+.op-small .carousel { left: 4.71%; top: 20.17%; width: 90.59%; height: 76.47%; }
 .carousel .track { display: flex; height: 100%; will-change: transform; }
 .carousel .slide { flex: 0 0 100%; height: 100%; display: flex; flex-direction: column; }
 .carousel .pic { flex: 1 1 auto; min-height: 0; background: #f2f4f3; }
 .screen .carousel .pic img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .carousel .price-bar { position: relative; flex: 0 0 auto; background: #128132; overflow: hidden; }
-.op-daily .price-bar { height: 20.14%; }
-.op-small .price-bar { height: 25.45%; }
+.op-daily .price-bar { height: 12.28%; }
+.op-small .price-bar { height: 15.38%; }
 .carousel .price-bar::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 42%;
   background: linear-gradient(90deg, #4c9c66, #1e6b37); clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%); }
 .carousel .price-bar .big { position: absolute; left: 6%; top: 0; bottom: 0; z-index: 1; display: flex; align-items: center;
@@ -375,7 +375,15 @@ code {
   font-size: 10.4px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 20rpx */
 .carousel .price-bar .ref s { margin-left: 3px; }
 .carousel .dots { position: absolute; left: 0; right: 0; display: flex; justify-content: center; gap: 4px; pointer-events: none; }
-.op-daily .dots { bottom: calc(20.14% + 5px); }
-.op-small .dots { bottom: calc(25.45% + 5px); }
+.op-daily .dots { bottom: calc(12.28% + 5px); }
+.op-small .dots { bottom: calc(15.38% + 5px); }
 .carousel .dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, .55); box-shadow: 0 0 2px rgba(0,0,0,.35); }
 .carousel .dots i.on { background: #fff; }
+
+/* R3-04 顶部视频区：高度由屏宽 56% 调为 44%。样稿底图含状态栏与胶囊，从下方截掉一截，底部重画播放控制条 */
+.hv { position: relative; overflow: hidden; aspect-ratio: 851 / 319; }
+.screen .hv img.hv-img { width: 100%; height: auto; }
+.hv-ctrl { position: absolute; left: 4%; right: 3%; bottom: 5%; display: flex; align-items: center; gap: 8px; color: #fff; font-size: 12px; text-shadow: 0 0 2px rgba(0,0,0,.4); }
+.hv-ico { width: 16px; height: 16px; flex: none; }
+.hv-bar { flex: 1; height: 2px; background: rgba(255,255,255,.45); position: relative; }
+.hv-bar b { position: absolute; left: 0; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: #fff; }

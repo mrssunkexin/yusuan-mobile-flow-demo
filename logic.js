@@ -83,7 +83,7 @@
   }
 
   function normalizeView(view) {
-    const allowed = ['overview', 'inventory', 'stores', 'employees', 'home002', 'notice', 'contact', 'contact2', 'list008', 'login009', 'clue010', 'stock', 'user'];
+    const allowed = ['overview', 'inventory', 'stores', 'employees', 'home002', 'notice', 'contact', 'contact2', 'list008', 'login009', 'clue010', 'stock', 'user', 'fav'];
     if (!allowed.includes(view)) throw new Error(`页面不在本次原型范围：${view}`);
     return view;
   }

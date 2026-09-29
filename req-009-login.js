@@ -1,5 +1,6 @@
 /* REQ-009 小程序 4S 店登录 样稿
-   依据：REQ-009 v1.0；页面照线上「商户登录」页（00-原始需求/登录页.PNG、mall-portal-itu/pages/seller/sellerLogin.vue）。
+   依据：REQ-009 v1.2；商户登录页照线上（00-原始需求/登录页.PNG、mall-portal-itu/pages/seller/sellerLogin.vue），
+   只加「车源登记登录」按钮；车源登记登录页按 R3-05 另做布局，保持同一绿色系、不要顶部轮播图。
    本地演示数据，不连接接口。元素 id 统一以 l9- 开头。*/
 (function () {
   'use strict';
@@ -10,6 +11,8 @@
     '13800001234': { status: 1, idCard: '11010519900307123X' },
     '13800005678': { status: 0, idCard: '320102198811224567' }
   };
+  // 演示代理商、商家账号（bdpx_user ToB，不在员工表）：在车源登记登录页用它登录时提示走验证码登录
+  var AGENT = { '13600001111': 1 };
   var state = { page: 'merchant', busy: false, requests: 0 };
   var toastTimer = null;
 
@@ -45,17 +48,25 @@
             item('<input id="l9-m-code" type="text" maxlength="6" placeholder="请输入验证码">', 'icon-lock.png') +
           '</div>' +
           '<div class="l9-login" id="l9-m-login">登录</div>' +
-          '<div class="l9-entry" id="l9-m-entry">4S店登录</div>' +
+          '<div class="l9-entry" id="l9-m-entry">车源登记登录</div>' +
           '<div class="l9-copy">Copyright ©2022 预蒜版权所有</div>' +
         '</div></div>' +
-      // 4S 店登录（新页面）
-      '<div class="l9-page" id="l9-p-staff" hidden>' + top('4S店登录', 'l9-s-back') +
-        '<div class="l9-screen">' + head('欢迎登录4S店后台') +
-          '<div class="l9-form">' +
-            item('<input id="l9-s-mobile" type="tel" maxlength="11" placeholder="请输入手机号">', 'icon-tel.png') +
-            item('<input id="l9-s-pwd" type="password" maxlength="6" placeholder="请输入密码">', 'icon-lock.png') +
+      // 车源登记登录（新页面，R3-05：不要顶部轮播图，另做布局，色系与商户登录一致）
+      '<div class="l9-page" id="l9-p-staff" hidden>' + top('车源登记登录', 'l9-s-back') +
+        '<div class="l9-screen l9s-screen">' +
+          '<div class="l9s-head">' +
+            '<div class="l9s-logo"><img src="' + A9 + 'logo.png?v=1" alt="logo"></div>' +
+            '<div class="l9s-title">车源登记</div>' +
+            '<div class="l9s-sub">4S店员工使用手机号和身份证号后六位登录</div>' +
           '</div>' +
-          '<div class="l9-login" id="l9-s-login">登录</div>' +
+          '<div class="l9s-card">' +
+            '<label class="l9s-label" for="l9-s-mobile">手机号</label>' +
+            item('<input id="l9-s-mobile" type="tel" maxlength="11" placeholder="请输入手机号">', 'icon-tel.png') +
+            '<label class="l9s-label" for="l9-s-pwd">密码</label>' +
+            item('<input id="l9-s-pwd" type="password" maxlength="6" placeholder="身份证号后六位">', 'icon-lock.png') +
+            '<div class="l9s-login" id="l9-s-login">登录</div>' +
+          '</div>' +
+          '<div class="l9s-tip">代理商、商家请返回上一页，用手机号验证码登录</div>' +
           '<div class="l9-copy">Copyright ©2022 预蒜版权所有</div>' +
         '</div></div>' +
       '<div class="l9-loading" id="l9-loading" hidden><div>登录中</div></div>' +
@@ -82,7 +93,7 @@
     var m = $('l9-m-mobile').value.trim();
     if (!m) return toast('请输入手机号');
     if (!$('l9-m-code').value) return toast('请输入手机验证码');
-    if (STAFF[m]) return toast('4S店员工请点击下方【4S店登录】');
+    if (STAFF[m]) return toast('4S店员工请点击下方【车源登记登录】');
     // 手机端整体流程演示：非4S号码视为代理商验证码登录成功，进代理商后台首页（入口页）
     if (window.__mobileNav) { window.__mobileNav({ view: 'inventory', mode: 'entry' }); return; }
     toast('验证码登录流程不变');
@@ -104,7 +115,8 @@
       $('l9-loading').hidden = true;
       state.busy = false;
       var s = STAFF[m];
-      if (!s) return toast('该手机号未开通4S店账号，请联系总部管理员');
+      if (!s && AGENT[m]) return toast('代理商、商家请返回上一页，用手机号验证码登录');
+      if (!s) return toast('该手机号未开通车源登记账号，请联系总部管理员');
       if (s.status !== 1) return toast('账号已停用，请联系总部管理员');
       if (s.idCard.slice(-6) !== pw) return toast('密码错误');
       // redirectTo 车源登记页：4S 员工登录后不经过后台首页，直接进车源登记页（REQ-009 第 3.4 节）

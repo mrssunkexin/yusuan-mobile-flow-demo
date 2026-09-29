@@ -12,11 +12,8 @@
       labels: ['现车', '可分期', '支持置换'],
       remark: '左后门运输中有轻微划痕，已原厂修复，不影响使用；手续齐全，可当天提车。',
       media: 6, video: true,
-      blocks: [
-        { t: 'text', v: '2026 年 8 月出厂，未上牌，里程为运输里程。' },
-        { t: 'img', v: 'assets/req-003/detail-car-front.png?v=1' },
-        { t: 'text', v: '车头格栅与大灯完好，两把钥匙、随车工具、说明书齐全。' }
-      ],
+      // R3-07：商品详情只有图片
+      blocks: ['assets/req-003/detail-car-front.png?v=1', 'assets/req-008/list-car-1.png'],
       contact: { name: '张伟', phone: '138 0000 1234', from: '车源登记人' },
       baseCount: 2
     },
@@ -27,10 +24,7 @@
       labels: ['现车', '全国可上牌'],
       remark: '4S 店现车，价格含购置税与上牌费用。',
       media: 4, video: false,
-      blocks: [
-        { t: 'text', v: '4S 店展厅现车，可到店看车试驾。' },
-        { t: 'img', v: 'assets/req-003/detail-car-front.png?v=1' }
-      ],
+      blocks: ['assets/req-003/detail-car-front.png?v=1'],
       contact: { name: '李静', phone: '138 0000 5678', from: '4S 车源统一联系人' },
       baseCount: 1
     }
@@ -80,12 +74,13 @@
       return '<span class="d2-label">' + esc(l) + '</span>';
     }).join('');
     $('#d2-remark').textContent = c.remark;
-    $('#d2-blocks').innerHTML = c.blocks.map(function (b) {
-      return b.t === 'text' ? '<p>' + esc(b.v) + '</p>' : '<img src="' + esc(b.v) + '" alt="车辆详情图片">';
+    $('#d2-blocks').innerHTML = c.blocks.map(function (src) {
+      return '<img src="' + esc(src) + '" alt="车辆详情图片">';
     }).join('');
 
-    // 浮钮只给代理商；C 端客户整个不渲染
+    // R3-12：浮钮只给一级代理商；二级代理商、C 端客户整个不渲染
     $('#d2-fab').hidden = state.role !== 'agent';
+    renderFav();
     if (state.role !== 'agent') closeSheet();
     renderSheet();
   }
@@ -112,6 +107,28 @@
     $('#d2-dc-ok').addEventListener('click', function () { close(); onOk(); });
   }
 
+  // R3-11 收藏：底部固定栏「返回首页」右侧。收藏记录放在 window.__favStore，「我的收藏」页读同一份
+  var FAV = window.__favStore = window.__favStore || { items: [] };
+  function favKey() { return 'car-' + state.source; }
+  function isFav() { return FAV.items.some(function (x) { return x.key === favKey(); }); }
+  function renderFav() {
+    var b = $('#d2-fav'); if (!b) return;
+    var on = isFav();
+    b.classList.toggle('on', on);
+    b.querySelector('.d2-fav-t').textContent = on ? '已收藏' : '收藏';
+  }
+  function toggleFav() {
+    var c = car();
+    if (isFav()) {
+      FAV.items = FAV.items.filter(function (x) { return x.key !== favKey(); });
+      toast('已取消收藏');
+    } else {
+      FAV.items.unshift({ key: favKey(), source: state.source, name: c.name, sale: c.sale, ref: c.ref, img: 'assets/req-008/list-car-1.png' });
+      toast('已收藏');
+    }
+    renderFav();
+  }
+
   function openSheet() {
     if (state.role !== 'agent') return;
     $('#d2-sheet').hidden = false;
@@ -131,6 +148,7 @@
       state.source = b.dataset.source; state.marked = false; render();
     });
     $('#d2-fab').addEventListener('click', openSheet);
+    if ($('#d2-fav')) $('#d2-fav').addEventListener('click', toggleFav);
     $('#d2-close').addEventListener('click', closeSheet);
     $('#d2-mask').addEventListener('click', closeSheet);
     $('#d2-c-tel').addEventListener('click', function () {

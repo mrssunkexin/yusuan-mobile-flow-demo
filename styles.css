@@ -606,6 +606,18 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .l9-login{margin:41.6px auto 0;background:#217c34;border:1px solid #979797;color:#fff}
 .l9-entry{margin:15.6px auto 0;background:#fff;border:1px solid #217c34;color:#217c34}
 .l9-entry.mark{outline:2px dashed #f59e0b;outline-offset:3px}
+.l9s-screen{background:#f4f7f5}
+.l9s-head{padding:26px 24px 46px;background:#e6f2e9}
+.l9s-logo{width:64px;height:56px;padding:4px 6px;box-sizing:border-box;overflow:hidden;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(33,124,52,.12)}
+.l9s-logo img{display:block;height:48px;width:auto}
+.l9s-title{margin-top:14px;font-size:24px;line-height:32px;font-weight:700;color:#217c34}
+.l9s-sub{margin-top:4px;font-size:13px;line-height:19px;color:#5f6f63}
+.l9s-card{position:relative;margin:-26px 16px 0;padding:18px 16px 22px;background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(33,124,52,.1)}
+.l9s-label{display:block;margin:0 0 8px 2px;font-size:13px;line-height:18px;color:#333}
+.l9s-card .l9-item{width:100%;margin-bottom:16px}
+.l9s-card .l9-item input{width:100%}
+.l9s-login{margin-top:8px;height:46px;line-height:46px;text-align:center;border-radius:23px;background:#217c34;color:#fff;font-size:17px;cursor:pointer}
+.l9s-tip{margin:18px 16px 0;text-align:center;font-size:12px;line-height:18px;color:#999}
 .l9-copy{position:absolute;left:0;right:0;bottom:23.9px;text-align:center;font-size:13.5px;line-height:15.6px;color:#999}
 .l9-loading{position:absolute;left:0;right:0;top:0;bottom:0;z-index:19;display:flex;align-items:center;justify-content:center}
 .l9-loading div{padding:16px 24px;border-radius:8px;background:rgba(17,17,17,.78);color:#fff;font-size:14px}
@@ -654,3 +666,63 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .l10-sheet-i{padding:15px 0;background:#fff;border-bottom:1px solid #eee;text-align:center;font-size:16px;color:#111;cursor:pointer}
 .l10-sheet-gap{height:8px}
 .l9-loading[hidden],.l10-alert-wrap[hidden],.l10-sheet-wrap[hidden],.l10-empty[hidden],.l10-more[hidden]{display:none}
+
+/* R3-01 付费置顶、R3-07 详情只传图片、R3-08 车辆照片裁成正方形（REQ-001 v2.4） */
+.vehicle-time{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.top-btn{flex:none;border:1px solid #f08c1a;color:#e07a0a;background:#fff;border-radius:11px;padding:0 10px;font-size:11px;line-height:20px;cursor:pointer}
+.chip-row > .type-chip.top{background:#fff4e5;color:#b25b00;font-weight:600}
+.top-ghost{color:#e07a0a!important;border-color:#f08c1a!important}
+.top-sheet{padding:0 16px 18px}
+.top-sheet-head{display:flex;align-items:center;justify-content:center;position:relative;height:48px;font-size:16px}
+.top-x{position:absolute;right:-4px;top:6px;border:0;background:none;font-size:24px;color:#999;cursor:pointer}
+.top-sheet-car{font-size:14px;font-weight:600;color:#222;line-height:20px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.top-sheet-desc{margin-top:6px;font-size:12px;color:#666;line-height:18px}
+.top-sheet-price{margin-top:14px;color:#e5452b}
+.top-sheet-price strong{font-size:26px}
+.top-sheet-price span{font-size:13px;color:#666;margin-left:2px}
+.top-sheet-time{margin-top:6px;font-size:12px;color:#888;line-height:18px}
+.top-pay{display:block;width:100%;margin-top:18px;height:44px;border:0;border-radius:22px;background:#217c34;color:#fff;font-size:16px;cursor:pointer}
+.top-pay:disabled{opacity:.7}
+.photo-thumb.sq{width:70px;height:70px;object-fit:cover}
+.pending-crop{border:1px dashed #f08c1a!important;background:#fff8ef;color:#9a5a12;font-size:11px;line-height:15px;cursor:pointer;display:grid;place-items:center;text-align:center}
+.pending-crop em{font-style:normal;color:#e07a0a;font-weight:600}
+.detail-pics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.detail-pics .detail-empty{grid-column:1/-1}
+.detail-pic img{display:block;width:100%;height:auto;border-radius:6px;border:1px solid #e8e8e8}
+.detail-pic-tools{display:flex;gap:4px;margin-top:4px}
+.detail-pic-tools .detail-mini{flex:1;padding:2px 0}
+.detail-add{display:inline-flex;align-items:center;cursor:pointer}
+.crop-layer{position:absolute;inset:0;z-index:12;background:#000;display:flex;flex-direction:column;color:#fff}
+.crop-top{padding:14px 16px 10px;font-size:13px;text-align:center;color:#ddd;display:flex;flex-direction:column;gap:4px}
+.crop-count{font-size:12px;color:#aaa}
+.crop-stage{position:relative;flex:1;overflow:hidden;touch-action:none;cursor:grab}
+.crop-img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;pointer-events:none}
+.crop-box{position:absolute;box-shadow:0 0 0 2000px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.85);pointer-events:none}
+.crop-box i{position:absolute;width:18px;height:18px;border-color:#fff;border-style:solid;border-width:0}
+.crop-box i:nth-child(1){left:-2px;top:-2px;border-left-width:3px;border-top-width:3px}
+.crop-box i:nth-child(2){right:-2px;top:-2px;border-right-width:3px;border-top-width:3px}
+.crop-box i:nth-child(3){left:-2px;bottom:-2px;border-left-width:3px;border-bottom-width:3px}
+.crop-box i:nth-child(4){right:-2px;bottom:-2px;border-right-width:3px;border-bottom-width:3px}
+.crop-foot{display:flex;justify-content:space-between;padding:12px 16px 18px}
+.crop-foot button{border:0;background:none;color:#fff;font-size:15px;padding:8px 14px;cursor:pointer}
+.crop-foot button.ok{background:#217c34;border-radius:6px}
+.top-until{color:#d46b08;font-weight:600;white-space:nowrap}
+
+/* R3-09 车辆列表固定一行一台：左图右文，照用户样例（00-原始需求/车辆列表样例-2026-09-29.jpg）只改排版，字段与价格颜色不变 */
+.l8-list.one{margin:0 15.6px}
+.l8-list.one .l8-item{height:auto;min-height:0;margin:0;padding:12.5px 0;background:#fff;border-radius:0;box-shadow:none;border-bottom:1px solid #f0f0f0;align-items:flex-start}
+.l8-list.one .l8-img{margin-left:0;height:auto;flex:none;width:124.8px;height:104px;border-radius:5px;overflow:hidden;background:#f5f6f7}
+.l8-screen .l8-list.one .l8-img img.l8-pic{width:100%;height:100%;object-fit:cover}
+.l8-screen .l8-list.one .l8-img.fit img.l8-pic{object-fit:contain}
+.l8-screen .l8-list.one .l8-img img.l8-badge{position:absolute;left:0;top:0;width:24px;height:33px;object-fit:fill}
+.l8-list.one .l8-video{right:6px;bottom:6px}
+.l8-list.one .l8-info{margin-left:12.5px;justify-content:flex-start;padding-right:0}
+.l8-list.one .l8-name{font-weight:600}
+.l8-list.one .l8-p1{margin-top:4px}
+.l8-list.one .l8-p2{margin-top:2px;line-height:26px}
+
+/* R3-11 详情页底部「收藏」：叠在底部栏截图「返回首页」与「微信分享」之间 */
+.d2-fav{position:absolute;left:44.2%;top:6%;width:10%;height:44%;border:0;background:#fff;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;cursor:pointer;color:#333;font-size:11px;line-height:13px}
+.d2-fav svg{width:19px;height:19px;fill:none;stroke:#333;stroke-width:1.6;stroke-linejoin:round}
+.d2-fav.on{color:#f5a623}
+.d2-fav.on svg{fill:#f5a623;stroke:#f5a623}

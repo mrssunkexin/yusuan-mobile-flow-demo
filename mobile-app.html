@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>预蒜小程序 · 手机端流程演示</title>
-<link rel="stylesheet" href="styles.css?v=6.4.0">
+<link rel="stylesheet" href="styles.css?v=6.9.0">
 <link rel="stylesheet" href="mobile-flow.css?v=3">
 </head>
 <body class="mobile-app">
@@ -13,7 +13,7 @@
 
   <section class="view" id="view-home002">
     <div class="embedded-prototype">
-      <iframe id="home002-frame" src="req-002-home.html?v=5.0.0" title="REQ-002 小程序首页改造"></iframe>
+      <iframe id="home002-frame" src="req-002-home.html?v=6.0.1" title="REQ-002 小程序首页改造"></iframe>
     </div>
   </section>
 
@@ -103,7 +103,7 @@
       <div class="detail-col">
         <div class="d-toolbar">
           <span class="d-label">当前身份</span>
-          <div class="seg2" id="d2-role"><button data-role="agent" class="on">代理商</button><button data-role="customer">C 端客户</button></div>
+          <div class="seg2" id="d2-role"><button data-role="agent" class="on">一级代理商</button><button data-role="agent2">二级代理商</button><button data-role="customer">C 端客户</button></div>
           <span class="d-label">车源类型</span>
           <div class="seg2" id="d2-source"><button data-source="inventory" class="on">库存车</button><button data-source="firsthand">一手车源</button></div>
         </div>
@@ -148,7 +148,7 @@
           <button class="d-fab d2-fab" id="d2-fab" title="联系登记人">
             <span class="d-fab-ico">☎</span><span class="d-fab-txt">登记人</span>
           </button>
-          <div class="d-tabbar"><img src="assets/req-003/detail-tabbar.png?v=1" alt="底部固定栏"></div>
+          <div class="d-tabbar"><img src="assets/req-003/detail-tabbar.png?v=1" alt="底部固定栏"><button type="button" class="d2-fav" id="d2-fav"><svg viewBox="0 0 24 24"><path d="M12 3.2l2.6 5.5 6 .8-4.4 4.1 1.1 5.9L12 16.6l-5.3 2.9 1.1-5.9L3.4 9.5l6-.8z"/></svg><span class="d2-fav-t">收藏</span></button></div>
           <div class="d-sheet-wrap" id="d2-sheet" hidden>
             <div class="d-mask" id="d2-mask"></div>
             <div class="d-sheet">
@@ -192,7 +192,6 @@
               <span class="l8-f" id="l8-f-brand"><span class="t">全部</span><i></i></span>
               <span class="l8-f" id="l8-f-price"><span class="t">价格</span><i></i></span>
               <span class="l8-f" id="l8-f-cat"><span class="t">类别</span><i></i></span>
-              <img class="l8-toggle" id="l8-toggle" src="assets/req-008/toggle-icon.png?v=1" alt="列表宫格切换">
             </div>
             <div class="l8-list grid" id="l8-list"></div>
             <div class="l8-emptybox" id="l8-emptybox" hidden><div class="l8-empty-ico"></div>没有搜索结果</div>
@@ -251,13 +250,30 @@
     </div>
   </section>
 
+  <section class="view" id="view-fav">
+    <div class="mobile-layout"><div class="detail-col">
+      <div class="d-phone l8-phone">
+        <div class="l8-top">
+          <img class="l8-status" src="assets/req-008/nav-status.png?v=2" alt="状态栏">
+          <div class="l8-navrow"><img class="l8-back" id="fav-back" src="assets/req-008/nav-back.png?v=2" alt="返回"><span class="l8-title">我的收藏</span><img class="l8-capsule" src="assets/req-008/nav-capsule.png?v=2" alt="胶囊按钮"></div>
+        </div>
+        <div class="l8-screen" style="background:#fff">
+          <div class="l8-list one" id="fav-list"></div>
+          <div class="l8-emptybox" id="fav-empty" hidden><div class="l8-empty-ico"></div>还没有收藏的车</div>
+          <div class="l8-more" id="fav-more">没有更多数据了</div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
   <section class="view" id="view-user">
     <div class="mobile-layout"><div class="detail-col">
       <div class="d-phone mu-phone">
         <div class="mu-wrap">
-          <img src="assets/req-user/user_top.png" style="width:100%;display:block">
+          <img src="assets/req-user/user_top_v2.png?v=1" style="width:100%;display:block">
           <button type="button" id="mu-login" class="mu-hot" style="top:49%;left:2%;width:68%;height:13%"></button>
           <button type="button" id="mu-admin" class="mu-hot" style="top:49%;left:70%;width:28%;height:13%"></button>
+          <button type="button" id="mu-fav" class="mu-hot" style="top:70%;left:79%;width:15%;height:29%" aria-label="我的收藏"></button>
         </div>
         <img src="assets/req-user/user_mid.png" style="width:100%;display:block">
         <div class="mu-wrap">
@@ -274,12 +290,13 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="modal-root"></div>
-<script src="logic.js?v=6.2.0"></script>
-<script src="app.js?v=5.4.0"></script>
-<script src="req-003-detail2.js?v=5.2.0"></script>
-<script src="req-008-list.js?v=1.0.2"></script>
-<script src="req-009-login.js?v=1.3.0"></script>
+<script src="logic.js?v=6.3.0"></script>
+<script src="app.js?v=5.5.2"></script>
+<script src="req-003-fav.js?v=1.0.0"></script>
+<script src="req-003-detail2.js?v=5.3.0"></script>
+<script src="req-008-list.js?v=1.1.1"></script>
+<script src="req-009-login.js?v=1.4.1"></script>
 <script src="req-010-clue.js?v=1.2.0"></script>
-<script src="mobile-flow.js?v=3"></script>
+<script src="mobile-flow.js?v=4"></script>
 </body>
 </html>
