@@ -22,8 +22,8 @@ body.mobile-app .detail-col { width:auto !important; }
 
 /* 手机画面本身：统一按 390px 设计宽度、缩小到 80%，和首页那台容器的绝对尺寸完全一致，
    全部页面看起来一样大。
-   两类容器高度处理不同：.mobile-stage/.entry-stage/.mu-phone 内部是正常排版的图片/内容，
-   高度交给内容自己撑开（auto）；.d-phone/.l8-phone/.l9-phone/.l10-phone 内部用绝对定位
+   入口和「我的」页由内容撑开高度；登记列表与选车页面使用固定 844px 高度（见下方覆盖），
+   让长内容在各自区域内滚动。.d-phone/.l8-phone/.l9-phone/.l10-phone 内部用绝对定位
    摆放各个区块（和首页 .phone 是同一种做法），必须保留原有的固定 844px 高度，
    改成 auto 会因为没有正常排版的子元素撑不开、直接塌成 0 高。 */
 body.mobile-app .mobile-stage,
@@ -43,6 +43,26 @@ body.mobile-app .l10-phone {
 }
 body.mobile-app .mobile-layout .mobile-stage { position:static !important; }
 
+/* 登记及选车页面沿用 PC 的 390×844 设计坐标，再整体缩小到 80%。
+   页面栈必须相对手机容器定位，避免页面铺满浏览器而内部文字仍被缩小。
+   长列表/长表单继续在各自内容区滚动，外层页面保留原有滚动。 */
+body.mobile-app .mobile-layout .mobile-stage:not(.entry-stage) {
+  position:relative !important;
+  height:844px !important;
+}
+body.mobile-app .mobile-stage #vehicle-list,
+body.mobile-app .m-page-body { min-height:0; -webkit-overflow-scrolling:touch; }
+body.mobile-app .m-page { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+/* 有可见滚动条的浏览器也按设计坐标缩放，避免占宽在 zoom 后仍为 15px。 */
+body.mobile-app .m-page-body::-webkit-scrollbar { width:15px; }
+body.mobile-app .m-page-body::-webkit-scrollbar-thumb { background:#c1c1c1; border:3px solid #f5f6f7; border-radius:8px; }
+
+/* 公共样式按浏览器宽度触发的单列规则不用于手机演示中的设计稿。 */
+body.mobile-app #vehicle-form { grid-template-columns:repeat(2,minmax(0,1fr)); }
+body.mobile-app #vehicle-form .form-field.full { grid-column:1 / -1; }
+body.mobile-app .mobile-stage .m-choice,
+body.mobile-app #vehicle-form .color-choice:not(.selected) { color:#000; }
+
 /* 车源登记：默认是代理商后台首页（entry-stage），点「车源登记」后只看列表页 */
 body.mobile-app #view-inventory.mf-mode-list .entry-stage { display:none !important; }
 body.mobile-app #view-inventory:not(.mf-mode-list) .mobile-stage:not(.entry-stage) { display:none !important; }
@@ -60,4 +80,3 @@ body.mobile-app #view-home002 { margin:0 !important; padding:0 !important; backg
    截图本身、文字、颜色一概不改 */
 body.mobile-app .mu-wrap { position:relative; }
 body.mobile-app .mu-hot { position:absolute; background:transparent; border:0; padding:0; }
-
