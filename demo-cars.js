@@ -3,14 +3,16 @@
 (function(root,factory){var api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.DemoCars=api;})(typeof window==='object'?window:globalThis,function(){
   'use strict';
   var A='assets/demo-cars/';
-  function photos(files){return files.map(function(x){return {src:A+x,position:x.indexOf('prado-')===0?'50% 100%':(x==='lc300-black-1.jpg'?'50% 80%':'50% 50%')};});}
+  // 显示框为正方形时的取景位置，按每张照片车头所在一侧调整，原图不裁
+  var POS={'cm-m6-1.jpg':'78% 50%','cm-m6-2.jpg':'45% 50%','cm-yuan-1.jpg':'18% 50%','cm-yuan-2.jpg':'45% 50%','cm-prado-1.jpg':'12% 50%','cm-prado-2.jpg':'45% 50%','cm-lc300-1.jpg':'8% 50%','cm-lc300-2.jpg':'50% 50%','cm-lc76-1.jpg':'35% 50%','cm-lc76-2.jpg':'60% 50%','cm-g63-1.jpg':'85% 50%','cm-g63-2.jpg':'18% 50%'};
+  function photos(files){return files.map(function(x){return {src:A+x,position:POS[x]||'50% 50%'};});}
   var MODELS={
-    m6:{name:'广汽传祺 传祺M6 MAX 2026款 1.5T DCT 尊荣版',brand:'广汽传祺',ref:'11.98万',colorOut:'典雅黑',colorIn:'黑色 / 朱砂棕',photos:photos(['m6-showroom-2.jpg','m6-showroom-1.jpg','m6-showroom-3.jpg']),remark:'1.5T发动机，7挡双离合，七座布局；黑色车身。'},
-    yuan:{name:'比亚迪 元UP 2027款 飞驰版 401KM 活力型',brand:'比亚迪',ref:'8.98万',colorOut:'浅绿色',colorIn:'黑色 / 米色',photos:photos(['yuan-2.jpg','yuan-1.jpg','yuan-5.jpg']),remark:'纯电动车，401KM续航版本，五座布局。'},
-    prado:{name:'丰田 普拉多 2025款 2.8T 柴油 真皮雷测高配 方灯 中东版',brand:'丰田',ref:'79.80万',colorOut:'白色',colorIn:'黑色',photos:photos(['prado-1.jpg','prado-2.jpg','prado-3.jpg']),remark:'2.8T柴油发动机，8挡自动变速箱，方灯，真皮座椅。'},
-    lc300:{name:'丰田 兰德酷路泽 2024款 4000 GXR 八气 20轮 真皮版',brand:'丰田',ref:'88.00万',colorOut:'黑色',colorIn:'米色',photos:photos(['lc300-black-1.jpg','lc300-black-2.jpg','lc300-black-8.jpg','lc300-black-4.jpg']),remark:'4.0L汽油发动机，20英寸轮毂，八气囊，米色真皮座椅。'},
-    lc76:{name:'丰田 兰德酷路泽LC76 2025款 2.8T 柴油 LX-Z 自动挡',brand:'丰田',ref:'65.80万',colorOut:'黑色',colorIn:'黑色',photos:photos(['lc76-2.jpg','lc76-1.jpg','lc76-5.jpg']),remark:'2.8T柴油发动机，自动变速箱，四轮驱动，五座布局。'},
-    g63:{name:'奔驰 G级AMG 2026款 AMG G 63',brand:'奔驰',ref:'259.55万',colorOut:'灰色',colorIn:'黑色',photos:photos(['g63-2.jpg','g63-1.jpg','g63-5.jpg']),remark:'4.0T V8发动机，9挡自动变速箱，五座布局。'}
+    m6:{name:'广汽传祺 传祺M6 MAX 2026款 1.5T DCT 尊荣版',brand:'广汽传祺',ref:'11.98万',colorOut:'典雅黑',colorIn:'黑色 / 朱砂棕',photos:photos(['cm-m6-1.jpg','cm-m6-2.jpg']),remark:'1.5T发动机，7挡双离合，七座布局；黑色车身。'},
+    yuan:{name:'比亚迪 元UP 2027款 飞驰版 401KM 活力型',brand:'比亚迪',ref:'8.98万',colorOut:'浅绿色',colorIn:'黑色 / 米色',photos:photos(['cm-yuan-1.jpg','cm-yuan-2.jpg']),remark:'纯电动车，401KM续航版本，五座布局。'},
+    prado:{name:'丰田 普拉多 2024款 2.8T 柴油 VX 方灯',brand:'丰田',ref:'79.80万',colorOut:'白色',colorIn:'黑色',photos:photos(['cm-prado-1.jpg','cm-prado-2.jpg']),remark:'2.8T柴油发动机，8挡自动变速箱，方灯；白色车身。'},
+    lc300:{name:'丰田 兰德酷路泽 2021款 3.5T 汽油 LC300',brand:'丰田',ref:'88.00万',colorOut:'白色',colorIn:'黑色',photos:photos(['cm-lc300-1.jpg','cm-lc300-2.jpg']),remark:'3.5T双涡轮V6汽油发动机，10挡自动变速箱；白色车身。'},
+    lc76:{name:'丰田 兰德酷路泽LC76 2024款 2.8T 柴油 AX 自动挡',brand:'丰田',ref:'65.80万',colorOut:'白色',colorIn:'黑色',photos:photos(['cm-lc76-1.jpg','cm-lc76-2.jpg']),remark:'2.8T柴油发动机，6挡自动变速箱，四轮驱动，五座布局；白色车身。'},
+    g63:{name:'奔驰 G级AMG 2025款 AMG G 63',brand:'奔驰',ref:'259.55万',colorOut:'白色',colorIn:'黑色',photos:photos(['cm-g63-1.jpg','cm-g63-2.jpg']),remark:'4.0T V8发动机，9挡自动变速箱，五座布局；白色车身。'}
   };
   var labels={special_price:'特价车',firsthand:'一手车源',inventory:'库存车'};
   var records=[];

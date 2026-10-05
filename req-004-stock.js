@@ -1,14 +1,17 @@
 /* REQ-004 PC 车源管理样稿
-   依据：REQ-004-PC车源管理需求方案 v2.0（按第二轮变更 R2 改写）。本地演示数据，不连接接口。*/
+   依据：REQ-004-PC车源管理需求方案 v2.3（按第二轮变更 R2 改写，R3 与 TASK-038 补充）。本地演示数据，不连接接口。*/
 (function () {
   'use strict';
 
-  var BRANDS = [
-    ['宝马', '530Li', 428000, 469000], ['丰田', '凯美瑞', 198000, 239000], ['奥迪', 'Q5L', 368000, 429000],
-    ['奔驰', 'C260L', 315000, 358000], ['比亚迪', '汉DM', 228000, 259000], ['理想', 'L7', 339800, 379800],
-    ['大众', '途观L', 186000, 229000], ['本田', '雅阁', 209000, 239800], ['特斯拉', 'Model Y', 263900, 288900],
-    ['别克', '昂科威', 168000, 219000], ['坦克', '500', 335000, 369000], ['长安', '启源A07', 129900, 165900]
-  ];
+  // TASK-038：车辆与小程序登记列表共用同一份实拍资料（demo-cars.js）；库存车价格与登记列表一致，一手车源售价按列表页「XX」口径取值
+  var SEEDS = [['inventory-m6', 108000], ['inventory-lc76', 618000], ['inventory-g63', 2538000],
+    ['inventory-yuan', 78800], ['inventory-prado', 768000], ['inventory-lc300', 818000]];
+  var BRANDS = [0, 1, 2, 3, 4, 5, 0, 1, 2, 3].map(function (k) { return SEEDS[k]; })
+    .concat([['firsthand-yuan', 85800], ['firsthand-lc300', 825000]])
+    .map(function (x) {
+      var car = window.DemoCars.get(x[0]), m = car.name.match(/^(\S+)\s+(.+?)\s+(\d{4}款.*)$/);
+      return [m[1], m[2], x[1], Math.round(parseFloat(car.ref) * 10000), car, m[3]];
+    });
   var PEOPLE = ['张三', '李四', '王五', '赵六', '陈婷', '刘洋', '周敏', '吴刚', '孙丽', '高远', '郑凯', '许静'];
   var ORGS = ['华东名车行', '安信汽车', '德仁二手车', '天成车业', '优选好车', '新能源体验店',
     '众诚车行', '诚新二手车', '未来出行', '宏达名车', '杭州滨江4S店', '上海浦东4S店'];
@@ -22,8 +25,7 @@
       id: '18' + String(1517386574692651010 + i * 7919).slice(2),
       srcType: is4s ? '一手车源' : '库存车',
       // R2-04 车辆类型＝商品分类，可多选
-      vtypes: [['运损车'], ['包牌包税'], ['新能源', '包牌包税'], ['运损车', '库存尾款车'], ['新能源'],
-               ['平行进口'], ['包牌包税'], ['运损车'], ['新能源'], ['库存尾款车'], ['包牌包税'], ['运损车']][i],
+      vtypes: b[4].cats.length ? b[4].cats.slice() : ['库存尾款车'],   // 与小程序登记列表同一取法
       labels: i % 2 ? ['现车', '可分期'] : ['支持置换'],
       // R2-11 审核状态与上下架两个维度
       approve: i < 3 ? '未审核' : i === 3 ? '不通过' : '通过',
@@ -31,21 +33,22 @@
       auditAt: i === 3 ? '2026-09-12 09:20' : (i >= 4 ? '2026-09-11 15:30' : ''),
       auditor: i === 3 ? '总部 admin' : (i >= 4 ? '总部 admin' : ''),
       // R3-07 详情只放图片；R3-01 去掉推荐，演示两台置顶中的车（结束时间按打开页面的时刻往后算）
-      detailPics: i % 5 === 0 ? 2 : 0,
+      detailImgs: i % 5 === 4 ? [] : b[4].photos.map(function (p) { return p.src; }),
+      photos: b[4].photos.map(function (p) { return p.src; }),
       topEnd: i === 5 ? new Date(Date.now() + 3 * 86400000) : i === 8 ? new Date(Date.now() + 9 * 86400000) : null,
       // 每次付款买下的时段：未置顶时从付款时刻起，续期时从原结束时间起（REQ-001 第 2.17、3.20 节）
       topOrders: i === 5 ? [{ pay: D(-4), money: 9.9, days: 7, start: D(-4), end: D(3) }]
         : i === 8 ? [{ pay: D(-1), money: 9.9, days: 7, start: D(2), end: D(9) }, { pay: D(-5), money: 9.9, days: 7, start: D(-5), end: D(2) }] : [],
-      video: i % 4 === 0,
-      brand: b[0], model: b[1], name: b[0] + ' ' + b[1], price: b[2], guide: b[3],
+      video: false,   // 实拍素材均无视频，与小程序各页一致
+      brand: b[0], model: b[1], variant: b[5], name: b[0] + ' ' + b[1], price: b[2], guide: b[3],
       person: PEOPLE[i], org: is4s ? ORGS[10 + (i - 10)] : ORGS[i],
       city: CITY[i % 6],
       time: '2026-09-' + String(11 - (i % 9)).padStart(2, '0') + ' 1' + (i % 9) + ':2' + (i % 6),
       views: [126, 85, 212, 96, 138, 176, 67, 104, 198, 59, 143, 88][i],
       sold: [0, 0, 3, 1, 0, 0, 2, 0, 5, 0, 1, 0][i],
       on: [false, false, false, false, true, true, false, true, true, false, true, true][i],
-      color: ['黑色', '白色', '灰色'][i % 3], inner: ['米色', '黑色'][i % 2],
-      remark: i % 3 === 0 ? '个人一手，原版原漆，支持检测' : '暂无备注',
+      color: b[4].colorOut, inner: b[4].colorIn,
+      remark: b[4].remark,
       ops: []
     };
   });
@@ -190,6 +193,37 @@
   function byId(id) { return rows.filter(function (r) { return r.id === id; })[0]; }
   function closeModal() { $('#modal-root').innerHTML = ''; }
 
+  // 图片缩略图与查看层：查看层盖在详情弹窗之上，关闭后回到原弹窗
+  var pvSets = {};
+  function thumbs(title, list) {
+    return '<div class="pic-row">' + list.map(function (src, k) {
+      return '<button type="button" class="pic-thumb img" data-pv="' + title + '" data-pv-i="' + k + '" title="查看' + title + ' ' + (k + 1) + '"><img src="' + src + '" alt="' + title + ' ' + (k + 1) + '"></button>';
+    }).join('') + '</div>';
+  }
+  function openViewer(title, items, start) {
+    var index = start, layer = document.createElement('section');
+    layer.className = 'reg-image-viewer pc-image-viewer';
+    layer.setAttribute('role', 'dialog'); layer.setAttribute('aria-modal', 'true'); layer.setAttribute('aria-label', title + '查看');
+    function close() { document.removeEventListener('keydown', onKey, true); layer.remove(); }
+    function move(d) { index = Math.max(0, Math.min(items.length - 1, index + d)); draw(); }
+    function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } if (e.key === 'ArrowLeft') move(-1); if (e.key === 'ArrowRight') move(1); }
+    function draw() {
+      layer.innerHTML = '<header><span>' + title + '</span><button type="button" class="reg-preview-close">关闭</button></header>' +
+        '<div class="reg-preview-body"><img src="' + items[index] + '" alt="' + title + (index + 1) + '" draggable="false"></div>' +
+        '<footer><button type="button" class="reg-preview-prev"' + (index === 0 ? ' disabled' : '') + '>上一张</button><span>' + (index + 1) + ' / ' + items.length + '</span>' +
+        '<button type="button" class="reg-preview-next"' + (index === items.length - 1 ? ' disabled' : '') + '>下一张</button></footer>';
+      layer.querySelector('.reg-preview-close').addEventListener('click', close);
+      layer.querySelector('.reg-preview-prev').addEventListener('click', function () { move(-1); });
+      layer.querySelector('.reg-preview-next').addEventListener('click', function () { move(1); });
+    }
+    document.body.appendChild(layer); document.addEventListener('keydown', onKey, true); draw();
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-pv]');
+    if (!t || !document.getElementById('modal-root').contains(t)) return;
+    openViewer(t.dataset.pv, pvSets[t.dataset.pv] || [], Number(t.dataset.pvI));
+  });
+
   function confirmBox(title, body, onOk, okText) {
     $('#modal-root').innerHTML = '<div class="modal-backdrop"><div class="modal" style="width:min(480px,100%)">' +
       '<div class="modal-header"><h2>' + esc(title) + '</h2><button class="modal-close" id="k-x">×</button></div>' +
@@ -267,19 +301,17 @@
 
   // 车辆信息只读表：详情与审核弹窗共用，字段口径同 REQ-001 第 2.6 节 18 项，R2 新增五项不得缺
   function vehicleDl(r) {
-    var pics = '<div class="pic-row">' +
-      [1, 2, 3].map(function (i) { return '<span class="pic-thumb">图 ' + i + '</span>'; }).join('') +
-      (r.video ? '<span class="pic-thumb vid">▶ 视频</span>' : '') + '</div>';
-    var blocks = r.detailPics
-      ? '<div class="pic-row">' + Array.apply(null, Array(r.detailPics)).map(function (x, k) { return '<span class="pic-thumb">详情图 ' + (k + 1) + '</span>'; }).join('') + '</div>'
-      : '<span class="muted">未添加</span>';
+    // TASK-038：显示真实缩略图，点击放大查看，可前后切换（做法同小程序登记页 TASK-037）
+    pvSets = { '车辆照片': r.photos, '详情图片': r.detailImgs };
+    var pics = thumbs('车辆照片', r.photos);
+    var blocks = r.detailImgs.length ? thumbs('详情图片', r.detailImgs) : '<span class="muted">未添加</span>';
     return '<div class="detail-grid two">' +
       '<dt>车辆 ID</dt><dd>' + r.id + '</dd>' +
       '<dt>车源类型</dt><dd>' + r.srcType + '</dd>' +
       '<dt>车辆类型</dt><dd>' + (r.vtypes.length ? r.vtypes.join('、') : '<span class="muted">未选</span>') + '</dd>' +
       '<dt>标签</dt><dd>' + (r.labels.length ? r.labels.join('、') : '<span class="muted">无</span>') + '</dd>' +
       '<dt>品牌</dt><dd>' + esc(r.brand) + '</dd>' +
-      '<dt>车型</dt><dd>' + esc(r.model) + '</dd>' +
+      '<dt>车型</dt><dd>' + esc(r.model + ' ' + r.variant) + '</dd>' +
       '<dt>外观颜色</dt><dd>' + r.color + '</dd>' +
       '<dt>内饰颜色</dt><dd>' + r.inner + '</dd>' +
       '<dt>官方指导价</dt><dd>' + money(r.guide) + '</dd>' +

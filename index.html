@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="预蒜 车源登记与 4S 店维护 页面方案">
   <title>预蒜 · 页面方案</title>
-  <link rel="stylesheet" href="styles.css?v=6.15.0">
+  <link rel="stylesheet" href="styles.css?v=6.16.0">
 </head>
 <body>
   <header class="topbar">
@@ -381,7 +381,7 @@
               <li>「登记人」浮钮放在「车辆信息」标题右侧的白底处，只有一级代理商看得到（R3-12）；弹窗与原来那版一致。</li>
               <li><b>第三轮</b>：商品详情只显示图片（R3-07）；底部栏「返回首页」右侧新增「收藏」，点后变橙色「已收藏」，「我的」页第 5 个入口「我的收藏」能看到（R3-11）。</li>
             </ul>
-            <p class="side-info-src">2026-09-29已确认采用此版，手机展示统一使用；其余未决细节仍在待确认事项中。车辆实拍出处见 TASK-035 素材记录；示价为排版值。</p>
+            <p class="side-info-src">2026-09-29已确认采用此版，手机展示统一使用；其余未决细节仍在待确认事项中。车辆实拍图片来自 Wikimedia Commons，作者与许可见 assets/demo-cars/sources.json（TASK-038）；示价为排版值。</p>
           </aside>
         </div>
       </section>
@@ -467,7 +467,7 @@
             <ul>
               <li>价格筛选按标签还是按售价（PENDING-016）；格子上取哪个标签（PENDING-017）；车源图片缩略图（PENDING-014）；类别清单（PENDING-008）。</li>
             </ul>
-            <p class="side-info-src">上传天数按今天日期实时计算。类别选项为本地取值。完整规则见 REQ-008 需求方案 v1.4。</p>
+            <p class="side-info-src">上传天数按今天日期实时计算。类别选项为本地取值。完整规则见 REQ-008 需求方案 v1.7。</p>
           </aside>
         </div>
       </section>
@@ -562,7 +562,7 @@
 
       <section class="view" id="view-home002">
         <div class="embedded-prototype">
-          <iframe id="home002-frame" src="req-002-home.html?v=5.6.0" title="REQ-002 小程序首页改造"></iframe>
+          <iframe id="home002-frame" src="req-002-home.html?v=5.8.0" title="REQ-002 小程序首页改造"></iframe>
         </div>
       </section>
     </main>
@@ -570,7 +570,7 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
   <div id="modal-root"></div>
-  <script src="demo-cars.js?v=1.0.0"></script>
+  <script src="demo-cars.js?v=1.1.0"></script>
   <script src="demo-car-ui.js?v=1.0.0"></script>
   <script src="logic.js?v=6.3.0"></script>
   <script src="app.js?v=5.7.0"></script>
@@ -581,7 +581,7 @@
   <script src="req-008-list.js?v=1.5.0"></script>
   <script src="req-009-login.js?v=1.4.1"></script>
   <script src="req-010-clue.js?v=1.2.0"></script>
-  <script src="req-004-stock.js?v=5.0.0"></script>
+  <script src="req-004-stock.js?v=5.1.0"></script>
   <script src="req-pending.js?v=5.2.0"></script>
   <script>
     // REQ-002 样稿按自身真实高度撑开，避免内层滚动条或底部空白
