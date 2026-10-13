@@ -355,15 +355,18 @@ code {
 .daily .op-card { width: 91.74%; margin: 0 auto; }
 .screen .op-card img.op-bg { display: block; width: 100%; height: auto; margin: 0; }
 .carousel { position: absolute; overflow: hidden; border-radius: 0; }
-.op-daily .carousel { left: 0; top: calc(56 / 456 * 100%); width: 100%; height: calc(400 / 456 * 100%); }
-.op-small .carousel { left: 0; top: calc(60 / 456 * 100%); width: 100%; height: calc(396 / 456 * 100%); }
+/* 门店卡恢复原高后，大卡、小卡车图各压低19rpx（约10px），版位改为688×437、340×437rpx，正方形照片上下各裁一点。 */
+.screen .op-daily img.op-bg { aspect-ratio: 688 / 437; object-fit: cover; object-position: top; }
+.screen .op-small img.op-bg { aspect-ratio: 340 / 437; object-fit: cover; object-position: top; }
+.op-daily .carousel { left: 0; top: calc(56 / 437 * 100%); width: 100%; height: calc(381 / 437 * 100%); }
+.op-small .carousel { left: 0; top: calc(60 / 437 * 100%); width: 100%; height: calc(377 / 437 * 100%); }
 .carousel .track { display: flex; height: 100%; will-change: transform; }
 .carousel .slide { flex: 0 0 100%; height: 100%; display: flex; flex-direction: column; }
 .carousel .pic { flex: 1 1 auto; min-height: 0; background: #f2f4f3; }
 .screen .carousel .pic img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .carousel .price-bar { position: relative; flex: 0 0 auto; background: #128132; overflow: hidden; }
-.op-daily .price-bar { width: 100%; height: calc(56 / 400 * 100%); }
-.op-small .price-bar { height: calc(56 / 396 * 100%); }
+.op-daily .price-bar { width: 100%; height: calc(56 / 381 * 100%); }
+.op-small .price-bar { height: calc(56 / 377 * 100%); }
 .carousel .price-bar::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 42%;
   background: linear-gradient(90deg, #4c9c66, #1e6b37); clip-path: polygon(0 0, 88% 0, 100% 100%, 0 100%); }
 .carousel .price-bar .big { position: absolute; left: 6%; top: 0; bottom: 0; z-index: 1; display: flex; align-items: center;
@@ -372,8 +375,8 @@ code {
   font-size: 9px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 约17.3rpx，标准宽度下 9px */
 .carousel .price-bar .ref s { margin-left: 3px; }
 .carousel .dots { position: absolute; left: 0; right: 0; display: flex; justify-content: center; gap: 4px; pointer-events: none; }
-.op-daily .dots { bottom: calc(56 / 400 * 100% + 5px); }
-.op-small .dots { bottom: calc(56 / 396 * 100% + 5px); }
+.op-daily .dots { bottom: calc(56 / 381 * 100% + 5px); }
+.op-small .dots { bottom: calc(56 / 377 * 100% + 5px); }
 .carousel .dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, .55); box-shadow: 0 0 2px rgba(0,0,0,.35); }
 .carousel .dots i.on { background: #fff; }
 
@@ -395,12 +398,16 @@ code {
 .op-daily .dots i { background:#c8d1cb; box-shadow:none; }
 .op-daily .dots i.on { background:#128132; }
 
-/* TASK-035：旧切图姓名被截断，绿色卡改为完整文字，压缩为48px。 */
-.shop-block { padding: 0; }
-.shop-card { width:91.74%; height:48px; margin:0 auto; border-radius:0 0 5px 5px; background:linear-gradient(115deg,#208e43,#0d7d2d); color:#fff; padding:4px 12px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; line-height:13px; }
-.shop-card strong { font-size:13px; font-weight:500; line-height:14px; }
-.shop-card span { font-size:10px; white-space:nowrap; }
-.shop-card .shop-phone { font-size:11px; letter-spacing:1px; }
+/* 门店卡按现有首页 user_detail 恢复：688×154rpx、四角圆角、上压视频24rpx；
+   左侧130rpx正方形店铺头像（距左32rpx），右侧隔40rpx排姓名32rpx、地址/电话20rpx。 */
+.shop-block { padding: 0; z-index: 2; }
+.shop-card { width:91.74%; aspect-ratio:688 / 154; margin:calc(-24 / 750 * 100%) auto 0; border-radius:5px; background:linear-gradient(115deg,#208e43,#0d7d2d); color:#fff; display:flex; align-items:center; overflow:hidden; }
+.screen .shop-card img.shop-ava { flex:none; width:calc(130 / 688 * 100%); height:auto; aspect-ratio:1 / 1; object-fit:cover; margin-left:calc(32 / 688 * 100%); }
+.shop-info { align-self:flex-start; margin-left:calc(40 / 688 * 100%); padding-top:7px; min-width:0; }
+.shop-info strong { display:block; font-size:16.6px; font-weight:400; line-height:20px; letter-spacing:3px; }
+.shop-line { display:flex; align-items:center; font-size:10.4px; line-height:14px; letter-spacing:1.6px; white-space:nowrap; margin-top:5px; }
+.shop-info strong + .shop-line { margin-top:12px; }
+.shop-line svg { flex:none; width:11px; height:11px; margin-right:9px; }
 
 /* CHG-D037：按这两张示例照片分别取景，侧前图保留左侧车头。 */
 .screen .op-daily .pic.pair img[src*="audi-a6l-side.png"] { object-position:0% 50%; }
