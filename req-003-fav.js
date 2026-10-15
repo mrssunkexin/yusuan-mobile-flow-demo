@@ -11,7 +11,7 @@
     var box = $('#fav-list'); if (!box) return;
     box.innerHTML = FAV.items().map(function (c) {
       return '<div class="l8-item" data-source="' + c.source + '" data-car-id="' + c.id + '">' +
-        '<div class="l8-img fit"><img class="l8-pic" src="' + c.img + '" style="object-position:' + c.position + '" alt="' + esc(c.name) + '"></div>' +
+        '<div class="l8-img fit"><img class="l8-pic" src="' + c.img + '" style="object-position:' + c.position + '" alt="' + esc(c.name) + '">' + window.DemoCars.promoHtml(c) + '</div>' +
         '<div class="l8-info"><div class="l8-name">' + esc(c.name) + '</div>' +
         '<div class="l8-p1"><span>官方指导价</span><s>' + (c.ref || '暂无') + '</s></div>' +
         '<div class="l8-p2"><span>预蒜价</span><b>' + (c.sale || '暂无') + '</b></div></div></div>';

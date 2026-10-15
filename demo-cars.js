@@ -46,9 +46,10 @@
     return n>=1?'直降<br>'+n+'万':'特价';
   }
   records.forEach(function(c){ c.promo=c.promo||'none'; c.promoText=promoText(c); });
+  function promoHtml(c){return c&&c.promoText?'<span class="promo-tag promo-'+c.promo+'">'+c.promoText+'</span>':'';}
   function normalize(source){return source==='special'?'special_price':source;}
   function get(id){return records.find(function(c){return c.id===id;})||null;}
   function list(source){return records.filter(function(c){return c.source===normalize(source);}).sort(function(a,b){return (a.top?0:1)-(b.top?0:1)||(a.top&&b.top?a.top-b.top:0)||a.days-b.days;});}
   function createFavorites(){var ids=[];return {has:function(id){return ids.indexOf(id)>=0;},toggle:function(id){if(!get(id))return false;var i=ids.indexOf(id);if(i>=0)ids.splice(i,1);else ids.unshift(id);return i<0;},items:function(){return ids.map(get);}};}
-  return {get:get,list:list,home:function(s){return list(s).slice(0,5);},normalize:normalize,createFavorites:createFavorites,all:function(){return records.slice();}};
+  return {get:get,list:list,promoHtml:promoHtml,home:function(s){return list(s).slice(0,5);},normalize:normalize,createFavorites:createFavorites,all:function(){return records.slice();}};
 });

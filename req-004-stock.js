@@ -24,8 +24,8 @@
     return {
       id: '18' + String(1517386574692651010 + i * 7919).slice(2),
       srcType: is4s ? '一手车源' : '库存车',
-      // R2-04 车辆类型＝商品分类，可多选
-      vtypes: b[4].cats.length ? b[4].cats.slice() : ['库存尾款车'],   // 与小程序登记列表同一取法
+      // CHG-D051：车辆类型取消，改为促销标识（单选），角标文字与小程序同一算法
+      promo: b[4].promo || 'none', promoText: b[4].promoText || '',
       labels: i % 2 ? ['现车', '可分期'] : ['支持置换'],
       // R2-11 审核状态与上下架两个维度
       approve: i < 3 ? '未审核' : i === 3 ? '不通过' : '通过',
@@ -53,7 +53,7 @@
     };
   });
 
-  var q = { code: '', brand: '', model: '', person: '', org: '', srctype: '', approve: '', shelf: '', vtype: '', prov: '', city: '', dist: '', from: '', to: '', sort: 'time' };
+  var q = { code: '', brand: '', model: '', person: '', org: '', srctype: '', approve: '', shelf: '', promo: '', prov: '', city: '', dist: '', from: '', to: '', sort: 'time' };
   var page = 1, size = 20;
 
   function $(s) { return document.querySelector(s); }
@@ -79,7 +79,7 @@
       if (q.shelf === '在售' && !r.on) return false;
       if (q.shelf === '已下架' && r.on) return false;
       // 车辆类型单选，该车带有即命中（一台车可有多个类型）
-      if (q.vtype && r.vtypes.indexOf(q.vtype) === -1) return false;
+      if (q.promo && r.promo !== q.promo) return false;
       if (q.prov && r.city[0] !== q.prov) return false;
       if (q.city && r.city[1] !== q.city) return false;
       if (q.dist && r.city[2] !== q.dist) return false;
@@ -118,7 +118,7 @@
         '<td>' + ((page - 1) * size + i + 1) + '</td>' +
         '<td class="cell-id">' + r.id + '</td>' +
         '<td><span class="tag2 ' + (r.srcType === '库存车' ? 't-inv' : 't-4s') + '">' + r.srcType + '</span></td>' +
-        '<td>' + r.vtypes.map(function (t) { return '<span class="tag2">' + t + '</span>'; }).join(' ') + '</td>' +
+        '<td>' + promoLabel(r) + '</td>' +
         '<td>' + esc(r.name) + '</td>' +
         '<td>' + num(r.price) + '</td>' +
         '<td>' + r.person + '</td>' +
@@ -145,7 +145,7 @@
     }).join('');
 
     $('#stock-empty').hidden = list.length !== 0;
-    var any = ['code', 'brand', 'model', 'person', 'org', 'srctype', 'approve', 'shelf', 'vtype', 'prov', 'city', 'dist', 'from', 'to'].some(function (k) { return q[k]; });
+    var any = ['code', 'brand', 'model', 'person', 'org', 'srctype', 'approve', 'shelf', 'promo', 'prov', 'city', 'dist', 'from', 'to'].some(function (k) { return q[k]; });
     $('#stock-empty').textContent = any ? '没有查询到匹配的车辆' : '暂无车源';
     $('#stock-total').textContent = '共 ' + list.length + ' 条';
     $('#stock-page').textContent = page + ' / ' + maxPage;
@@ -165,6 +165,8 @@
       list.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('');
     if (old && list.indexOf(old) > -1) e.value = old;
   }
+  var PROMO_NAMES = { none: '无', special: '特价', hot: '热销' };
+  function promoLabel(r) { return r.promo === 'none' ? '<span class="muted">无</span>' : '<span class="tag2">' + PROMO_NAMES[r.promo] + '</span>'; }
   function uniq(a) { return a.filter(function (x, i) { return x && a.indexOf(x) === i; }); }
   function fillBrand() {
     fillSel('#q-brand', '不限品牌', uniq(rows.map(function (r) { return r.brand; })));
@@ -195,9 +197,11 @@
 
   // 图片缩略图与查看层：查看层盖在详情弹窗之上，关闭后回到原弹窗
   var pvSets = {};
-  function thumbs(title, list) {
+  function thumbs(title, list, r) {
     return '<div class="pic-row">' + list.map(function (src, k) {
-      return '<button type="button" class="pic-thumb img" data-pv="' + title + '" data-pv-i="' + k + '" title="查看' + title + ' ' + (k + 1) + '"><img src="' + src + '" alt="' + title + ' ' + (k + 1) + '"></button>';
+      // 车辆照片第一张左上角带促销角标（REQ-001 第 1.7 节）
+      var tag = (k === 0 && title === '车辆照片' && r && r.promoText) ? '<span class="promo-tag promo-' + r.promo + '">' + r.promoText + '</span>' : '';
+      return '<button type="button" class="pic-thumb img" data-pv="' + title + '" data-pv-i="' + k + '" title="查看' + title + ' ' + (k + 1) + '"><img src="' + src + '" alt="' + title + ' ' + (k + 1) + '">' + tag + '</button>';
     }).join('') + '</div>';
   }
   function openViewer(title, items, start) {
@@ -303,12 +307,12 @@
   function vehicleDl(r) {
     // TASK-038：显示真实缩略图，点击放大查看，可前后切换（做法同小程序登记页 TASK-037）
     pvSets = { '车辆照片': r.photos, '详情图片': r.detailImgs };
-    var pics = thumbs('车辆照片', r.photos);
+    var pics = thumbs('车辆照片', r.photos, r);
     var blocks = r.detailImgs.length ? thumbs('详情图片', r.detailImgs) : '<span class="muted">未添加</span>';
     return '<div class="detail-grid two">' +
       '<dt>车辆 ID</dt><dd>' + r.id + '</dd>' +
       '<dt>车源类型</dt><dd>' + r.srcType + '</dd>' +
-      '<dt>车辆类型</dt><dd>' + (r.vtypes.length ? r.vtypes.join('、') : '<span class="muted">未选</span>') + '</dd>' +
+      '<dt>促销标识</dt><dd>' + PROMO_NAMES[r.promo] + '</dd>' +
       '<dt>标签</dt><dd>' + (r.labels.length ? r.labels.join('、') : '<span class="muted">无</span>') + '</dd>' +
       '<dt>品牌</dt><dd>' + esc(r.brand) + '</dd>' +
       '<dt>车型</dt><dd>' + esc(r.model + ' ' + r.variant) + '</dd>' +
@@ -387,7 +391,7 @@
 
     // 注意：审核状态与上下架的 id 用 pc- 前缀，避开小程序视图里的同名 id
     var FIELDS = { code: 'q-code', brand: 'q-brand', model: 'q-model', person: 'q-person',
-      org: 'q-org', srctype: 'q-srctype', approve: 'pc-approve', shelf: 'pc-shelf', vtype: 'q-vtype',
+      org: 'q-org', srctype: 'q-srctype', approve: 'pc-approve', shelf: 'pc-shelf', promo: 'q-promo',
       prov: 'q-prov', city: 'q-city', dist: 'q-dist', from: 'q-from', to: 'q-to' };
 
     fillBrand(); fillProv();

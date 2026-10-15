@@ -55,9 +55,7 @@
     document.querySelectorAll('#l8-entry button').forEach(function (b) { b.classList.toggle('on', b.dataset.entry === state.entry); });
     $('#l8-title').textContent = TITLES[state.entry];
     $('#l8-f-brand .t').textContent = state.otherBrand ? '其他品牌' : (state.brand || '全部');
-    var cat = $('#l8-f-cat');
-    cat.querySelector('.t').textContent = state.cats.length === 0 ? '类别' : (state.cats.length === 1 ? state.cats[0] : '类别(' + state.cats.length + ')');
-    cat.classList.toggle('on', state.cats.length > 0);
+    // CHG-D051：车辆类型取消，「类别」筛选作废，页面上已无此控件
     var box = $('#l8-list');
     box.classList.remove('grid'); box.classList.add('one');
     var rows = list();
@@ -65,7 +63,7 @@
       // 三类示例照片均按正方形取景，数据按具体车辆 ID 进入详情
       return '<div class="l8-item" data-src="' + state.entry + '" data-car-id="' + c.id + '">' +
         '<div class="l8-img' + (state.entry === 'special_price' ? ' fit' : '') + '"><img class="l8-pic" src="' + c.img + '" alt="' + esc(c.name) + '" style="object-position:' + c.position + '">' +
-        (c.video ? '<span class="l8-video">▶</span>' : '') + '</div>' +
+        (c.video ? '<span class="l8-video">▶</span>' : '') + window.DemoCars.promoHtml(c) + '</div>' +
         '<div class="l8-info"><div class="l8-name">' + esc(c.name) + '</div>' +
         (c.chip ? '<div class="l8-chip">' + c.chip + '</div>' : '') +
         '<div class="l8-p1"><span>官方指导价</span><s>' + (c.ref || '暂无') + '</s></div>' +
@@ -133,17 +131,7 @@
       var o = $('#l8-price-opts .l8-popt.on'); state.price = o ? o.dataset.p : '全部'; closePrice(); render();
     });
 
-    // 类别：底部多选面板，点「确定」才生效
-    $('#l8-f-cat').addEventListener('click', function () { state.draftCats = state.cats.slice(); renderCatSheet(); sheet('#l8-cat-sheet', true); });
-    $('#l8-cat-opts').addEventListener('click', function (e) {
-      var b = e.target.closest('.l8-cat'); if (!b) return;
-      var k = b.dataset.cat, i = state.draftCats.indexOf(k);
-      if (i >= 0) state.draftCats.splice(i, 1); else state.draftCats.push(k);
-      renderCatSheet();
-    });
-    $('#l8-cat-reset').addEventListener('click', function () { state.draftCats = []; renderCatSheet(); });
-    $('#l8-cat-ok').addEventListener('click', function () { state.cats = state.draftCats.slice(); sheet('#l8-cat-sheet', false); render(); });
-    $('#l8-cat-mask').addEventListener('click', function () { sheet('#l8-cat-sheet', false); });
+    // CHG-D051：「类别」筛选作废，面板与绑定已去掉
 
     $('#l8-list').addEventListener('click', function (e) {
       var it = e.target.closest('.l8-item'); if (!it) return;

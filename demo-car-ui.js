@@ -14,8 +14,10 @@
     if(car.video)items.push({src:car.video,type:'video'});
     box.innerHTML='<img class="demo-photo" alt=""><video class="demo-video" controls playsinline hidden></video><button type="button" class="demo-prev" aria-label="上一张照片">‹</button><button type="button" class="demo-next" aria-label="下一张照片">›</button><span class="d2-media"></span><span class="d2-video" hidden>▶ 含视频</span>';
     box.querySelector('.d2-video').hidden=!showCount||!car.video;
+    // 促销角标只在第一张图上（REQ-003 第 4.2 节）
+    var promo=null;if(car.promoText){promo=document.createElement('span');promo.className='promo-tag promo-'+car.promo;promo.innerHTML=car.promoText;box.appendChild(promo);}
     var img=box.querySelector('img'),vid=box.querySelector('video'),count=box.querySelector('.d2-media');
-    function render(){var p=items[index];vid.pause();vid.hidden=p.type!=='video';img.hidden=p.type==='video';if(p.type==='video')vid.src=p.src;else {img.src=p.src;img.style.objectPosition=p.position||'center';img.alt=car.name+' · 第'+(index+1)+'张实拍';}count.hidden=!showCount||items.length===1;count.textContent=(index+1)+'/'+items.length;box.dataset.carId=car.id;box.dataset.index=index;}
+    function render(){var p=items[index];if(promo)promo.hidden=index!==0;vid.pause();vid.hidden=p.type!=='video';img.hidden=p.type==='video';if(p.type==='video')vid.src=p.src;else {img.src=p.src;img.style.objectPosition=p.position||'center';img.alt=car.name+' · 第'+(index+1)+'张实拍';}count.hidden=!showCount||items.length===1;count.textContent=(index+1)+'/'+items.length;box.dataset.carId=car.id;box.dataset.index=index;}
     function move(n){index=(index+n+items.length)%items.length;render();}
     box.querySelector('.demo-prev').hidden=box.querySelector('.demo-next').hidden=items.length<2;
     box.querySelector('.demo-prev').onclick=function(){move(-1);};box.querySelector('.demo-next').onclick=function(){move(1);};

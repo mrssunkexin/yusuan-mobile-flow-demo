@@ -773,3 +773,18 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .pc-image-viewer{position:fixed;z-index:30;background:rgba(21,21,21,.94)}
 .pc-image-viewer .reg-preview-body{padding:0 24px}
 .pc-image-viewer .reg-preview-body img{width:auto;height:auto;max-width:100%;max-height:100%}
+
+/* 促销角标（REQ-001 第 1.7 节）：所有出现车辆第一张图的位置统一用这一段。
+   沿用线上列表「直降几万」挂旗：30×42px、距左 5px、底部尖角、白色斜体粗字；
+   特价＝绿旗两行「直降／N万」，热销＝红旗「热销」。首页 iframe 内另有同样一份（req-002-home.css）。 */
+.promo-tag{position:absolute;left:5px;top:0;z-index:2;width:30px;height:42px;box-sizing:border-box;padding-top:6px;
+  color:#fff;text-align:center;font-size:11px;line-height:13px;font-weight:800;font-style:italic;letter-spacing:-.3px;
+  clip-path:polygon(0 0,100% 0,100% 84%,50% 100%,0 84%);pointer-events:none}
+.promo-special{background:#1a8a3a}
+.promo-hot{background:#e8402e}
+/* 列表 104px 图在 124.8px 框内居中，旗子贴到图的左上角 */
+.l8-img .promo-tag{left:15px}
+.vehicle-cover{position:relative}
+.pic-thumb{position:relative}
+.pic-thumb .promo-tag{left:3px;transform:scale(.8);transform-origin:top left}
+

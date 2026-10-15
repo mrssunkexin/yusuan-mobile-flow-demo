@@ -44,7 +44,6 @@
     $('#d2-src').textContent = c.srcLabel;
     $('#d2-color-out').textContent = c.colorOut;
     $('#d2-color-in').textContent = c.colorIn;
-    $('#d2-vtypes').textContent = c.vtypes.join('、') || '普通车';
     $('#d2-region').textContent = c.region;
     $('#d2-labels').innerHTML = c.labels.map(function (l) {
       return '<span class="d2-label">' + esc(l) + '</span>';
