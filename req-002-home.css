@@ -414,10 +414,11 @@ code {
 .screen .op-daily .pic.pair img[src*="audi-a6l-side.png"] { object-position:0% 50%; }
 .screen .op-daily .pic.pair img[src*="audi-a6l-front.png"] { object-position:48% 50%; }
 
-/* 促销角标（REQ-001 第 1.7 节）：车辆第一张图左上角；特价红底、热销橙底；大卡双图只在左图 */
+/* 促销角标（REQ-001 第 1.7 节）：沿用原「直降几万」挂旗样式——车辆第一张图左上角垂下的小旗，
+   底部尖角，白色斜体粗字。特价＝绿旗两行「直降／N万」，热销＝红旗「热销」；大卡双图只在左图。 */
 .carousel .pic { position: relative; }
-.promo-tag { position: absolute; left: 0; top: 0; z-index: 2; padding: 0 8px; height: 20px; line-height: 20px;
-  font-size: 11px; font-weight: 500; color: #fff; white-space: nowrap; border-radius: 0 0 8px 0; letter-spacing: .5px; }
-.promo-special { background: #e63a2e; }
-.promo-hot { background: #ff7a00; }
-
+.promo-tag { position: absolute; left: 5px; top: 0; z-index: 2; width: 30px; height: 42px; box-sizing: border-box; padding-top: 6px;
+  color: #fff; text-align: center; font-size: 11px; line-height: 13px; font-weight: 800; font-style: italic; letter-spacing: -.3px;
+  clip-path: polygon(0 0, 100% 0, 100% 84%, 50% 100%, 0 84%); }
+.promo-special { background: #1a8a3a; }
+.promo-hot { background: #e8402e; }

@@ -43,7 +43,7 @@
     if(c.promo==='hot') return '热销';
     if(c.promo!=='special') return '';
     var ref=parseFloat(c.ref), sale=parseInt(c.sale,10), n=(isNaN(ref)||isNaN(sale))?0:Math.floor(ref)-sale;
-    return n>=1?'特价 直降'+n+'万':'特价';
+    return n>=1?'直降<br>'+n+'万':'特价';
   }
   records.forEach(function(c){ c.promo=c.promo||'none'; c.promoText=promoText(c); });
   function normalize(source){return source==='special'?'special_price':source;}
