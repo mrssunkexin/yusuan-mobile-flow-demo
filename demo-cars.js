@@ -21,23 +21,31 @@
     records.push(Object.assign({},m,{id:id,source:source,srcLabel:labels[source],sale:sale,days:days,cats:cats,vtypes:cats,chip:key==='m6'?'10万–15万':'',video:null,img:m.photos[0].src,position:m.photos[0].position,blocks:m.photos.map(function(p){return p.src;}),region:source==='firsthand'?'江苏省 南京市':'广东省 广州市',labels:['现车','支持置换'],contact:source==='firsthand'?{name:'李静',phone:'138 0000 5678',from:'4S 车源统一联系人'}:{name:'张伟',phone:'138 0000 1234',from:'车源登记人'},baseCount:source==='firsthand'?1:2},extra||{}));
   }
   add('special_price','m6','10.XX万',0,['运损车']);
-  add('special_price','prado','77.XX万',1,['运损车']);
-  add('special_price','lc300','82.XX万',3,['包牌包税']);
+  add('special_price','prado','77.XX万',1,['运损车'],{promo:'special'});
+  add('special_price','lc300','82.XX万',3,['包牌包税'],{promo:'hot'});
   add('special_price','lc76','62.XX万',12,['包牌包税']);
   add('special_price','g63','255.XX万',30,[]);
   add('special_price','prado','76.XX万',99,[],{suffix:'-2'});
   add('special_price','lc76','61.XX万',120,['包牌包税'],{suffix:'-2'});
   add('firsthand','yuan','8.XX万',0,['包牌包税']);
-  add('firsthand','prado','77.XX万',2,[]);
+  add('firsthand','prado','77.XX万',2,[],{promo:'hot'});
   add('firsthand','lc300','82.XX万',11,['运损车']);
-  add('firsthand','lc76','62.XX万',20,['运损车'],{top:2});
+  add('firsthand','lc76','62.XX万',20,['运损车'],{top:2,promo:'special'});
   add('firsthand','g63','255.XX万',45,[]);
   add('inventory','m6','10.XX万',0,['运损车']);
   add('inventory','lc76','61.XX万',0,['运损车']);
   add('inventory','g63','253.XX万',5,[]);
   add('inventory','yuan','7.XX万',9,[],{manual:1,brand:''});
   add('inventory','prado','76.XX万',19,['运损车','包牌包税']);
-  add('inventory','lc300','81.XX万',21,[],{top:1,labels:['现车','支持置换','运损车','包牌','包税']});
+  add('inventory','lc300','81.XX万',21,[],{top:1,promo:'special',labels:['现车','支持置换','运损车','包牌','包税']});
+  // 促销标识（REQ-001 第 1.7 节）：none／special／hot；特价文字＝参考价−实际售价取整数万
+  function promoText(c){
+    if(c.promo==='hot') return '热销';
+    if(c.promo!=='special') return '';
+    var ref=parseFloat(c.ref), sale=parseInt(c.sale,10), n=(isNaN(ref)||isNaN(sale))?0:Math.floor(ref)-sale;
+    return n>=1?'特价 直降'+n+'万':'特价';
+  }
+  records.forEach(function(c){ c.promo=c.promo||'none'; c.promoText=promoText(c); });
   function normalize(source){return source==='special'?'special_price':source;}
   function get(id){return records.find(function(c){return c.id===id;})||null;}
   function list(source){return records.filter(function(c){return c.source===normalize(source);}).sort(function(a,b){return (a.top?0:1)-(b.top?0:1)||(a.top&&b.top?a.top-b.top:0)||a.days-b.days;});}

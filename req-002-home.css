@@ -413,3 +413,11 @@ code {
 /* CHG-D037：按这两张示例照片分别取景，侧前图保留左侧车头。 */
 .screen .op-daily .pic.pair img[src*="audi-a6l-side.png"] { object-position:0% 50%; }
 .screen .op-daily .pic.pair img[src*="audi-a6l-front.png"] { object-position:48% 50%; }
+
+/* 促销角标（REQ-001 第 1.7 节）：车辆第一张图左上角；特价红底、热销橙底；大卡双图只在左图 */
+.carousel .pic { position: relative; }
+.promo-tag { position: absolute; left: 0; top: 0; z-index: 2; padding: 0 8px; height: 20px; line-height: 20px;
+  font-size: 11px; font-weight: 500; color: #fff; white-space: nowrap; border-radius: 0 0 8px 0; letter-spacing: .5px; }
+.promo-special { background: #e63a2e; }
+.promo-hot { background: #ff7a00; }
+
