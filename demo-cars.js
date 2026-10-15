@@ -37,7 +37,7 @@
   add('inventory','g63','253.XX万',5,[]);
   add('inventory','yuan','7.XX万',9,[],{manual:1,brand:''});
   add('inventory','prado','76.XX万',19,['运损车','包牌包税']);
-  add('inventory','lc300','81.XX万',21,[],{top:1});
+  add('inventory','lc300','81.XX万',21,[],{top:1,labels:['现车','支持置换','运损车','包牌','包税']});
   function normalize(source){return source==='special'?'special_price':source;}
   function get(id){return records.find(function(c){return c.id===id;})||null;}
   function list(source){return records.filter(function(c){return c.source===normalize(source);}).sort(function(a,b){return (a.top?0:1)-(b.top?0:1)||(a.top&&b.top?a.top-b.top:0)||a.days-b.days;});}
