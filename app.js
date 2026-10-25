@@ -252,6 +252,39 @@
       ()=>{ $$('[data-variant-index]').forEach((b)=>b.addEventListener('click',()=>showVehicleForm({selection:{brand,model,variant:catalog[brand][model][Number(b.dataset.variantIndex)]}}))); });
   }
 
+  // REQ-001 v2.10：修改车源时按车型重选型号（同车型下的型号；演示车不在上面的选车目录里，单列）
+  const EDIT_VARIANTS={
+    '传祺M6 MAX':[{name:'2026款 1.5T DCT 尊荣版',price:119800},{name:'2026款 1.5T DCT 尊享版',price:129800},{name:'2026款 1.5T DCT 尊贵版',price:139800}],
+    '元UP':[{name:'2027款 飞驰版 301KM 活力型',price:79800},{name:'2027款 飞驰版 401KM 活力型',price:89800},{name:'2027款 飞驰版 401KM 进取型',price:96800}],
+    '普拉多':[{name:'2024款 2.4T 双擎 TX',price:459800},{name:'2024款 2.8T 柴油 VX 方灯',price:798000}],
+    '兰德酷路泽':[{name:'2021款 3.5T 汽油 LC300',price:880000},{name:'2021款 3.5T 汽油 VX-R',price:980000}],
+    '兰德酷路泽LC76':[{name:'2024款 2.8T 柴油 GX 自动挡',price:628000},{name:'2024款 2.8T 柴油 AX 自动挡',price:658000}],
+    'G级AMG':[{name:'2025款 AMG G 63',price:2595500},{name:'2025款 AMG G 63 先型特别版',price:2865500}]
+  };
+  function editVariants(brand,model){ return (catalog[brand]&&catalog[brand][model])||EDIT_VARIANTS[model]||[]; }
+  // 进型号页前把当前表单节点和表单状态留住，选完回来原样放回，再按新型号更新参考价、实际售价、颜色
+  function reselectVariantForEdit(brand,model){
+    const keepForm=$('#vehicle-form'), keep={promo:state.formPromo,labels:state.formLabels.slice(),detail:state.formDetail.slice(),photos:state.photos.slice()};
+    const back=(variant)=>{
+      popPage();
+      const fresh=$('#vehicle-form'); if(fresh)fresh.replaceWith(keepForm);
+      Object.assign(state,{formPromo:keep.promo,formLabels:keep.labels,formDetail:keep.detail,photos:keep.photos});
+      if(!variant)return;
+      if(keepForm.elements.variant.value===variant.name)return;   // 选回原型号视为未改
+      keepForm.elements.variant.value=variant.name;
+      keepForm.elements.reference.value=variant.price;
+      keepForm.elements.sale.value=variant.price;
+      keepForm.elements.exterior.value=''; keepForm.elements.interior.value='';
+      keepForm.querySelectorAll('.color-choice.selected').forEach((b)=>b.classList.remove('selected'));
+    };
+    const list=editVariants(brand,model);
+    pushPage(`${brand} ${model}`,
+      `<div class="m-card" style="padding:0">${list.map((variant,index)=>`<button class="m-choice" data-edit-variant="${index}"><span><strong>${escapeHtml(variant.name)}</strong><br><small>指导价 ${variant.price.toLocaleString()}元</small></span><span class="m-arrow">›</span></button>`).join('')}</div>`,
+      '',
+      ()=>{ $$('[data-edit-variant]').forEach((b)=>b.addEventListener('click',()=>back(list[Number(b.dataset.editVariant)])));
+            $('.m-page-back').addEventListener('click',(e)=>{ e.stopImmediatePropagation(); back(null); },true); });
+  }
+
   function currentRole(){ return '一级代理商'; }
   function showVehicleForm({selection=null,manual=false,vehicle=null}){
     const role=currentRole(), sourceType=logic.sourceTypeForRole(role), isManual=manual||Boolean(vehicle&&vehicle.manual);
@@ -270,7 +303,7 @@
       <form id="vehicle-form" class="form-grid" style="margin-top:14px">
         <label class="form-field">品牌<input name="brand" value="${escapeHtml(brand)}" ${isManual?'':'readonly class="read-only"'} maxlength="50" required></label>
         <label class="form-field">车型<input name="model" value="${escapeHtml(model)}" ${isManual?'':'readonly class="read-only"'} maxlength="100" required></label>
-        <label class="form-field full">型号<input name="variant" value="${escapeHtml(variantName)}" ${isManual?'':'readonly class="read-only"'} maxlength="150" required></label>
+        <label class="form-field full">型号<input name="variant" value="${escapeHtml(variantName)}" ${isManual?'':'readonly class="read-only"'} maxlength="150" required></label>${vehicle&&!isManual?'<div class="form-field full edit-reselect"><button type="button" class="ghost" id="edit-reselect-variant">重选型号</button><span class="field-help">只能在本车型内重选；重选后参考价、实际售价按新型号带出，内外颜色需重新选择。</span></div>':''}
         <label class="form-field">参考价（元）<input name="reference" type="number" step="0.01" min="0.01" value="${reference}" ${isManual?'':'readonly class="read-only"'}></label>
         <label class="form-field">实际售价（元）<input name="sale" type="number" step="0.01" min="0.01" value="${sale}" required></label>
         <div class="form-field full"><span>外观颜色（必填）</span><div class="color-options" data-color-group="exterior">${[...new Set([vehicle?.exterior,'冰川白','曜石黑','星河灰'].filter(Boolean))].map((color)=>`<button type="button" class="color-choice ${vehicle?.exterior===color?'selected':''}" data-color="${color}">${color}</button>`).join('')}</div></div>
@@ -359,6 +392,7 @@
     });
     if(isManual){ const referenceInput=$('[name="reference"]'),saleInput=$('[name="sale"]'); let saleTouched=Boolean(sale); saleInput.addEventListener('input',()=>saleTouched=true); referenceInput.addEventListener('input',()=>{if(!saleTouched)saleInput.value=referenceInput.value;}); }
     $('#cancel-vehicle-form').addEventListener('click',()=>returnToDetail?popPage():clearStack());
+    if($('#edit-reselect-variant'))$('#edit-reselect-variant').addEventListener('click',()=>reselectVariantForEdit(brand,model));
     if($('#reselect-vehicle'))$('#reselect-vehicle').addEventListener('click',()=>{
       const note=$('[name="note"]').value;
       mDialog('重新选择型号','重选后将更新参考价、实际售价和颜色；已有图片和备注保留。','继续选择',()=>{state.preservedNote=note;clearStack();showBrandStep();});
