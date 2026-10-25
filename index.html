@@ -56,7 +56,6 @@
        <div class="mobile-layout">
         <div class="entry-col">
           <p class="entry-cap">入口页 · 代理商后台</p>
-          <div class="entry-cap" id="inv-role-row">右侧车源登记页按谁进入查看：<div class="seg2" id="inv-role"><button type="button" data-r="agent" class="on">代理商</button><button type="button" data-r="staff">4S 员工</button></div></div>
           <!-- R2-10：按线上实际页面（用户 2026-09-16 提供的真机截图）完整复刻，不再贴 Word 示意图 -->
           <div class="mobile-stage entry-stage">
             <div class="ph-status"><span class="ph-time">16:08</span><span class="ph-right"><i class="ph-sig"></i>5G<i class="ph-bat"></i></span></div>
@@ -574,18 +573,7 @@
   <script src="req-009-login.js?v=1.5.0"></script>
   <script src="req-010-clue.js?v=1.2.0"></script>
   <script src="req-004-stock.js?v=5.2.0"></script>
-  <script src="req-pending.js?v=5.5.0"></script>
-  <script>
-    // 车源登记页按身份查看：4S 员工进入时顶栏显示「退出」（REQ-009 第 3.5 节）；与 4S 员工登录后的状态同步
-    (function () {
-      var inv = document.getElementById('view-inventory'), seg = document.getElementById('inv-role');
-      if (!inv || !seg) return;
-      function sync() { var s = inv.classList.contains('is-staff4s'); seg.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', (b.dataset.r === 'staff') === s); }); }
-      seg.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; inv.classList.toggle('is-staff4s', b.dataset.r === 'staff'); });
-      new MutationObserver(sync).observe(inv, { attributes: true, attributeFilter: ['class'] });
-      sync();
-    })();
-  </script>
+  <script src="req-pending.js?v=5.6.0"></script>
   <script>
     // REQ-002 样稿按自身真实高度撑开，避免内层滚动条或底部空白
     window.addEventListener('message', function (e) {
