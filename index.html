@@ -443,20 +443,21 @@
               <li><b>上传天数</b>：每个格子最后一行。当天「当天上传」，之后「上传一天」「上传十二天」…满 100 天用数字。</li>
               <li><b>类别</b>：筛选栏新增，点开可多选，点「确定」才生效，带任一类别就显示。</li>
               <li><b>其他品牌</b>：一手车源、库存车点「全部」选品牌时，最前面有「其他品牌」，看手写品牌的车。</li>
+              <li><b>价格（v1.9）</b>：三类车都按实际售价筛，不再用价格标签；档位可配置，默认 10万以下／10–15万／15–20万／20万以上，正好落在交界的两档都算；特价车按 PC 新加的数字实际售价（元）。</li>
               <li><b>本轮反馈</b>：特价车列表也使用实拍照片，车名随照片对应；三类列表先不显示左上角直降角标。</li>
               <li><b>一行一台（R3-09）</b>：照用户样例改为左侧车图、右侧信息，去掉列表／宫格切换；字段和绿色预蒜价不变。</li>
               <li><b>置顶（R3-01）</b>：一手车源、库存车里付费置顶的车排最前。</li>
             </ul>
             <h3>照旧不改</h3>
             <ul>
-              <li>搜索、价格筛选、横幅、价格格式与车名下标签小字保持；左上角「直降」按本轮反馈先去掉。</li>
+              <li>搜索、横幅、价格格式与车名下标签小字保持；左上角「直降」按本轮反馈先去掉。</li>
               <li>车源格子和特价车格子内容一样，不显示店名、地区。</li>
             </ul>
             <h3>后期统一确认</h3>
             <ul>
-              <li>价格筛选按标签还是按售价（PENDING-016）；格子上取哪个标签（PENDING-017）；车源图片缩略图（PENDING-014）；类别清单（PENDING-008）。</li>
+              <li>格子上取哪个标签（PENDING-017）；车源图片缩略图（PENDING-014）；类别清单（PENDING-008）。</li>
             </ul>
-            <p class="side-info-src">上传天数按今天日期实时计算。类别选项为本地取值。完整规则见 REQ-008 需求方案 v1.7。</p>
+            <p class="side-info-src">上传天数按今天日期实时计算。类别选项为本地取值。完整规则见 REQ-008 需求方案 v1.9。</p>
           </aside>
         </div>
       </section>
@@ -567,11 +568,11 @@
   <script src="req-003-contact.js?v=5.2.0"></script>
   <script src="req-003-fav.js?v=1.2.0"></script>
   <script src="req-003-detail2.js?v=5.5.0"></script>
-  <script src="req-008-list.js?v=1.6.0"></script>
+  <script src="req-008-list.js?v=1.7.0"></script>
   <script src="req-009-login.js?v=1.4.1"></script>
   <script src="req-010-clue.js?v=1.2.0"></script>
   <script src="req-004-stock.js?v=5.2.0"></script>
-  <script src="req-pending.js?v=5.2.0"></script>
+  <script src="req-pending.js?v=5.3.0"></script>
   <script>
     // REQ-002 样稿按自身真实高度撑开，避免内层滚动条或底部空白
     window.addEventListener('message', function (e) {

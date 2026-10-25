@@ -1,12 +1,14 @@
 /* REQ-008 小程序车辆列表页改造 样稿
-   依据：REQ-008 v1.6；页面结构与尺寸照线上「我要寻车」列表页（00-原始需求/车辆列表页.PNG、mall-portal-itu/pages/shop/list.vue）。
+   依据：REQ-008 v1.9；页面结构与尺寸照线上「我要寻车」列表页（00-原始需求/车辆列表页.PNG、mall-portal-itu/pages/shop/list.vue）。
    本地演示数据，不连接接口。元素 id 统一以 l8- 开头。上传天数按浏览器今天的日期实时计算。*/
 (function () {
   'use strict';
 
   var A8 = 'assets/req-008/', A2 = 'assets/req-002/';
   var TITLES = { special_price: '特价车', firsthand: '一手车源', inventory: '库存车' };
-  var PRICES = ['全部', '10万–15万', '15万–20万', '20万–30万'];
+  // v1.9：价格按实际售价落档，档位读配置 car_price_ranges（单位元，两端都含，交界值两档都出现）
+  var PRICES = ['全部', '10万以下', '10–15万', '15–20万', '20万以上'];
+  var RANGES = { '10万以下': [null, 100000], '10–15万': [100000, 150000], '15–20万': [150000, 200000], '20万以上': [200000, null] };
   var CATS = ['运损车', '包牌包税'];
   // 特价车：品牌来自现有商品品牌列表；车源：车型目录品牌＋最前面「其他品牌」
   var BRANDS = [['B', ['奔驰', '比亚迪']], ['C', ['长安']], ['F', ['丰田']], ['G', ['广汽传祺']], ['H', ['红旗']]];
@@ -34,13 +36,22 @@
   }
   window.__l8DaysText = daysText;   // 供核验调用
 
+  // 演示车只有「NN.XX万」文字，按整数万位＋5000 元当作实际售价演示（不落在交界上）
+  function priceOf(c) { var n = parseFloat(c.sale); return isNaN(n) ? null : Math.floor(n) * 10000 + 5000; }
+  function inRange(c, name) {
+    var r = RANGES[name], v = priceOf(c);
+    if (!r) return true;
+    if (v === null) return false;
+    return (r[0] === null || v >= r[0]) && (r[1] === null || v <= r[1]);
+  }
+
   function list() {
     if (state.empty) return [];
     return window.DemoCars.list(state.entry).filter(function (c) {
       if (state.kw && c.name.indexOf(state.kw) < 0) return false;
       if (state.otherBrand && !c.manual) return false;
       if (state.brand && c.brand !== state.brand) return false;
-      if (state.price !== '全部' && c.chip !== state.price) return false;
+      if (state.price !== '全部' && !inRange(c, state.price)) return false;
       if (state.cats.length && !state.cats.some(function (k) { return c.cats.indexOf(k) >= 0; })) return false;
       return true;
     }).sort(function (a, b) {
@@ -65,7 +76,6 @@
         '<div class="l8-img' + (state.entry === 'special_price' ? ' fit' : '') + '"><img class="l8-pic" src="' + c.img + '" alt="' + esc(c.name) + '" style="object-position:' + c.position + '">' +
         (c.video ? '<span class="l8-video">▶</span>' : '') + window.DemoCars.promoHtml(c) + '</div>' +
         '<div class="l8-info"><div class="l8-name">' + esc(c.name) + '</div>' +
-        (c.chip ? '<div class="l8-chip">' + c.chip + '</div>' : '') +
         '<div class="l8-p1"><span>官方指导价</span><s>' + (c.ref || '暂无') + '</s></div>' +
         '<div class="l8-p2"><span>预蒜价</span><b>' + (c.sale || '暂无') + '</b></div>' +
         '<div class="l8-days">' + daysText(c.days) + '</div></div></div>';
