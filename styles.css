@@ -790,3 +790,6 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 /* REQ-009 v1.3：4S 员工退出（PENDING-019 方案），只在 4S 员工进入时显示，位于铃铛左边 */
 .logout-btn { display: none; position: absolute; right: 54px; top: 50%; transform: translateY(-50%); background: none; border: 0; padding: 4px 6px; font-size: 14px; color: #333; cursor: pointer; }
 #view-inventory.is-staff4s .logout-btn { display: block; }
+/* REQ-008 v1.10：车名下标签排一行，放不下的整个折到第二行并被裁掉，不出现半个 */
+.l8-tags { margin-top: 8.3px; height: 15.6px; overflow: hidden; display: flex; flex-wrap: wrap; gap: 0 4px; }
+.l8-tags .l8-chip { margin-top: 0; width: auto; padding: 0 5px; white-space: nowrap; flex: none; }

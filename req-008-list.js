@@ -1,5 +1,5 @@
 /* REQ-008 小程序车辆列表页改造 样稿
-   依据：REQ-008 v1.9；页面结构与尺寸照线上「我要寻车」列表页（00-原始需求/车辆列表页.PNG、mall-portal-itu/pages/shop/list.vue）。
+   依据：REQ-008 v1.10；页面结构与尺寸照线上「我要寻车」列表页（00-原始需求/车辆列表页.PNG、mall-portal-itu/pages/shop/list.vue）。
    本地演示数据，不连接接口。元素 id 统一以 l8- 开头。上传天数按浏览器今天的日期实时计算。*/
 (function () {
   'use strict';
@@ -76,6 +76,8 @@
         '<div class="l8-img' + (state.entry === 'special_price' ? ' fit' : '') + '"><img class="l8-pic" src="' + c.img + '" alt="' + esc(c.name) + '" style="object-position:' + c.position + '">' +
         (c.video ? '<span class="l8-video">▶</span>' : '') + window.DemoCars.promoHtml(c) + '</div>' +
         '<div class="l8-info"><div class="l8-name">' + esc(c.name) + '</div>' +
+        // v1.10：车名下全部标签排一行，能放几个放几个，放不下的整个不显示（折到第二行被裁掉）
+        (c.labels && c.labels.length ? '<div class="l8-tags">' + c.labels.map(function (t) { return '<span class="l8-chip">' + esc(t) + '</span>'; }).join('') + '</div>' : '') +
         '<div class="l8-p1"><span>官方指导价</span><s>' + (c.ref || '暂无') + '</s></div>' +
         '<div class="l8-p2"><span>预蒜价</span><b>' + (c.sale || '暂无') + '</b></div>' +
         '<div class="l8-days">' + daysText(c.days) + '</div></div></div>';
