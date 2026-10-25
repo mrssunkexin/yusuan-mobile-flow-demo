@@ -787,4 +787,6 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .vehicle-cover{position:relative}
 .pic-thumb{position:relative}
 .pic-thumb .promo-tag{left:3px;transform:scale(.8);transform-origin:top left}
-
+/* REQ-009 v1.3：4S 员工退出（PENDING-019 方案），只在 4S 员工进入时显示，位于铃铛左边 */
+.logout-btn { display: none; position: absolute; right: 54px; top: 50%; transform: translateY(-50%); background: none; border: 0; padding: 4px 6px; font-size: 14px; color: #333; cursor: pointer; }
+#view-inventory.is-staff4s .logout-btn { display: block; }

@@ -630,6 +630,12 @@
     const stage=document.querySelector('#view-inventory .mobile-stage:not(.entry-stage)');
     if(stage){ stage.scrollIntoView({behavior:'smooth',block:'center'}); stage.classList.add('flash'); setTimeout(()=>stage.classList.remove('flash'),1200); }
   });
+  // REQ-009 v1.3：4S 员工退出（确认后清空登录信息，回到「我的」）
+  const logoutBtn=$('#inv-logout');
+  if(logoutBtn) logoutBtn.addEventListener('click',()=>mDialog('确定退出登录？','','确定',()=>{
+    $('#view-inventory').classList.remove('is-staff4s');
+    if(window.__mobileNav) window.__mobileNav({view:'user'});
+  }));
   $('#notify-entry').addEventListener('click',()=>{
     const list=rejectedVehicles(); state.notifyOpen=true; renderNotifyBadge();
     pushPage('驳回通知', list.length

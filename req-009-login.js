@@ -89,11 +89,18 @@
     if (page === 'staff') { $('l9-s-mobile').value = ''; $('l9-s-pwd').value = ''; }
   }
 
+  // 车源登记页是否按 4S 员工显示（顶栏「退出」只对 4S 员工显示，REQ-009 第 3.5 节）
+  function staffMode(on) {
+    var inv = document.getElementById('view-inventory');
+    if (inv) inv.classList.toggle('is-staff4s', on);
+  }
+
   function merchantLogin() {
     var m = $('l9-m-mobile').value.trim();
     if (!m) return toast('请输入手机号');
     if (!$('l9-m-code').value) return toast('请输入手机验证码');
     if (STAFF[m]) return toast('4S店员工请点击下方【车源登记登录】');
+    staffMode(false);
     // 手机端整体流程演示：非4S号码视为代理商验证码登录成功，进代理商后台首页（入口页）
     if (window.__mobileNav) { window.__mobileNav({ view: 'inventory', mode: 'entry' }); return; }
     toast('验证码登录流程不变');
@@ -121,7 +128,8 @@
       if (s.idCard.slice(-6) !== pw) return toast('密码错误');
       // redirectTo 车源登记页：4S 员工登录后不经过后台首页，直接进车源登记页（REQ-009 第 3.4 节）
       go('merchant');
-      if (window.__mobileNav) { window.__mobileNav({ view: 'inventory', mode: 'list' }); return; }
+      staffMode(true);
+      if (window.__mobileNav) { window.__mobileNav({ view: 'inventory', mode: 'list', staff: true }); return; }
       window.location.hash = 'inventory';
       setTimeout(function () {
         var stage = document.querySelector('#view-inventory .mobile-stage');

@@ -28,6 +28,9 @@
     opts = opts || {};
     if (view === 'inventory') {
       setInventoryMode(opts.mode === 'list' ? 'list' : 'entry');
+      // 4S 员工登录进入时带 staff，顶栏显示「退出」；代理商从后台进入不显示
+      var inv = document.getElementById('view-inventory');
+      if (inv) inv.classList.toggle('is-staff4s', !!opts.staff);
       if (opts.mode === 'list') {
         setTimeout(function () {
           var stage = document.querySelector('#view-inventory .mobile-stage:not(.entry-stage)');

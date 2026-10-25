@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="预蒜 车源登记与 4S 店维护 页面方案">
   <title>预蒜 · 页面方案</title>
-  <link rel="stylesheet" href="styles.css?v=6.17.0">
+  <link rel="stylesheet" href="styles.css?v=6.18.0">
 </head>
 <body>
   <header class="topbar">
@@ -90,7 +90,7 @@
           <p class="entry-note">入口页是 <code>pages/seller/index.vue</code>。本次只在现有 12 个入口后面新增「车源登记」一个，其余入口、返回主页、城市合伙人、退出后台一概不动。点「车源登记」进右边的页面。</p>
         </div>
         <div class="mobile-stage">
-          <div class="mobile-head"><button class="icon-btn" aria-label="返回">‹</button><strong>车源登记</strong><button class="notify-btn" id="notify-entry" aria-label="驳回通知">🔔<span class="notify-badge" id="notify-badge" hidden>0</span></button></div>
+          <div class="mobile-head"><button class="icon-btn" aria-label="返回">‹</button><strong>车源登记</strong><button class="logout-btn" id="inv-logout" type="button">退出</button><button class="notify-btn" id="notify-entry" aria-label="驳回通知">🔔<span class="notify-badge" id="notify-badge" hidden>0</span></button></div>
           <div class="inventory-actions">
             <button class="primary" id="add-vehicle">＋ 增加车源</button>
             <!-- R2-10：四个条件一行无边框横排，点选即生效；无查询/重置/收起按钮。形态同车辆列表页筛选栏 -->
@@ -455,7 +455,7 @@
             </ul>
             <h3>后期统一确认</h3>
             <ul>
-              <li>格子上取哪个标签（PENDING-017）；车源图片缩略图（PENDING-014）；类别清单（PENDING-008）。</li>
+              <li>价格筛选方案已定、待会议确认（PENDING-016）；格子上取哪个标签（PENDING-017）；车源图片缩略图（PENDING-014）；类别清单（PENDING-008）。</li>
             </ul>
             <p class="side-info-src">上传天数按今天日期实时计算。类别选项为本地取值。完整规则见 REQ-008 需求方案 v1.9。</p>
           </aside>
@@ -495,7 +495,7 @@
             </ul>
             <h3>后期统一确认</h3>
             <ul>
-              <li>4S 员工在哪里退出登录（PENDING-019），确认前不做。</li>
+              <li>4S 员工退出（PENDING-019，方案已定、待会议确认）：从「车源登记登录」进入车源登记页后，顶栏右侧铃铛左边显示「退出」，点后确认，确定回到「我的」；代理商从后台进入不显示。</li>
               <li>PC「4S店信息维护」「4S店员工维护」是否同步改名（PENDING-020）。</li>
             </ul>
             <p class="side-info-src">不连接接口。完整规则见 REQ-009 需求方案 v1.2。</p>
@@ -563,16 +563,16 @@
   <script src="demo-cars.js?v=1.5.0"></script>
   <script src="demo-car-ui.js?v=1.1.0"></script>
   <script src="logic.js?v=6.3.0"></script>
-  <script src="app.js?v=5.9.0"></script>
+  <script src="app.js?v=5.10.0"></script>
   <script src="req-007-notice.js?v=4.9.0"></script>
   <script src="req-003-contact.js?v=5.2.0"></script>
   <script src="req-003-fav.js?v=1.2.0"></script>
   <script src="req-003-detail2.js?v=5.5.0"></script>
   <script src="req-008-list.js?v=1.7.0"></script>
-  <script src="req-009-login.js?v=1.4.1"></script>
+  <script src="req-009-login.js?v=1.5.0"></script>
   <script src="req-010-clue.js?v=1.2.0"></script>
   <script src="req-004-stock.js?v=5.2.0"></script>
-  <script src="req-pending.js?v=5.3.0"></script>
+  <script src="req-pending.js?v=5.4.0"></script>
   <script>
     // REQ-002 样稿按自身真实高度撑开，避免内层滚动条或底部空白
     window.addEventListener('message', function (e) {
