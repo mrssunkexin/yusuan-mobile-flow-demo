@@ -1,5 +1,5 @@
 /* REQ-010 小程序线索一键拨号 样稿
-   依据：REQ-010 v1.0；页面照线上「销售线索」页（用户 2026-09-15 截图、mall-portal-itu/pages/seller/clueList.vue）。
+   依据：REQ-010 v1.2（v1.2 加「联系车源」，只对一级代理商）；页面照线上「销售线索」页（用户 2026-09-15 截图、mall-portal-itu/pages/seller/clueList.vue）。
    本地演示数据，不真实拨号。元素 id 统一以 l10- 开头。*/
 (function () {
   'use strict';
@@ -10,12 +10,16 @@
     { label: '销售线索', value: 'reserve_price', cls: 'w0' },
     { label: '9.9元查车线索', value: 'car_search_clues', cls: 'w1' }
   ];
-  // 与截图一致的两条销售线索（top_price、reserve_price 都显示为「销售线索」）
+  // 线索卡片头部：reserve_price、top_price 都显示「销售线索」，browse_clues 显示「浏览线索」
+  var TAGS = { reserve_price: '销售线索', top_price: '销售线索', browse_clues: '浏览线索' };
+  // bizId 指向线索里的车（DemoCars 的车辆 ID）；v1.2 兴趣车辆写车型号。top_price（每日特价）没有对应的车
   var DATA = [
-    { id: 1, category: 'reserve_price', time: '2026-09-06 16:40:12', rows: [['线索地', '吉林省长春市南关区康宇路'], ['手机号', '18686636658'], ['兴趣车辆', '2026款传祺M8 HEV 至尊版（运损车）'], ['归属店铺', '孙可鑫']] },
-    { id: 2, category: 'reserve_price', time: '2026-09-06 16:39:53', rows: [['手机号', '18686636658'], ['兴趣车辆', '无'], ['归属店铺', '孙可鑫'], ['来源', '每日特价']] }
+    { id: 1, category: 'reserve_price', bizId: 'inventory-m6', time: '2026-09-06 16:40:12', rows: [['线索地', '吉林省长春市南关区康宇路'], ['手机号', '18686636658'], ['兴趣车辆', '广汽传祺 传祺M6 MAX 2026款 1.5T DCT 尊荣版'], ['归属店铺', '孙可鑫']] },
+    { id: 2, category: 'top_price', bizId: '', time: '2026-09-06 16:39:53', rows: [['手机号', '18686636658'], ['兴趣车辆', '广汽传祺'], ['归属店铺', '孙可鑫'], ['来源', '每日特价']] },
+    { id: 3, category: 'browse_clues', bizId: 'firsthand-prado', time: '2026-09-06 15:12:08', rows: [['线索地', '吉林省长春市朝阳区红旗街'], ['手机号', '13904318826'], ['兴趣车辆', '丰田 普拉多 2024款 2.8T 柴油 VX 方灯'], ['归属店铺', '孙可鑫']] }
   ];
-  var state = { os: 'ios', filter: '', noPhone: false, pending: '' };
+  // level1：当前登录的是一级代理商（登录返回 sellerInfo.isLevel1）；「联系车源」只对一级代理商显示
+  var state = { os: 'ios', filter: '', noPhone: false, pending: '', level1: true };
   var toastTimer = null;
 
   function $(id) { return document.getElementById(id); }
@@ -54,7 +58,8 @@
   }
 
   function renderList() {
-    var list = DATA.filter(function (d) { return !state.filter || d.category === state.filter; });
+    // 选「销售线索」时 reserve_price 与 top_price 一起出（现有查询口径）
+    var list = DATA.filter(function (d) { return !state.filter || d.category === state.filter || (state.filter === 'reserve_price' && d.category === 'top_price'); });
     $('l10-total').textContent = '已获线索数量:' + list.length + '条';
     $('l10-empty').hidden = list.length > 0;
     $('l10-more').hidden = list.length === 0;
@@ -66,8 +71,11 @@
       }).join('');
       // 拨号键放在现有卡片范围内右下角（绝对定位），卡片不加高；有拨号键时最后一行右侧留白
       var dial = p.trim() ? '<span class="l10-dial" data-tel="' + esc(p) + '"><i class="l10-ico" aria-hidden="true"></i>拨号</span>' : '';
-      return '<div class="l10-item' + (dial ? ' has-dial' : '') + '" data-id="' + d.id + '"><div class="l10-head"><span class="l10-tag">销售线索</span><span class="l10-time">' + d.time + '</span></div>' +
-        '<div class="l10-info">' + rows + '</div>' + dial + '</div>';
+      // v1.2「联系车源」：一级代理商 + 浏览线索／底价线索 + 有车，放在拨号左边 12rpx；没有拨号键时占拨号的位置
+      var carBtn = carSourceOf(d) ? '<span class="l10-carbtn" data-car="' + d.bizId + '"><i class="l10-carico" aria-hidden="true"></i>联系车源</span>' : '';
+      var cls = (dial ? ' has-dial' : '') + (carBtn ? ' has-car' : '');
+      return '<div class="l10-item' + cls + '" data-id="' + d.id + '"><div class="l10-head"><span class="l10-tag">' + (TAGS[d.category] || '销售线索') + '</span><span class="l10-time">' + d.time + '</span></div>' +
+        '<div class="l10-info">' + rows + '</div>' + (carBtn || dial ? '<span class="l10-btns">' + carBtn + dial + '</span>' : '') + '</div>';
     }).join('');
     Array.prototype.forEach.call(document.querySelectorAll('#l10-phone .l10-chip'), function (c) {
       c.classList.toggle('current', c.getAttribute('data-type') === state.filter);
@@ -76,6 +84,12 @@
     Array.prototype.forEach.call(document.querySelectorAll('#l10-list .l10-dial'), function (b) {
       b.classList.toggle('mark', !!(mark && mark.checked));
     });
+  }
+
+  function carSourceOf(d) {
+    if (!state.level1 || !d.bizId) return null;
+    if (d.category !== 'browse_clues' && d.category !== 'reserve_price') return null;
+    return window.DemoCars ? window.DemoCars.get(d.bizId) : null;
   }
 
   function toast(text) {
@@ -120,6 +134,14 @@
       });
     });
     $('l10-list').addEventListener('click', function (e) {
+      var car = e.target.closest('.l10-carbtn');
+      if (car) {
+        // 取车源联系人后沿用现有 call() 拨号：库存车拨登记的代理商，一手车源、特价车拨总部统一联系人
+        e.stopPropagation();
+        var c = window.DemoCars.get(car.getAttribute('data-car'));
+        if (c && c.contact && c.contact.phone) call(c.contact.phone.replace(/\s/g, '')); else toast('暂未配置车源联系人');
+        return;
+      }
       var btn = e.target.closest('.l10-dial, .l10-tel');
       if (btn) { e.stopPropagation(); if (btn.getAttribute('data-tel')) call(btn.getAttribute('data-tel')); return; }
     });
@@ -140,6 +162,13 @@
     if (np) np.addEventListener('change', function () { state.noPhone = np.checked; renderList(); });
     var mark = $('l10-mark');
     if (mark) mark.addEventListener('change', renderList);
+    Array.prototype.forEach.call(document.querySelectorAll('#l10-level1 button'), function (b) {
+      b.addEventListener('click', function () {
+        state.level1 = b.getAttribute('data-level') === '1';
+        Array.prototype.forEach.call(document.querySelectorAll('#l10-level1 button'), function (x) { x.classList.toggle('on', x === b); });
+        renderList();
+      });
+    });
   }
 
   window.__l10 = { state: state };

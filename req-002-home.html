@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>预蒜 · REQ-002 小程序首页改造</title>
-  <link rel="stylesheet" href="req-002-home.css?v=5.10.0">
+  <link rel="stylesheet" href="req-002-home.css?v=5.11.0">
 </head>
 <body>
 <div class="wrap">
@@ -43,8 +43,11 @@
           </div>
         </div>
 
-        <div class="block" data-info="五个圆形快捷入口（特价车、库存车、包牌包税、精品商城、积分商城）：不属于本次范围，指向由后台配置，功能做完再配。">
-          <img src="assets/req-002/nav.png?v=4" alt="五个圆形快捷入口">
+        <div class="block nav-block" data-info="五个圆形快捷入口（v2.18）：前三个为特价车、库存车、一手车源（第 3 个原「包牌包税」在 PC「商品分类」导航菜单改名换图标），点击带入口类型进入与对应卡片相同的列表；精品商城、积分商城不变。">
+          <img src="assets/req-002/nav-v2.png?v=1" alt="五个圆形快捷入口">
+          <button type="button" class="nav-hot" data-entry="special" style="left:0" aria-label="特价车"></button>
+          <button type="button" class="nav-hot" data-entry="inventory" style="left:20%" aria-label="库存车"></button>
+          <button type="button" class="nav-hot" data-entry="firsthand" style="left:40%" aria-label="一手车源"></button>
         </div>
 
         <div class="daily block">
@@ -133,12 +136,13 @@
       <li><b>车图</b>：特价车取同一辆车的前两张图片紧挨并排、铺满正方形图片框；按照片调整取景，优先保留车头，无上下白边；只有一张时单图显示。一手车源、库存车取第一张正方形照片，两侧与底部不露围框。</li>
       <li><b>价格条</b>：左边大字是实际售价，只显示整数万位，如「10.XX万」；右边一行「指导价 11.98万」带删除线；不放「预蒜价」（和大字是同一个数）。页面显示时现拼，不生成新图片。</li>
       <li><b>滚动</b>：每 3 秒换一格，循环，带小圆点。不足 5 台有几台放几台；只有 1 台不滚动；没有车留空。</li>
-      <li><b>取哪 5 台</b>：直接取该入口列表页的前 5 条，列表页怎么排首页就怎么排。</li>
+      <li><b>取哪 5 台</b>：直接取该入口列表页的前 5 条，列表页怎么排首页就怎么排（付费置顶＞热销＞其余）。</li>
+      <li><b>角标（v2.18）</b>：车图左上角只显示「热销」角标（总部勾了热销的车），「特价 直降N万」取消；大卡双图只在左图。</li>
     </ul>
 
     <h2>不改动的部分</h2>
     <ul>
-      <li>五个圆形快捷入口、底部导航保持现状；圆形入口的指向由后台配置，功能做完再配（PENDING-002）。顶部视频调矮，标准宽度下约 124px，视频控制条保留；绿色门店卡与现有首页一致：左侧店铺头像，右侧姓名、地址、电话。</li>
+      <li>底部导航保持现状。五个圆形快捷入口（v2.18，PENDING-002 已关闭）：前三个为特价车、库存车、一手车源，点击进入与对应卡片相同的列表；第 3 个由「包牌包税」改为「一手车源」并换图标；精品商城、积分商城不变。顶部视频调矮，标准宽度下约 124px，视频控制条保留；绿色门店卡与现有首页一致：左侧店铺头像，右侧姓名、地址、电话。</li>
       <li>三个卡片排列顺序不变，版位压缩至大卡 688×437rpx、小卡 340×437rpx；大卡通栏标题、正方形双图紧挨、通栏价格，小卡正方形车图贴边，车图上下各裁去一点。</li>
       <li>现有首页在圆形入口和大卡之间还有一块「预售车轮播」，后台配了预售车才显示。本次不动它，这里不画这块。</li>
     </ul>
@@ -155,7 +159,7 @@
   </div>
 </div>
 
-<script src="demo-cars.js?v=1.5.0"></script>
+<script src="demo-cars.js?v=1.6.0"></script>
 <script>
 (function () {
   var phone = document.getElementById('phone');
@@ -207,7 +211,7 @@
     function slide(c) {
       var pair=box.getAttribute('data-entry')==='special' && c.photos.length>1;
       var pics=(pair?c.photos.slice(0,2):c.photos.slice(0,1)).map(function(p){return '<img src="'+p.src+'" alt="'+c.name+'" style="object-position:'+p.position+'">';}).join('');
-      var promo=c.promoText?'<span class="promo-tag promo-'+c.promo+'">'+c.promoText+'</span>':'';
+      var promo=c.hot?'<span class="promo-tag promo-hot">热销</span>':'';   // v2.18：只显示热销角标
       return '<div class="slide" data-car-id="'+c.id+'"><div class="pic'+(pair?' pair':'')+'">'+pics+promo+'</div>'+
         '<div class="price-bar"><span class="big">'+c.sale+'</span><span class="ref">指导价 <s>'+c.ref+'</s></span></div></div>';
     }

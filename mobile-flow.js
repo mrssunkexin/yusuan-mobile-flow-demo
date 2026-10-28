@@ -128,7 +128,7 @@
   }
 
   // C 端首页（iframe，同源）：隐藏样稿自带的评审工具条／说明栏，手机内容按屏宽等比缩放；
-  // 三个入口卡片点击 → 车辆列表页
+  // 三个入口卡片、前三个圆形入口点击 → 车辆列表页
   function bindHomeFrame() {
     var frame = document.getElementById('home002-frame');
     if (!frame) return;
@@ -159,6 +159,13 @@
           if (!entry) return;
           e.stopImmediatePropagation();
           goto('list008', { entry: entry });
+        }, true);
+      });
+      // REQ-002 v2.18：前三个圆形入口 → 特价车、库存车、一手车源列表（与对应卡片同一列表）
+      doc.querySelectorAll('.nav-hot').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.stopImmediatePropagation();
+          goto('list008', { entry: b.getAttribute('data-entry') });
         }, true);
       });
       // 底部导航「我的」是图片，右三分之一叠一个透明按钮，图片本身不动

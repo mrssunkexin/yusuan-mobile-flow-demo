@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>预蒜小程序 · 手机端流程演示</title>
-<link rel="stylesheet" href="styles.css?v=6.20.0">
+<link rel="stylesheet" href="styles.css?v=6.21.0">
 <link rel="stylesheet" href="mobile-flow.css?v=4">
 </head>
 <body class="mobile-app">
@@ -13,7 +13,7 @@
 
   <section class="view" id="view-home002">
     <div class="embedded-prototype">
-      <iframe id="home002-frame" src="req-002-home.html?v=5.12.0" title="REQ-002 小程序首页改造"></iframe>
+      <iframe id="home002-frame" src="req-002-home.html?v=5.13.0" title="REQ-002 小程序首页改造"></iframe>
     </div>
   </section>
 
@@ -56,7 +56,6 @@
     <div class="mobile-stage">
       <div class="mobile-head"><button class="icon-btn" id="inv-back" aria-label="返回">‹</button><strong>车源登记</strong><button class="logout-btn" id="inv-logout" type="button">退出</button><button class="notify-btn" id="notify-entry" aria-label="驳回通知">🔔<span class="notify-badge" id="notify-badge" hidden>0</span></button></div>
       <div class="inventory-actions">
-        <button class="primary" id="add-vehicle">＋ 增加车源</button>
         <div class="filter-bar" id="query-body">
           <button type="button" class="filter-item" id="q-car">品牌<i></i></button>
                     <button type="button" class="filter-item" id="q-approve">审核<i></i></button>
@@ -65,6 +64,8 @@
       </div>
       <div id="vehicle-list" class="vehicle-list" aria-live="polite"></div>
       <div id="list-footer" class="list-footer">向下滚动加载后续记录</div>
+      <!-- REQ-001 v2.11：「增加车源」固定在页面底部、通栏 -->
+      <div class="inv-add-bar"><button class="primary" id="add-vehicle">＋ 增加车源</button></div>
       <div id="m-stack" class="m-stack"></div>
       <div id="m-dialog" class="m-dialog-wrap" hidden></div>
       <div id="m-picker" class="m-picker-wrap" hidden></div>
@@ -120,13 +121,14 @@
                 <p class="d2-yellow">预蒜价: <span id="d2-sale"></span></p>
               </div>
             </div>
-            <div class="d2-model"><span class="d2-model-tag">车型:</span><span class="d2-model-name" id="d2-name"></span></div>
+            <div class="d2-model"><span class="d2-model-tag">车型:</span><div class="d2-model-main"><span class="d2-model-name" id="d2-name"></span><p class="d2-model-no" id="d2-model-no" hidden></p></div></div>
             <div class="d2-info">
               <div class="d2-info-head"><b>车辆信息</b><span class="d2-src" id="d2-src"></span></div>
+                  <div class="d2-row d2-vno-row" id="d2-vno-row"><span class="d2-k">车辆编号</span><span class="d2-vno" id="d2-vno"></span></div>
               <dl class="d2-grid">
                 <div><dt>外观颜色</dt><dd id="d2-color-out"></dd></div>
                 <div><dt>内饰颜色</dt><dd id="d2-color-in"></dd></div>
-                                <div><dt>所在地区</dt><dd id="d2-region"></dd></div>
+                    <div><dt>车辆位置</dt><dd id="d2-location"></dd></div>
               </dl>
               <div class="d2-row"><span class="d2-k">标签</span><div class="d2-labels" id="d2-labels"></div></div>
               <div class="d2-row"><span class="d2-k">备注</span><p class="d2-remark" id="d2-remark"></p></div>
@@ -150,12 +152,7 @@
               <div class="d-row"><span class="d-k">姓名</span><span class="d-v" id="d2-c-name"></span></div>
               <div class="d-row"><span class="d-k">来源</span><span class="d-v d-from" id="d2-c-from"></span></div>
               <div class="d-row"><span class="d-k">手机号</span><a class="d-v d-tel" id="d2-c-tel"></a></div>
-              <div class="d-hr"></div>
-              <div class="d-sold">
-                <button class="d-mark" id="d2-mark"></button>
-                <p class="d-markcount" id="d2-markcount"></p>
-                <p class="d-soldtip">如果您觉得该车已售，请点击【疑似已售】标记</p>
-              </div>
+              <button type="button" class="d-dial" id="d2-dial">一键拨号</button>
             </div>
           </div>
         </div>
@@ -181,7 +178,7 @@
               <div class="l8-input"><span class="l8-mag" aria-hidden="true"></span><input id="l8-kw" placeholder="找到您的爱车"></div>
               <button type="button" class="l8-sbtn" id="l8-search">搜索</button>
             </div>
-            <img class="l8-banner" src="assets/req-008/banner.png?v=1" alt="横幅">
+            <div class="l8-banner" id="l8-banner"></div>
             <div class="l8-filter">
               <span class="l8-f" id="l8-f-brand"><span class="t">全部</span><i></i></span>
               <span class="l8-f" id="l8-f-price"><span class="t">价格</span><i></i></span>
@@ -228,6 +225,8 @@
         <div class="d-toolbar">
           <span class="d-label">手机系统</span>
           <div class="seg2" id="l10-os"><button type="button" data-os="ios" class="on">苹果</button><button type="button" data-os="android">安卓</button></div>
+          <span class="d-label">当前身份</span>
+          <div class="seg2" id="l10-level1"><button type="button" data-level="1" class="on">一级代理商</button><button type="button" data-level="2">二级代理商</button></div>
           <label class="d-check"><input type="checkbox" id="l10-nophone"> 第 2 条没有手机号</label>
         </div>
         <div class="d-phone l10-phone" id="l10-phone"></div>
@@ -275,15 +274,15 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="modal-root"></div>
-<script src="demo-cars.js?v=1.5.0"></script>
-<script src="demo-car-ui.js?v=1.1.0"></script>
+<script src="demo-cars.js?v=1.6.0"></script>
+<script src="demo-car-ui.js?v=1.2.0"></script>
 <script src="logic.js?v=6.3.0"></script>
-<script src="app.js?v=5.11.0"></script>
+<script src="app.js?v=5.12.0"></script>
 <script src="req-003-fav.js?v=1.2.0"></script>
-<script src="req-003-detail2.js?v=5.5.0"></script>
-<script src="req-008-list.js?v=1.8.0"></script>
+<script src="req-003-detail2.js?v=5.6.0"></script>
+<script src="req-008-list.js?v=1.9.0"></script>
 <script src="req-009-login.js?v=1.5.0"></script>
-<script src="req-010-clue.js?v=1.2.0"></script>
-<script src="mobile-flow.js?v=6"></script>
+<script src="req-010-clue.js?v=1.3.0"></script>
+<script src="mobile-flow.js?v=7"></script>
 </body>
 </html>

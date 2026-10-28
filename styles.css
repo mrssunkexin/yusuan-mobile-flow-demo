@@ -774,13 +774,12 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .pc-image-viewer .reg-preview-body{padding:0 24px}
 .pc-image-viewer .reg-preview-body img{width:auto;height:auto;max-width:100%;max-height:100%}
 
-/* 促销角标（REQ-001 第 1.7 节）：所有出现车辆第一张图的位置统一用这一段。
-   沿用线上列表「直降几万」挂旗：30×42px、距左 5px、底部尖角、白色斜体粗字；
-   特价＝绿旗两行「直降／N万」，热销＝红旗「热销」。首页 iframe 内另有同样一份（req-002-home.css）。 */
+/* 热销角标（REQ-001 v2.11 第 1.7 节）：所有出现车辆第一张图的位置统一用这一段。
+   沿用已认可的挂旗样式：30×42px、距左 5px、底部尖角、白色斜体粗字，红旗「热销」；「特价 直降N万」取消。
+   首页 iframe 内另有同样一份（req-002-home.css）。 */
 .promo-tag{position:absolute;left:5px;top:0;z-index:2;width:30px;height:42px;box-sizing:border-box;padding-top:6px;
   color:#fff;text-align:center;font-size:11px;line-height:13px;font-weight:800;font-style:italic;letter-spacing:-.3px;
   clip-path:polygon(0 0,100% 0,100% 84%,50% 100%,0 84%);pointer-events:none}
-.promo-special{background:#1a8a3a}
 .promo-hot{background:#e8402e}
 /* 列表 104px 图在 124.8px 框内居中，旗子贴到图的左上角 */
 .l8-img .promo-tag{left:15px}
@@ -793,6 +792,57 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 /* REQ-008 v1.10：车名下标签排一行，放不下的整个折到第二行并被裁掉，不出现半个 */
 .l8-tags { margin-top: 8.3px; height: 15.6px; overflow: hidden; display: flex; flex-wrap: wrap; gap: 0 4px; }
 .l8-tags .l8-chip { margin-top: 0; width: auto; padding: 0 5px; white-space: nowrap; flex: none; }
-/* REQ-001 v2.10：修改车源「重选型号」 */
-.edit-reselect { display: flex; align-items: center; gap: 10px; margin-top: -6px; }
-.edit-reselect .ghost { flex: none; padding: 4px 12px; font-size: 13px; }
+
+/* ===== 2026-10-28 会议后改版（REQ-001 v2.11、REQ-003 v2.11、REQ-008 v1.11、REQ-010 v1.2） ===== */
+/* 车源登记：「增加车源」固定在页面底部、通栏，沿用原按钮样式 */
+.inv-add-bar{flex:none;padding:8px 12px 12px;background:#fff;border-top:1px solid #eef0f2}
+.inv-add-bar>.primary{width:100%;height:44px;background:linear-gradient(90deg,#ffcf31,#f5aa00);border:0;color:#2b2413;font-size:15px;font-weight:600;border-radius:6px;box-shadow:0 3px 8px rgba(235,167,0,.2)}
+/* 封面右上角半透明斜角水印：驳回、未审核、已下架；在架的不打 */
+.cover-mark{position:absolute;top:10px;right:-27px;z-index:2;width:92px;transform:rotate(45deg);text-align:center;color:#fff;font-size:11px;line-height:17px;font-weight:600;letter-spacing:1px;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.cover-mark.reject{background:rgba(245,34,45,.78)}
+.cover-mark.review{background:rgba(250,140,22,.8)}
+.cover-mark.off{background:rgba(70,74,80,.68)}
+/* 价格下面一行：驳回原因红字、下架原因灰字，最多两行 */
+.vehicle-card .reject-line,.vehicle-card .unlist-line{margin:0;font-size:11px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vehicle-card .unlist-line{color:#9096a0}
+.vehicle-card.is-reject{cursor:default}
+/* 驳回卡片「修改」加大、绿色实底；在架卡片「修改」「下架」同为小号描边 */
+.vehicle-card .vehicle-actions button.edit-big{height:32px;padding:0 22px;font-size:14px;line-height:30px;border-radius:16px;background:#217C34;border-color:#217C34;color:#fff;font-weight:600}
+.vehicle-card.is-onsale .vehicle-actions button{height:22px;padding:0 9px;font-size:11px;line-height:20px;border-radius:11px}
+/* 详情页：特价车车名下的车辆编号；车辆信息区第一行车辆编号 */
+.d2-model-main{flex:1 1 auto;min-width:0}
+.d2-model-no{margin:4px 0 0;font-size:12.5px;line-height:1.4;color:#999}
+.d2-row.d2-vno-row{padding:0 0 12px}
+.d2-vno{font-size:14.6px;line-height:22px;color:#333}
+.d2-vno-row[hidden],.d2-model-no[hidden]{display:none}
+/* 登记人弹窗：手机号下方通栏绿色大按钮「一键拨号」（88rpx 高、32rpx 字） */
+.d-dial{display:block;width:100%;height:46px;margin:18px 0 0;border:0;border-radius:23px;background:#217C34;color:#fff;font-size:16.6px;font-weight:600;font-family:inherit;cursor:pointer}
+.d-dial:disabled{background:#c8d1cc;cursor:default}
+/* 拨号回到本页后的确认窗「车源是否已售？」 */
+.sold-ask{position:relative;width:100%;max-width:300px;background:#fff;border-radius:12px;padding:28px 18px 20px;text-align:center}
+.sold-ask h4{margin:0;font-size:17px;color:#111}
+.sold-x{position:absolute;top:6px;right:8px;width:32px;height:32px;border:0;background:none;font-size:22px;line-height:1;color:#999;cursor:pointer}
+.sold-btns{display:flex;gap:12px;margin-top:22px}
+.sold-btns button{flex:1;height:46px;border-radius:23px;font-size:16.6px;font-family:inherit;cursor:pointer}
+.sold-yes{border:1px solid #217C34;background:#217C34;color:#fff;font-weight:600}
+.sold-no{border:1px solid #c9cdd2;background:#fff;color:#666}
+/* 列表页顶部横幅：轮播勾了 banner 的车，首图按横幅比例居中裁切，左下车名与预蒜价 */
+.l8-screen .l8-banner{position:relative;overflow:hidden;background:#e9ecef;touch-action:pan-y;cursor:pointer;user-select:none}
+.l8-banner-img{display:block;width:100%;height:100%;object-fit:cover}
+.l8-btrack{display:flex;height:100%;transition:transform .45s ease}
+.l8-bslide{position:relative;flex:0 0 100%;height:100%}
+.l8-bslide img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;-webkit-user-drag:none;pointer-events:none}
+.l8-bcap{position:absolute;left:0;right:0;bottom:0;padding:26px 12px 10px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.6));color:#fff;display:flex;flex-direction:column;align-items:flex-start;gap:1px;pointer-events:none}
+.l8-bname{max-width:78%;font-size:14px;line-height:19px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l8-bprice{font-size:12px;line-height:22px}
+.l8-bprice b{margin-left:5px;font-size:18px;font-weight:800;color:#fff200}
+.l8-bdots{position:absolute;right:12px;bottom:12px;display:flex;gap:5px;pointer-events:none}
+.l8-bdots i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.5)}
+.l8-bdots i.on{width:12px;background:#fff}
+/* 销售线索：「联系车源」在「拨号」左边 12rpx，同高同圆角，白底绿框；卡片大小不变，最后一行右侧留白加宽 */
+.l10-btns{position:absolute;right:10.4px;bottom:2.1px;display:flex;align-items:center;gap:6.24px}
+.l10-btns .l10-dial{position:static}
+.l10-carbtn{display:inline-flex;align-items:center;box-sizing:border-box;height:22.9px;padding:0 10.4px;border:1px solid #217c34;border-radius:11.4px;background:#fff;color:#217c34;font-size:12.5px;font-weight:500;line-height:1;cursor:pointer;white-space:nowrap}
+.l10-carico{width:13px;height:13px;margin-right:3.1px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23217c34'><path d='M5 11l1.6-4.6A2 2 0 0 1 8.5 5h7a2 2 0 0 1 1.9 1.4L19 11a2 2 0 0 1 2 2v4a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H4a1 1 0 0 1-1-1v-4a2 2 0 0 1 2-2zm2.2 0h9.6l-1.1-3.3a1 1 0 0 0-.9-.7H9.2a1 1 0 0 0-.9.7zM7 15.5a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4zm10 0a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4z'/></svg>") center/contain no-repeat}
+.l10-item.has-car.has-dial .l10-row:last-child .r{padding-right:156px}
+.l10-item.has-car:not(.has-dial) .l10-row:last-child .r{padding-right:84px}

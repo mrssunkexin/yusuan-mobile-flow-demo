@@ -1,5 +1,5 @@
 /* REQ-008 小程序车辆列表页改造 样稿
-   依据：REQ-008 v1.10；页面结构与尺寸照线上「我要寻车」列表页（00-原始需求/车辆列表页.PNG、mall-portal-itu/pages/shop/list.vue）。
+   依据：REQ-008 v1.11（顶部横幅轮播勾了 banner 的车、热销排序、只留热销角标）；页面结构与尺寸照线上「我要寻车」列表页（00-原始需求/车辆列表页.PNG、mall-portal-itu/pages/shop/list.vue）。
    本地演示数据，不连接接口。元素 id 统一以 l8- 开头。上传天数按浏览器今天的日期实时计算。*/
 (function () {
   'use strict';
@@ -54,18 +54,52 @@
       if (state.price !== '全部' && !inRange(c, state.price)) return false;
       if (state.cats.length && !state.cats.some(function (k) { return c.cats.indexOf(k) >= 0; })) return false;
       return true;
-    }).sort(function (a, b) {
-      // R3-01：付费置顶的车排最前，多台之间按最近一次付款时间（top 越小越近）；其余按上架时间
-      if ((a.top ? 0 : 1) !== (b.top ? 0 : 1)) return (a.top ? 0 : 1) - (b.top ? 0 : 1);
-      if (a.top && b.top) return a.top - b.top;
-      return a.days - b.days;
     });
+    // 排序沿用 DemoCars.list：付费置顶最前，其次热销（后勾的在前），其余按上架时间（v1.11 第 3.3 节）
+  }
+
+  // v1.11 顶部横幅：轮播本列表内勾了 banner 的车；没有时显示原运营图（slot 9）
+  var bannerTimer = null;
+  function renderBanner() {
+    var box = $('#l8-banner');
+    if (!box) return;
+    clearInterval(bannerTimer);
+    var cars = window.DemoCars.banners(state.entry);
+    if (!cars.length) {
+      box.innerHTML = '<img class="l8-banner-img" src="' + A8 + 'banner.png?v=1" alt="横幅">';
+      return;
+    }
+    var slide = function (c) {
+      return '<div class="l8-bslide" data-car-id="' + c.id + '"><img src="' + c.photos[0].src + '" alt="' + esc(c.name) + '">' +
+        '<div class="l8-bcap"><span class="l8-bname">' + esc(c.name) + '</span><span class="l8-bprice">预蒜价<b>' + esc(c.sale) + '</b></span></div></div>';
+    };
+    box.innerHTML = '<div class="l8-btrack">' + cars.map(slide).join('') + '</div>' +
+      (cars.length > 1 ? '<div class="l8-bdots">' + cars.map(function (_, i) { return '<i' + (i ? '' : ' class="on"') + '></i>'; }).join('') + '</div>' : '');
+    var track = box.querySelector('.l8-btrack'), dots = box.querySelectorAll('.l8-bdots i'), idx = 0, n = cars.length;
+    function go(i) {
+      idx = (i + n) % n;
+      track.style.transform = 'translateX(' + (-idx * 100) + '%)';
+      Array.prototype.forEach.call(dots, function (d, k) { d.classList.toggle('on', k === idx); });
+    }
+    function auto() { clearInterval(bannerTimer); if (n > 1) bannerTimer = setInterval(function () { go(idx + 1); }, 3000); }
+    // 左右滑动换张；没有滑动就是点击，进这台车的详情
+    var x0 = null;
+    box.onpointerdown = function (e) { x0 = e.clientX; };
+    box.onpointerup = function (e) {
+      if (x0 === null) return;
+      var dx = e.clientX - x0; x0 = null;
+      if (Math.abs(dx) > 30 && n > 1) { go(idx + (dx < 0 ? 1 : -1)); auto(); return; }
+      window.DemoCarUI.open(cars[idx].id);
+    };
+    box.onpointercancel = function () { x0 = null; };
+    auto();
   }
 
   function render() {
     document.querySelectorAll('#l8-entry button').forEach(function (b) { b.classList.toggle('on', b.dataset.entry === state.entry); });
     $('#l8-title').textContent = TITLES[state.entry];
     $('#l8-f-brand .t').textContent = state.otherBrand ? '其他品牌' : (state.brand || '全部');
+    renderBanner();
     // CHG-D051：车辆类型取消，「类别」筛选作废，页面上已无此控件
     var box = $('#l8-list');
     box.classList.remove('grid'); box.classList.add('one');

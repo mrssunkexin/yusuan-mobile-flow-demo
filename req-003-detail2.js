@@ -1,11 +1,10 @@
-/* REQ-003 车辆详情页 · 含车辆信息（另一版样稿）
+/* REQ-003 车辆详情页 · 含车辆信息（已采用；v2.11：车辆编号、车辆位置、特价车浮钮、一键拨号后确认已售）
    与「车辆详情页改造」样稿并列，原样稿不动，用于对比详情页要不要增加车辆信息。
    本地演示数据，不连接接口，不真实拨号。本页元素 id 统一以 d2- 开头，避免与其他样稿重名。*/
 (function () {
   'use strict';
 
-  var state = { role: 'agent', source: 'inventory', carId:'inventory-m6', marked: false };
-  var marks={};
+  var state = { role: 'agent', source: 'inventory', carId:'inventory-m6' };
   var refreshFav=function(){};
 
   function $(s) { return document.querySelector(s); }
@@ -41,20 +40,27 @@
     $('#d2-ref').textContent = c.ref;
     $('#d2-sale').textContent = c.sale;
     $('#d2-name').textContent = c.name;
+    // v2.11：特价车在车名下面一行显示车辆编号；车源详情的编号放在车辆信息区第一行
+    var special = c.source === 'special_price';
+    $('#d2-model-no').hidden = !special || !c.vehicleNo;
+    $('#d2-model-no').textContent = '车辆编号 ' + (c.vehicleNo || '');
     $('#d2-src').textContent = c.srcLabel;
-    $('#d2-color-out').textContent = c.colorOut;
-    $('#d2-color-in').textContent = c.colorIn;
-    $('#d2-region').textContent = c.region;
-    $('#d2-labels').innerHTML = c.labels.map(function (l) {
+    $('#d2-vno-row').hidden = !c.vehicleNo;
+    $('#d2-vno').textContent = c.vehicleNo || '';
+    $('#d2-color-out').textContent = c.colorOut || '暂无';
+    $('#d2-color-in').textContent = c.colorIn || '暂无';
+    $('#d2-location').textContent = c.location || '暂无';
+    $('#d2-labels').innerHTML = c.labels.length ? c.labels.map(function (l) {
       return '<span class="d2-label">' + esc(l) + '</span>';
-    }).join('');
+    }).join('') : '<p class="d2-remark">暂无</p>';
     $('#d2-remark').textContent = c.remark;
     $('#d2-blocks').innerHTML = c.blocks.map(function (src) {
       return '<img src="' + esc(src) + '" alt="车辆详情图片">';
     }).join('');
 
-    // R3-12：浮钮只给一级代理商；二级代理商、C 端客户整个不渲染
-    $('#d2-fab').hidden = state.role !== 'agent' || c.source === 'special_price';
+    // R3-12：浮钮只给一级代理商；二级代理商、C 端客户整个不渲染。v2.11 起特价车也显示
+    $('#d2-fab').hidden = state.role !== 'agent';
+    document.querySelector('#view-contact2 .d-phone').classList.toggle('is-special', special);
     refreshFav();
     if ($('#d2-fab').hidden) closeSheet();
     renderSheet();
@@ -65,25 +71,14 @@
     $('#d2-c-name').textContent = c.contact.name;
     $('#d2-c-from').textContent = c.contact.from;
     $('#d2-c-tel').textContent = c.contact.phone;
-    var mk = $('#d2-mark');
-    mk.classList.toggle('marked', state.marked);
-    mk.textContent = state.marked ? '已标记疑似已售' : '疑似已售';
-    $('#d2-markcount').textContent = (c.baseCount + (state.marked ? 1 : 0)) + ' 人标记';
   }
 
-  // 手机内居中确认框，对应线上 u-modal
-  function confirmBox(title, onOk) {
-    var wrap = $('#d2-confirm');
-    wrap.hidden = false;
-    wrap.innerHTML = '<div class="m-dialog"><h4>' + title + '</h4>' +
-      '<div class="m-dialog-foot"><button id="d2-dc-no">取消</button><button id="d2-dc-ok">确认</button></div></div>';
-    var close = function () { wrap.hidden = true; wrap.innerHTML = ''; };
-    $('#d2-dc-no').addEventListener('click', close);
-    $('#d2-dc-ok').addEventListener('click', function () { close(); onOk(); });
+  function dial() {
+    window.DemoCarUI.dial({ car: car(), wrap: $('#d2-confirm'), currentId: function () { return state.carId; } });
   }
 
   function openSheet() {
-    if (state.role !== 'agent' || state.source === 'special_price') return;
+    if (state.role !== 'agent') return;
     $('#d2-sheet').hidden = false;
     renderSheet();
   }
@@ -91,7 +86,7 @@
 
   function selectCar(id) {
     var c=window.DemoCars.get(id);if(!c)return;
-    state.carId=id;state.source=c.source;state.marked=!!marks[id];closeSheet();render();
+    state.carId=id;state.source=c.source;closeSheet();var cf=$('#d2-confirm');cf.hidden=true;cf.innerHTML='';render();
     document.querySelector('#view-contact2 .d-screen').scrollTop=0;
   }
   window.__setDetailCar=selectCar;
@@ -111,16 +106,9 @@
     refreshFav=window.DemoCarUI.bindFavorite($('#d2-fav'),car);
     $('#d2-close').addEventListener('click', closeSheet);
     $('#d2-mask').addEventListener('click', closeSheet);
-    $('#d2-c-tel').addEventListener('click', function () {
-      toast('调起系统拨号：' + this.textContent);
-    });
-    $('#d2-mark').addEventListener('click', function () {
-      if (state.marked) {
-        confirmBox('是否确认取消？', function () { state.marked = false; marks[state.carId]=false; renderSheet(); toast('已取消标记'); });
-      } else {
-        confirmBox('是否确认已售？', function () { state.marked = true; marks[state.carId]=true; renderSheet(); toast('已标记为疑似已售'); });
-      }
-    });
+    // v2.11：手机号与「一键拨号」都直接拨；拨完回到本页弹「车源是否已售？」（特价车不弹）
+    $('#d2-c-tel').addEventListener('click', dial);
+    $('#d2-dial').addEventListener('click', dial);
 
     render();
 
