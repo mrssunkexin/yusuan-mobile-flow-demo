@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="预蒜 车源登记与 4S 店维护 页面方案">
   <title>预蒜 · 页面方案</title>
-  <link rel="stylesheet" href="styles.css?v=6.21.0">
+  <link rel="stylesheet" href="styles.css?v=6.22.0">
 </head>
 <body>
   <header class="topbar">
@@ -31,9 +31,9 @@
       <button class="nav-item" data-view="clue010"><i>REQ-010</i>线索一键拨号 <span>新增拨号键 · 待审阅</span></button>
 
       <p class="nav-group">PC 端</p>
-      <button class="nav-item" data-view="stores"><i>REQ-005</i>4S店信息维护 <span>门店配置 · 已放行</span></button>
-      <button class="nav-item" data-view="employees"><i>REQ-006</i>4S店员工维护 <span>员工与联系人 · 已放行</span></button>
-      <button class="nav-item" data-view="stock"><i>REQ-004</i>车源管理 <span>查看·审核·上下架·置顶 · R3 已改写</span></button>
+      <button class="nav-item" data-view="stores"><i>REQ-005</i>类型维护 <span>类型代码 · 统计跳转 · 待审阅</span></button>
+      <button class="nav-item" data-view="employees"><i>REQ-006</i>登记人维护 <span>登记人与联系人 · 批量导入 · 待审阅</span></button>
+      <button class="nav-item" data-view="stock"><i>REQ-004</i>车源管理 <span>热销·banner·审核·下架原因 · 待审阅</span></button>
       <button class="nav-item" data-view="notice"><i>REQ-007</i>公告配置 <span>底部滚动文字 · 已放行</span></button>
 
       <div class="scope-note">
@@ -149,22 +149,22 @@
 
       <section class="view" id="view-stores">
         <div class="pc-page">
-          <div class="page-heading"><div><p class="kicker">PC端</p><h2>4S店信息维护</h2></div><div class="button-row"><button class="primary" id="add-store">新增4S店</button></div></div>
-          <div class="panel toolbar"><label>4S店名称<input id="store-search" maxlength="100" placeholder="请输入4S店名称"></label><button id="query-store" class="primary">查询</button><button id="reset-store" class="ghost">重置</button></div>
-          <div class="panel table-panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>4S店名称</th><th>省市区县</th><th>详细地址</th><th>操作</th></tr></thead><tbody id="store-table-body"></tbody></table></div><div id="store-empty" class="table-empty" hidden></div><div class="pagination"><span id="store-total"></span><label>每页<select id="store-page-size"><option>20</option><option>50</option><option>100</option></select></label><button id="store-prev">上一页</button><span id="store-page"></span><button id="store-next">下一页</button></div></div>
+          <div class="page-heading"><div><p class="kicker">PC端</p><h2>类型维护</h2></div><div class="button-row"><button class="primary" id="add-store">新增类型</button></div></div>
+          <div class="panel toolbar"><label>类型代码<select id="store-code-filter"><option value="">全部</option></select></label><label>类型名称<input id="store-search" maxlength="100" placeholder="请输入类型名称"></label><button id="query-store" class="primary">查询</button><button id="reset-store" class="ghost">重置</button></div>
+          <div class="panel table-panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>类型代码</th><th>类型名称</th><th>登记人数</th><th>近 30 天上传车辆数</th><th>省市区县</th><th>详细地址</th><th>操作</th></tr></thead><tbody id="store-table-body"></tbody></table></div><div id="store-empty" class="table-empty" hidden></div><div class="pagination"><span id="store-total"></span><label>每页<select id="store-page-size"><option>20</option><option>50</option><option>100</option></select></label><button id="store-prev">上一页</button><span id="store-page"></span><button id="store-next">下一页</button></div></div>
         </div>
       </section>
       <section class="view" id="view-employees">
         <div class="pc-page">
-          <div class="page-heading"><div><p class="kicker">PC端</p><h2>4S店员工维护</h2></div><div class="button-row"><button class="ghost" id="contact-setting">车源联系人设置</button><button class="primary" id="add-employee">新增员工</button></div></div>
+          <div class="page-heading"><div><p class="kicker">PC端</p><h2>登记人维护</h2></div><div class="button-row"><button class="ghost" id="contact-setting">车源联系人设置</button><button class="ghost" id="import-employee">批量导入</button><button class="primary" id="add-employee">新增登记人</button></div></div>
           <div class="panel toolbar employee-toolbar">
-            <label>员工姓名<input id="employee-name" maxlength="50" placeholder="请输入员工姓名"></label>
+            <label>登记人姓名<input id="employee-name" maxlength="50" placeholder="请输入登记人姓名"></label>
             <label>手机号<input id="employee-phone" placeholder="请输入手机号"></label>
-            <label>所属4S店<input id="employee-store-filter" list="employee-store-options" placeholder="全部门店／输入店名搜索"><datalist id="employee-store-options"></datalist></label>
+            <label>所属类型<input id="employee-store-filter" list="employee-store-options" placeholder="全部类型／输入代码或名称搜索"><datalist id="employee-store-options"></datalist></label>
             <label>状态<select id="employee-status"><option value="">全部</option><option>启用</option><option>停用</option></select></label>
             <button id="query-employee" class="primary">查询</button><button id="reset-employee" class="ghost">重置</button>
           </div>
-          <div class="panel table-panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>员工姓名</th><th>手机号</th><th>所属4S店</th><th>账号状态</th><th>备注</th><th>操作</th></tr></thead><tbody id="employee-table-body"></tbody></table></div><div id="employee-empty" class="table-empty" hidden></div><div class="pagination"><span id="employee-total"></span><button id="employee-prev">上一页</button><span id="employee-page"></span><button id="employee-next">下一页</button></div></div>
+          <div class="panel table-panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>登记人姓名</th><th>手机号</th><th>所属类型</th><th><button type="button" class="th-sort" id="employee-sort">近 30 天上传车辆数 <i>↕</i></button></th><th>账号状态</th><th>备注</th><th>操作</th></tr></thead><tbody id="employee-table-body"></tbody></table></div><div id="employee-empty" class="table-empty" hidden></div><div class="pagination"><span id="employee-total"></span><button id="employee-prev">上一页</button><span id="employee-page"></span><button id="employee-next">下一页</button></div></div>
         </div>
       </section>
 
@@ -172,23 +172,26 @@
         <div class="pc-page">
           <div class="page-heading">
             <div><p class="kicker">PC端</p><h2>车源管理</h2></div>
-            <div class="button-row"><span class="chip pend">查看、审核、上下架；不新增不修改不删除</span></div>
+            <div class="button-row"><span class="chip pend">查看、审核、上下架、勾热销和 banner；不新增、不改车辆信息、不删除</span></div>
           </div>
           <div class="panel toolbar">
             <label>登记人<input id="q-person" placeholder="请输入登记人"></label>
             <label>所属机构<input id="q-org" placeholder="请输入机构名称"></label>
+            <label>所属类型<select id="q-stype"><option value="">全部</option></select></label>
             <label>品牌<select id="q-brand"><option value="">不限品牌</option></select></label>
             <label>车型<select id="q-model"><option value="">不限车型</option></select></label>
             <label>车源类型<select id="q-srctype"><option value="">全部</option><option>库存车</option><option>一手车源</option></select></label>
-            <label>审核状态<select id="pc-approve"><option value="">全部</option><option>未审核</option><option>通过</option><option>不通过</option></select></label>
+            <label>审核状态<select id="pc-approve"><option value="">全部</option><option>未审核</option><option>通过</option><option>驳回</option></select></label>
             <label>上下架<select id="pc-shelf"><option value="">全部</option><option>在售</option><option>已下架</option></select></label>
-            <label>促销标识<select id="q-promo"><option value="">全部</option><option value="none">无</option><option value="special">特价</option><option value="hot">热销</option></select></label>
+            <label>热销<select id="q-hot"><option value="">全部</option><option>是</option><option>否</option></select></label>
+            <label>banner<select id="q-banner"><option value="">全部</option><option>是</option><option>否</option></select></label>
+            <label>车辆位置<select id="q-loc"><option value="">全部</option></select></label>
             <label>车辆所在地<select id="q-prov"><option value="">不限省</option></select></label>
             <label>市<select id="q-city"><option value="">不限市</option></select></label>
             <label>区县<select id="q-dist"><option value="">不限区县</option></select></label>
             <label>登记时间<span class="range"><input id="q-from" type="date"><i>至</i><input id="q-to" type="date"></span></label>
-            <label>车辆 ID<input id="q-code" placeholder="请输入车辆 ID"></label>
-            <label>排序<select id="q-sort"><option value="time">登记时间倒序</option><option value="sold">疑似已售多的在前</option><option value="views">查看次数多的在前</option></select></label>
+            <label>车辆编号<input id="q-code" placeholder="请输入完整车辆编号"></label>
+            <label>排序<select id="q-sort"><option value="time">登记时间倒序</option><option value="sold">已售人数多的在前</option><option value="views">查看次数多的在前</option></select></label>
             <button id="stock-query" class="primary">查询</button><button id="stock-reset" class="ghost">重置</button>
           </div>
           <div class="stat-row panel compact">
@@ -200,7 +203,7 @@
           </div>
           <div class="panel table-panel">
             <div class="table-wrap"><table class="data-table"><thead><tr>
-              <th>#</th><th class="col-id">车辆 ID</th><th>车源类型</th><th>促销标识</th><th>品牌车型</th><th>实际售价（元）</th><th>登记人</th><th>所属机构</th><th>车辆所在地</th><th>登记时间</th><th>查看</th><th>疑似已售</th><th>审核状态</th><th>上下架</th><th>置顶</th><th>操作</th>
+              <th>#</th><th class="col-id">车辆编号</th><th>车源类型</th><th>热销</th><th>banner</th><th>车辆位置</th><th>品牌车型</th><th>实际售价（元）</th><th>登记人</th><th>所属机构</th><th>车辆所在地</th><th>登记时间</th><th>查看</th><th>已售人数</th><th>审核状态</th><th>上下架</th><th>置顶</th><th>操作</th>
             </tr></thead><tbody id="stock-body"></tbody></table></div>
             <div id="stock-empty" class="table-empty" hidden></div>
             <div class="pagination"><span id="stock-total"></span><label>每页<select id="stock-size"><option>20</option><option>50</option><option>100</option></select></label><button id="stock-prev">上一页</button><span id="stock-page"></span><button id="stock-next">下一页</button></div>
@@ -499,7 +502,7 @@
             <h3>后期统一确认</h3>
             <ul>
               <li>4S 员工退出（PENDING-019 已确认）：从「车源登记登录」进入车源登记页后，顶栏右侧铃铛左边显示「退出」，点后确认，确定回到「我的」；代理商从后台进入不显示。</li>
-              <li>PC「4S店信息维护」改为「类型」维护（PENDING-020 已确认，PC 部分另行修改）。</li>
+              <li>PC「4S店信息维护」改为「类型维护」（PENDING-020 已确认，PC 页面已改）。</li>
             </ul>
             <p class="side-info-src">不连接接口。完整规则见 REQ-009 需求方案 v1.2。</p>
           </aside>
@@ -568,7 +571,7 @@
   <script src="demo-cars.js?v=1.6.0"></script>
   <script src="demo-car-ui.js?v=1.2.0"></script>
   <script src="logic.js?v=6.3.0"></script>
-  <script src="app.js?v=5.12.0"></script>
+  <script src="app.js?v=5.13.0"></script>
   <script src="req-007-notice.js?v=4.9.0"></script>
   <script src="req-003-contact.js?v=5.3.0"></script>
   <script src="req-003-fav.js?v=1.2.0"></script>
@@ -576,7 +579,7 @@
   <script src="req-008-list.js?v=1.9.0"></script>
   <script src="req-009-login.js?v=1.5.0"></script>
   <script src="req-010-clue.js?v=1.3.0"></script>
-  <script src="req-004-stock.js?v=5.2.0"></script>
+  <script src="req-004-stock.js?v=5.3.0"></script>
   <script src="req-pending.js?v=5.11.0"></script>
   <script>
     // REQ-002 样稿按自身真实高度撑开，避免内层滚动条或底部空白

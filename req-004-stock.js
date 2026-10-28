@@ -1,85 +1,163 @@
 /* REQ-004 PC 车源管理样稿
-   依据：REQ-004-PC车源管理需求方案 v2.3（按第二轮变更 R2 改写，R3 与 TASK-038 补充）。本地演示数据，不连接接口。*/
+   依据：REQ-004-PC车源管理需求方案 v2.5（2026-10-28 CHG-D065：热销／banner 开关与 10 台上限、车辆编号、车辆位置、所属类型、
+   已售人数、总部下架填原因、「不通过」改叫「驳回」）。本地演示数据，不连接接口。*/
 (function () {
   'use strict';
 
-  // TASK-038：车辆与小程序登记列表共用同一份实拍资料（demo-cars.js）；库存车价格与登记列表一致，一手车源售价按列表页「XX」口径取值
-  var SEEDS = [['inventory-m6', 108000], ['inventory-lc76', 618000], ['inventory-g63', 2538000],
-    ['inventory-yuan', 78800], ['inventory-prado', 768000], ['inventory-lc300', 818000]];
-  var BRANDS = [0, 1, 2, 3, 4, 5, 0, 1, 2, 3].map(function (k) { return SEEDS[k]; })
-    .concat([['firsthand-yuan', 85800], ['firsthand-lc300', 825000]])
-    .map(function (x) {
-      var car = window.DemoCars.get(x[0]), m = car.name.match(/^(\S+)\s+(.+?)\s+(\d{4}款.*)$/);
-      return [m[1], m[2], x[1], Math.round(parseFloat(car.ref) * 10000), car, m[3]];
-    });
-  var PEOPLE = ['张三', '李四', '王五', '赵六', '陈婷', '刘洋', '周敏', '吴刚', '孙丽', '高远', '郑凯', '许静'];
-  var ORGS = ['华东名车行', '安信汽车', '德仁二手车', '天成车业', '优选好车', '新能源体验店',
-    '众诚车行', '诚新二手车', '未来出行', '宏达名车', '杭州滨江4S店', '上海浦东4S店'];
+  var DC = window.DemoCars;
+  var ORG = window.PcOrgs || { types: [], registrants: [] };
+  var DAY = 86400000, NOW = Date.now();
+  var PEOPLE_ORG = { '张伟': '华东名车行', '张三': '安信汽车', '李四': '德仁二手车', '王五': '天成车业', '赵六': '优选好车', '刘洋': '众诚车行', '周敏': '宏达名车' };
   var CITY = [['浙江省', '杭州市', '余杭区'], ['江苏省', '南京市', '鼓楼区'], ['广东省', '深圳市', '南山区'],
     ['上海市', '上海市', '浦东新区'], ['北京市', '北京市', '朝阳区'], ['四川省', '成都市', '高新区']];
+  var LOCATIONS = ['东区', '西区', '南区', '北区', '大北区'];
+  var HQ_REASON = '车辆照片与实车不符，请核实后重新上架';
+  var SOLD_REASON = '三个用户标记该车辆已售';
 
-  function D(days) { return new Date(Date.now() + days * 86400000); }
-  var rows = BRANDS.map(function (b, i) {
-    var is4s = i >= 10;
-    return {
-      id: '18' + String(1517386574692651010 + i * 7919).slice(2),
-      srcType: is4s ? '一手车源' : '库存车',
-      // CHG-D051：车辆类型取消，改为促销标识（单选），角标文字与小程序同一算法
-      promo: b[4].promo || 'none', promoText: b[4].promoText || '',
-      labels: i % 2 ? ['现车', '可分期'] : ['支持置换'],
-      // R2-11 审核状态与上下架两个维度
-      approve: i < 3 ? '未审核' : i === 3 ? '不通过' : '通过',
-      opinion: i === 3 ? '照片不清晰，请补拍车身正面与内饰' : '',
-      auditAt: i === 3 ? '2026-09-12 09:20' : (i >= 4 ? '2026-09-11 15:30' : ''),
-      auditor: i === 3 ? '总部 admin' : (i >= 4 ? '总部 admin' : ''),
-      // R3-07 详情只放图片；R3-01 去掉推荐，演示两台置顶中的车（结束时间按打开页面的时刻往后算）
-      detailImgs: i % 5 === 4 ? [] : b[4].photos.map(function (p) { return p.src; }),
-      photos: b[4].photos.map(function (p) { return p.src; }),
-      topEnd: i === 5 ? new Date(Date.now() + 3 * 86400000) : i === 8 ? new Date(Date.now() + 9 * 86400000) : null,
-      // 每次付款买下的时段：未置顶时从付款时刻起，续期时从原结束时间起（REQ-001 第 2.17、3.20 节）
-      topOrders: i === 5 ? [{ pay: D(-4), money: 9.9, days: 7, start: D(-4), end: D(3) }]
-        : i === 8 ? [{ pay: D(-1), money: 9.9, days: 7, start: D(2), end: D(9) }, { pay: D(-5), money: 9.9, days: 7, start: D(-5), end: D(2) }] : [],
+  function staffByName(n) { return ORG.registrants.filter(function (s) { return s.name === n; })[0] || null; }
+  function staffById(id) { return ORG.registrants.filter(function (s) { return s.id === id; })[0] || null; }
+  function typeOf(code) { return ORG.types.filter(function (t) { return t.code === code; })[0] || null; }
+  function typeText(code) { var t = typeOf(code); return t ? t.code + ' ' + t.name : ''; }
+
+  /* 车辆清单。mapped：与小程序共用 demo-cars.js 的那台车，车辆编号、热销、banner、车辆位置、标签、置顶都取它；
+     其余为同一批实拍车型由其他登记人登记的车（库存车 4 台未审核／驳回、2 台已下架；一手车源 8 台由其他类型的登记人登记）。 */
+  var SPECS = [
+    // 库存车：未审核、驳回的车还没有车辆编号
+    { car: 'inventory-m6', price: 109800, days: 0, person: '张三', approve: '未审核', views: 12 },
+    { car: 'inventory-lc76', price: 615000, days: 1, person: '李四', approve: '未审核', views: 8 },
+    { car: 'inventory-g63', price: 2528000, days: 2, person: '王五', approve: '未审核', views: 21 },
+    { car: 'inventory-yuan', price: 79800, days: 4, person: '赵六', approve: '驳回', opinion: '照片不清晰，请补拍车身正面与内饰', views: 9 },
+    { car: 'inventory-m6', mapped: true, price: 108000, person: '张伟', views: 126, sold: 1 },
+    { car: 'inventory-lc76', mapped: true, price: 618000, person: '张伟', views: 212, sold: 2 },
+    { car: 'inventory-g63', mapped: true, price: 2538000, person: '张伟', views: 96 },
+    { car: 'inventory-yuan', mapped: true, price: 78800, person: '张伟', views: 138 },
+    { car: 'inventory-prado', mapped: true, price: 768000, person: '张伟', views: 176 },
+    { car: 'inventory-lc300', mapped: true, price: 818000, person: '张伟', views: 198, sold: 1 },
+    { car: 'inventory-prado', no: 'KC00007', price: 762000, days: 26, person: '刘洋', on: false, off: HQ_REASON, offBy: '总部 admin', location: '南区', views: 67 },
+    { car: 'inventory-lc76', no: 'KC00008', price: 612000, days: 40, person: '周敏', on: false, off: SOLD_REASON, offBy: '系统', location: '北区', views: 143 },
+    // 一手车源：与小程序共用的 5 台（类型 A 的登记人登记）
+    { car: 'firsthand-yuan', mapped: true, price: 85800, person: '李明', views: 104 },
+    { car: 'firsthand-prado', mapped: true, price: 775000, person: '李明', views: 85, sold: 1 },
+    { car: 'firsthand-lc300', mapped: true, price: 825000, person: '张文静', views: 159 },
+    { car: 'firsthand-lc76', mapped: true, price: 628000, person: '欧阳明轩', views: 88 },
+    { car: 'firsthand-g63', mapped: true, price: 2558000, person: '张文静', views: 59 },
+    // 一手车源：其他类型登记人登记、总部已勾 banner 的车（含已下架的，下架的车勾了也不对外显示）
+    { car: 'firsthand-yuan', no: 'YB00001', price: 86800, days: 3, person: '王海涛', banner: 9, location: '西区', views: 77 },
+    { car: 'firsthand-lc300', no: 'YB00002', price: 829000, days: 8, person: '刘佳', banner: 8, location: '东区', views: 64, sold: 1 },
+    { car: 'firsthand-prado', no: 'YC00001', price: 772000, days: 5, person: '吴雅琴', banner: 7, hot: 3, location: '南区', views: 93 },
+    { car: 'firsthand-g63', no: 'YD00001', price: 2549000, days: 6, person: '孙立群', banner: 6, location: '大北区', views: 41 },
+    { car: 'firsthand-yuan', no: 'YD00002', price: 84800, days: 14, person: '黄晓峰', banner: 5, on: false, off: '售价与实际报价不符，请核实后重新上架', offBy: '总部 admin', location: '北区', views: 52 },
+    { car: 'firsthand-lc76', no: 'YE00001', price: 625000, days: 16, person: '马丽华', banner: 4, on: false, off: SOLD_REASON, offBy: '系统', location: '东区', views: 118 },
+    { car: 'firsthand-lc300', no: 'YF00001', price: 831000, days: 25, person: '林曼', banner: 3, location: '西区', views: 70 },
+    { car: 'firsthand-prado', no: 'YG00001', price: 769000, days: 33, person: '罗文博', banner: 2, on: false, off: '本人下架', offBy: '罗文博', location: '大北区', views: 36 },
+    // 一手车源：未审核、驳回
+    { car: 'firsthand-lc300', price: 826000, days: 1, person: '朱天翔', approve: '未审核', views: 5 },
+    { car: 'firsthand-g63', price: 2560000, days: 7, person: '梁秋萍', approve: '驳回', opinion: '实际售价与同款车差距较大，请核实后重新提交', views: 14 }
+  ];
+
+  function p2(n) { return String(n).padStart(2, '0'); }
+  function fmt(d, full) { return (full ? d.getFullYear() + '-' : '') + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes()); }
+  function ymd(d) { return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
+  function nowText() { return fmt(new Date(), true); }
+
+  var rows = SPECS.map(function (s, i) {
+    var car = DC.get(s.car), m = car.name.match(/^(\S+)\s+(.+?)\s+(\d{4}款.*)$/);
+    var src = car.source === 'inventory' ? '库存车' : '一手车源';
+    var approve = s.approve || '通过';
+    var days = s.mapped ? car.days : s.days;
+    // 登记时间落在白天 9～18 点；当天登记的不晚于此刻
+    var t = new Date(NOW - days * DAY);
+    t.setHours(9 + (i * 7) % 10, (i * 13) % 60, 0, 0);
+    if (t.getTime() > NOW) t = new Date(NOW - (i + 1) * 9 * 60000);
+    var staff = src === '一手车源' ? staffByName(s.person) : null;
+    var type = staff ? typeOf(staff.typeCode) : null;
+    var audit = approve === '未审核' ? null : new Date(t.getTime() + Math.min(2 * 3600000, (NOW - t.getTime()) / 2));
+    var on = approve === '通过' && s.on !== false;
+    var r = {
+      id: 'cs-' + (i + 1),
+      no: approve === '通过' ? (s.mapped ? car.vehicleNo : s.no) : '',
+      srcType: src,
+      hot: s.mapped ? !!car.hot : !!s.hot, hotAt: s.mapped ? (car.hotAt || 0) : (s.hot || 0),
+      banner: s.mapped ? !!car.banner : !!s.banner, bannerAt: s.mapped ? (car.bannerAt || 0) : (s.banner || 0),
+      location: s.mapped ? car.location : (s.location || car.location),
+      labels: car.labels.slice(),
+      approve: approve,
+      opinion: s.opinion || '',
+      auditAt: audit ? fmt(audit, true) : '', auditor: audit ? '总部 admin' : '',
+      photos: car.photos.map(function (p) { return p.src; }),
+      detailImgs: i % 5 === 4 ? [] : car.photos.map(function (p) { return p.src; }),
+      topEnd: null, topOrders: [],
       video: false,   // 实拍素材均无视频，与小程序各页一致
-      brand: b[0], model: b[1], variant: b[5], name: b[0] + ' ' + b[1], price: b[2], guide: b[3],
-      person: PEOPLE[i], org: is4s ? ORGS[10 + (i - 10)] : ORGS[i],
-      city: CITY[i % 6],
-      time: '2026-09-' + String(11 - (i % 9)).padStart(2, '0') + ' 1' + (i % 9) + ':2' + (i % 6),
-      views: [126, 85, 212, 96, 138, 176, 67, 104, 198, 59, 143, 88][i],
-      sold: [0, 0, 3, 1, 0, 0, 2, 0, 5, 0, 1, 0][i],
-      on: [false, false, false, false, true, true, false, true, true, false, true, true][i],
-      color: b[4].colorOut, inner: b[4].colorIn,
-      remark: b[4].remark,
+      brand: m[1], model: m[2], variant: m[3], name: m[1] + ' ' + m[2], price: s.price, guide: Math.round(parseFloat(car.ref) * 10000),
+      person: s.person, staffId: staff ? staff.id : '', org: staff ? '' : (PEOPLE_ORG[s.person] || ''),
+      // 车辆所在地：登记时带出并随车保存的地址所在省市区；登记人取所属类型的地址
+      city: type ? type.region.split(' ') : CITY[i % 6],
+      time: fmt(t, true),
+      views: s.views, sold: on ? (s.sold || 0) : 0, on: on,
+      offReason: on ? '' : (approve === '通过' ? s.off || '' : ''), offAt: '', offBy: s.offBy || '',
+      color: car.colorOut, inner: car.colorIn, remark: car.remark,
       ops: []
     };
+    // 置顶：与小程序同一台车一致（REQ-001 第 2.17 节），每次付款买下的时段从付款时刻或原结束时间起
+    if (s.mapped && car.top === 1) { r.topEnd = new Date(NOW + 3 * DAY); r.topOrders = [{ pay: new Date(NOW - 4 * DAY), money: 9.9, days: 7, start: new Date(NOW - 4 * DAY), end: r.topEnd }]; }
+    if (s.mapped && car.top === 2) { r.topEnd = new Date(NOW + 9 * DAY); r.topOrders = [{ pay: new Date(NOW - DAY), money: 9.9, days: 7, start: new Date(NOW + 2 * DAY), end: r.topEnd }, { pay: new Date(NOW - 5 * DAY), money: 9.9, days: 7, start: new Date(NOW - 5 * DAY), end: new Date(NOW + 2 * DAY) }]; }
+    if (approve === '通过') r.ops.push({ t: r.auditAt, who: r.auditor, act: '审核通过' });
+    if (approve === '驳回') r.ops.push({ t: r.auditAt, who: r.auditor, act: '审核驳回：' + r.opinion });
+    if (r.offReason) {
+      r.offAt = fmt(new Date(Math.min(NOW - 3600000, audit.getTime() + Math.max(1, days - 1) * DAY)), true);
+      r.ops.unshift({ t: r.offAt, who: r.offBy, act: '下架：' + r.offReason });
+    }
+    return r;
   });
+  // 车辆编号序号：每个前缀单独从 00001 排，永不复用（REQ-001 第 1.8 节）
+  var SEQ = {};
+  DC.all().forEach(function (c) { bump(c.vehicleNo); });
+  rows.forEach(function (r) { bump(r.no); });
+  function bump(no) { if (!no) return; var k = no.slice(0, 2), n = Number(no.slice(2)); SEQ[k] = Math.max(SEQ[k] || 0, n); }
+  function nextNo(r) {
+    var staff = staffById(r.staffId), k = r.srcType === '库存车' ? 'KC' : 'Y' + (staff ? staff.typeCode : 'A');
+    SEQ[k] = (SEQ[k] || 0) + 1;
+    return k + String(SEQ[k]).padStart(5, '0');
+  }
 
-  var q = { code: '', brand: '', model: '', person: '', org: '', srctype: '', approve: '', shelf: '', promo: '', prov: '', city: '', dist: '', from: '', to: '', sort: 'time' };
+  function rowType(r) { var s = staffById(r.staffId); return s ? s.typeCode : ''; }
+  function personText(r) { var s = staffById(r.staffId); return s ? s.name : r.person; }
+  // 所属机构：代理商登记的显示代理商经营主体；登记人登记的显示所属类型「代码 名称」
+  function orgText(r) { return r.staffId ? typeText(rowType(r)) : r.org; }
+  function recentFrom() { return ymd(new Date(NOW - 29 * DAY)); }
+
+  var KEYS = ['code', 'brand', 'model', 'person', 'org', 'stype', 'srctype', 'approve', 'shelf', 'hot', 'banner', 'loc', 'prov', 'city', 'dist', 'from', 'to'];
+  var q = { sort: 'time' };
+  KEYS.forEach(function (k) { q[k] = ''; });
   var page = 1, size = 20;
 
   function $(s) { return document.querySelector(s); }
   function money(n) { return n.toLocaleString('zh-CN') + ' 元'; }   // 详情弹窗用，带单位
   function num(n) { return n.toLocaleString('zh-CN'); }                // 列表用，单位写在表头
-  function toast(m) { var e = $('#toast'); if (!e) return; e.textContent = m; e.classList.add('show'); setTimeout(function () { e.classList.remove('show'); }, 1800); }
+  var toastTimer;
+  function toast(m, ms) { var e = $('#toast'); if (!e) return; e.textContent = m; e.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function () { e.classList.remove('show'); }, ms || 1800); }
   function cityText(c) { return c[0] === c[1] ? c[1] + ' ' + c[2] : c.join(' '); }
-  function p2(n) { return String(n).padStart(2, '0'); }
-  function fmt(d, full) { return (full ? d.getFullYear() + '-' : '') + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes()); }
   function isTop(r) { return !!(r.topEnd && r.topEnd > new Date()); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function noText(r) { return r.no || '—'; }
 
   function filtered() {
     var list = rows.filter(function (r) {
-      if (q.code && r.id.indexOf(q.code) === -1) return false;
-      if (q.brand && r.brand.indexOf(q.brand) === -1) return false;
-      if (q.model && r.model.indexOf(q.model) === -1) return false;
-      if (q.person && r.person.indexOf(q.person) === -1) return false;
-      if (q.org && r.org.indexOf(q.org) === -1) return false;
+      // 车辆编号精确查，不区分大小写
+      if (q.code && r.no.toUpperCase() !== q.code.toUpperCase()) return false;
+      if (q.brand && r.brand !== q.brand) return false;
+      if (q.model && r.model !== q.model) return false;
+      if (q.person && personText(r).indexOf(q.person) === -1) return false;
+      if (q.org && orgText(r).indexOf(q.org) === -1) return false;
+      if (q.stype && rowType(r) !== q.stype) return false;
       if (q.srctype && r.srcType !== q.srctype) return false;
       // 审核状态与上下架是两个独立条件，各自筛
       if (q.approve && r.approve !== q.approve) return false;
       if (q.shelf === '在售' && !r.on) return false;
       if (q.shelf === '已下架' && r.on) return false;
-      // 车辆类型单选，该车带有即命中（一台车可有多个类型）
-      if (q.promo && r.promo !== q.promo) return false;
+      if (q.hot && r.hot !== (q.hot === '是')) return false;
+      if (q.banner && r.banner !== (q.banner === '是')) return false;
+      if (q.loc && r.location !== q.loc) return false;
       if (q.prov && r.city[0] !== q.prov) return false;
       if (q.city && r.city[1] !== q.city) return false;
       if (q.dist && r.city[2] !== q.dist) return false;
@@ -91,11 +169,18 @@
       // R2-11 细则4：未审核排最前，照搬线上 ORDER BY CASE WHEN audit_status = 0 THEN 0 ELSE 1 END
       var pa = a.approve === '未审核' ? 0 : 1, pb = b.approve === '未审核' ? 0 : 1;
       if (pa !== pb) return pa - pb;
-      if (q.sort === 'sold') return b.sold - a.sold;
-      if (q.sort === 'views') return b.views - a.views;
+      if (q.sort === 'sold' && b.sold !== a.sold) return b.sold - a.sold;
+      if (q.sort === 'views' && b.views !== a.views) return b.views - a.views;
       return a.time < b.time ? 1 : -1;
     });
     return list;
+  }
+
+  // 热销、banner 开关（第 5.4 节）：只有审核通过的车能点
+  function sw(r, flag) {
+    var on = r[flag], ok = r.approve === '通过', label = flag === 'hot' ? '热销' : 'banner';
+    return '<button type="button" class="sw' + (on ? ' on' : '') + '" role="switch" aria-checked="' + on + '" aria-label="' + label + '" data-flag="' + flag + '" data-id="' + r.id + '"' +
+      (ok ? '' : ' disabled title="审核通过后可设置"') + '><i></i></button>';
   }
 
   function render() {
@@ -114,19 +199,21 @@
     var slice = list.slice((page - 1) * size, page * size);
 
     $('#stock-body').innerHTML = slice.map(function (r, i) {
-      return '<tr' + (r.sold >= 3 ? ' class="row-warn"' : '') + '>' +
+      return '<tr>' +
         '<td>' + ((page - 1) * size + i + 1) + '</td>' +
-        '<td class="cell-id">' + r.id + '</td>' +
+        '<td class="cell-id">' + (r.no || '<span class="muted">—</span>') + '</td>' +
         '<td><span class="tag2 ' + (r.srcType === '库存车' ? 't-inv' : 't-4s') + '">' + r.srcType + '</span></td>' +
-        '<td>' + promoLabel(r) + '</td>' +
+        '<td>' + sw(r, 'hot') + '</td>' +
+        '<td>' + sw(r, 'banner') + '</td>' +
+        '<td>' + r.location + '</td>' +
         '<td>' + esc(r.name) + '</td>' +
         '<td>' + num(r.price) + '</td>' +
-        '<td>' + r.person + '</td>' +
-        '<td>' + esc(r.org) + '</td>' +
+        '<td>' + esc(personText(r)) + '</td>' +
+        '<td>' + esc(orgText(r)) + '</td>' +
         '<td>' + cityText(r.city) + '</td>' +
         '<td>' + r.time + '</td>' +
         '<td>' + r.views + '</td>' +
-        '<td>' + (r.sold ? '<b class="sold">' + r.sold + ' 人</b>' : '<span class="muted">—</span>') + '</td>' +
+        '<td>' + (r.sold ? '<b class="sold">' + r.sold + ' 人</b>' : '<span class="muted">0</span>') + '</td>' +
         '<td>' + approveChip(r.approve) + '</td>' +
         '<td>' + (r.approve === '通过'
           ? '<span class="status-dot' + (r.on ? ' on' : '') + '">' + (r.on ? '在售' : '已下架') + '</span>'
@@ -145,7 +232,7 @@
     }).join('');
 
     $('#stock-empty').hidden = list.length !== 0;
-    var any = ['code', 'brand', 'model', 'person', 'org', 'srctype', 'approve', 'shelf', 'promo', 'prov', 'city', 'dist', 'from', 'to'].some(function (k) { return q[k]; });
+    var any = KEYS.some(function (k) { return q[k]; });
     $('#stock-empty').textContent = any ? '没有查询到匹配的车辆' : '暂无车源';
     $('#stock-total').textContent = '共 ' + list.length + ' 条';
     $('#stock-page').textContent = page + ' / ' + maxPage;
@@ -165,8 +252,6 @@
       list.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('');
     if (old && list.indexOf(old) > -1) e.value = old;
   }
-  var PROMO_NAMES = { none: '无', special: '特价', hot: '热销' };
-  function promoLabel(r) { return r.promo === 'none' ? '<span class="muted">无</span>' : '<span class="tag2">' + PROMO_NAMES[r.promo] + '</span>'; }
   function uniq(a) { return a.filter(function (x, i) { return x && a.indexOf(x) === i; }); }
   function fillBrand() {
     fillSel('#q-brand', '不限品牌', uniq(rows.map(function (r) { return r.brand; })));
@@ -191,6 +276,13 @@
       return (!p || r.city[0] === p) && (!c || r.city[1] === c);
     }).map(function (r) { return r.city[2]; })), true);
   }
+  // 所属类型：第一项「全部」，其后「代码 名称」（REQ-004 第 5.1 节 2.1）
+  function fillType() {
+    var e = $('#q-stype'), old = e.value;
+    e.innerHTML = '<option value="">全部</option>' + ORG.types.slice().sort(function (a, b) { return a.code < b.code ? -1 : 1; })
+      .map(function (t) { return '<option value="' + t.code + '">' + esc(t.code + ' ' + t.name) + '</option>'; }).join('');
+    e.value = old;
+  }
 
   function byId(id) { return rows.filter(function (r) { return r.id === id; })[0]; }
   function closeModal() { $('#modal-root').innerHTML = ''; }
@@ -199,8 +291,8 @@
   var pvSets = {};
   function thumbs(title, list, r) {
     return '<div class="pic-row">' + list.map(function (src, k) {
-      // 车辆照片第一张左上角带促销角标（REQ-001 第 1.7 节）
-      var tag = (k === 0 && title === '车辆照片' && r && r.promoText) ? '<span class="promo-tag promo-' + r.promo + '">' + r.promoText + '</span>' : '';
+      // 车辆照片第一张左上角带「热销」角标（REQ-001 第 1.7 节）
+      var tag = (k === 0 && title === '车辆照片' && r && r.hot) ? '<span class="promo-tag promo-hot">热销</span>' : '';
       return '<button type="button" class="pic-thumb img" data-pv="' + title + '" data-pv-i="' + k + '" title="查看' + title + ' ' + (k + 1) + '"><img src="' + src + '" alt="' + title + ' ' + (k + 1) + '">' + tag + '</button>';
     }).join('') + '</div>';
   }
@@ -228,52 +320,78 @@
     openViewer(t.dataset.pv, pvSets[t.dataset.pv] || [], Number(t.dataset.pvI));
   });
 
-  function confirmBox(title, body, onOk, okText) {
+  function confirmBox(title, body, onOk, okText, okClass) {
     $('#modal-root').innerHTML = '<div class="modal-backdrop"><div class="modal" style="width:min(480px,100%)">' +
       '<div class="modal-header"><h2>' + esc(title) + '</h2><button class="modal-close" id="k-x">×</button></div>' +
-      '<div class="modal-body"><p style="margin:0">' + body + '</p></div>' +
-      '<div class="modal-footer"><button class="ghost" id="k-no">取消</button><button class="primary" id="k-yes">' + (okText || '确定') + '</button></div></div></div>';
+      '<div class="modal-body">' + body + '</div>' +
+      '<div class="modal-footer"><button class="ghost" id="k-no">取消</button><button class="' + (okClass || 'primary') + '" id="k-yes">' + (okText || '确定') + '</button></div></div></div>';
     $('#k-x').addEventListener('click', closeModal);
     $('#k-no').addEventListener('click', closeModal);
-    $('#k-yes').addEventListener('click', function () { closeModal(); onOk(); });
+    $('#k-yes').addEventListener('click', function () { if (onOk() !== false) closeModal(); });
   }
 
+  // 总部下架（第 9 节）：确认框内「下架原因」必填，最多 100 字，登记人在小程序看到
   function doOff(r, fromDetail) {
     confirmBox('下架车源',
-      '确定下架 <b>' + r.id + '　' + esc(r.name) + '</b>？<br><br>下架后小程序端不再展示，记录、主键与历史保留。<br><b>该车的「疑似已售」标记将清零</b>（R2-19）。',
+      '<p style="margin:0">确定下架 <b>' + esc(r.no) + '　' + esc(r.name) + '</b>？</p>' +
+      '<p class="muted" style="margin:6px 0 12px;font-size:12.5px">下架后小程序端不再展示，记录与历史保留；该车已售人数清零。</p>' +
+      '<label class="form-field">下架原因（必填）<textarea id="k-reason" maxlength="100" rows="3" placeholder="请填写下架原因，登记人会看到"></textarea>' +
+      '<span class="field-help" id="k-count" style="justify-self:end">0 / 100</span></label>',
       function () {
+        var reason = $('#k-reason').value.trim();
+        if (!reason) return false;
         r.on = false;
         r.sold = 0;                 // R2-19 下架即清零
-        r.ops.unshift({ t: '2026-09-13 23:10', who: '总部 admin', act: '下架' });
-        toast('已下架，疑似已售标记已清零');
+        r.offReason = reason; r.offAt = nowText(); r.offBy = '总部 admin';
+        r.ops.unshift({ t: r.offAt, who: '总部 admin', act: '下架：' + reason });
+        toast('已下架');
         render();
-        if (fromDetail) openDetail(r);
-      });
+        if (fromDetail) setTimeout(function () { openDetail(r); });
+      }, '确认下架');
+    var ok = $('#k-yes'), ta = $('#k-reason');
+    ok.disabled = true;
+    ta.addEventListener('input', function () { ok.disabled = !ta.value.trim(); $('#k-count').textContent = Array.from(ta.value).length + ' / 100'; });
+    ta.focus();
   }
 
-  // R2-14 总部也可以上架
+  // R2-14 总部也可以上架；重新上架后下架原因不再显示
   function doOn(r, fromDetail) {
     confirmBox('上架车源',
-      '确定上架 <b>' + r.id + '　' + esc(r.name) + '</b>？<br><br>上架后小程序端恢复展示。总部只做上下架、不改车辆信息，因此不触发重新审核。',
+      '<p style="margin:0">确定上架 <b>' + esc(r.no) + '　' + esc(r.name) + '</b>？<br><br>上架后小程序端恢复展示。总部只做上下架、不改车辆信息，因此不触发重新审核。</p>',
       function () {
-        r.on = true;
-        r.ops.unshift({ t: '2026-09-13 23:12', who: '总部 admin', act: '上架' });
+        r.on = true; r.offReason = ''; r.offAt = '';
+        r.ops.unshift({ t: nowText(), who: '总部 admin', act: '上架' });
         toast('已上架');
         render();
-        if (fromDetail) openDetail(r);
+        if (fromDetail) setTimeout(function () { openDetail(r); });
       });
   }
 
-  // R2-18 审核弹窗：照搬线上售车登记 ApprovalSave 的字段与校验
+  // 热销、banner：立即保存，不弹确认；banner 每个列表（库存车、一手车源分别算）最多 10 台
+  function setFlag(r, flag) {
+    if (!r || r.approve !== '通过') return false;
+    var v = !r[flag];
+    if (flag === 'banner' && v) {
+      var n = rows.filter(function (x) { return x.srcType === r.srcType && x.banner; }).length;
+      if (n >= 10) { toast('每个列表最多 10 台 banner，请先取消其他车的 banner', 2600); return false; }
+    }
+    r[flag] = v;
+    r[flag + 'At'] = v ? Date.now() : 0;     // 打开记 hot_time／banner_time，关掉清空
+    toast(flag === 'hot' ? (v ? '已设为热销' : '已取消热销') : (v ? '已设为 banner' : '已取消 banner'));
+    render();
+    return true;
+  }
+
+  // R2-18 审核弹窗：照搬线上售车登记 ApprovalSave 的字段与校验；第一次通过时生成车辆编号
   function openApprove(r) {
     $('#modal-root').innerHTML = '<div class="modal-backdrop"><div class="modal large">' +
       '<div class="modal-header"><h2>审核车源 ' + approveChip(r.approve) + '</h2><button class="modal-close" id="a-x">×</button></div>' +
       '<div class="modal-body">' +
-      vehicleDl(r) +
+      vehicleDl(r, true) +
       '<h3 class="ops-title">审核</h3>' +
       '<div class="form-grid">' +
       '<label class="form-field"><span>审核结果（必填）</span>' +
-      '<span class="seg2" id="a-seg"><button type="button" data-ap="通过" class="on">通过</button><button type="button" data-ap="不通过">驳回</button></span></label>' +
+      '<span class="seg2" id="a-seg"><button type="button" data-ap="通过" class="on">通过</button><button type="button" data-ap="驳回">驳回</button></span></label>' +
       '<label class="form-field full"><span>审核意见</span><textarea id="a-op" maxlength="256" placeholder="选「驳回」时必填，最多 256 字"></textarea></label>' +
       '<div class="field-error form-field full" id="a-err"></div>' +
       '</div></div>' +
@@ -291,29 +409,38 @@
     $('#a-cancel').addEventListener('click', closeModal);
     $('#a-ok').addEventListener('click', function () {
       var op = $('#a-op').value.trim();
-      if (pick === '不通过' && !op) { $('#a-err').textContent = '请输入审核意见'; return; }
+      if (pick === '驳回' && !op) { $('#a-err').textContent = '请输入审核意见'; return; }
       r.approve = pick;
       r.opinion = op;
-      r.auditAt = '2026-09-13 23:20';
+      r.auditAt = nowText();
       r.auditor = '总部 admin';
-      if (pick === '通过') { r.on = true; r.ops.unshift({ t: r.auditAt, who: r.auditor, act: '审核通过' }); }
-      else { r.on = false; r.sold = 0; r.ops.unshift({ t: r.auditAt, who: r.auditor, act: '审核驳回：' + op }); }
+      if (pick === '通过') {
+        if (!r.no) r.no = nextNo(r);
+        r.on = true;
+        r.ops.unshift({ t: r.auditAt, who: r.auditor, act: '审核通过' });
+      } else { r.on = false; r.sold = 0; r.ops.unshift({ t: r.auditAt, who: r.auditor, act: '审核驳回：' + op }); }
       closeModal(); render();
-      toast(pick === '通过' ? '已通过，车辆已上架' : '已驳回，已通知登记人');
+      if (pick === '通过') toast('已通过，车辆编号 ' + r.no + '，车辆已上架', 3200);
+      else toast('已驳回，已通知登记人');
     });
   }
 
-  // 车辆信息只读表：详情与审核弹窗共用，字段口径同 REQ-001 第 2.6 节 18 项，R2 新增五项不得缺
-  function vehicleDl(r) {
+  // 车辆信息只读表：详情与审核弹窗共用，字段口径同 REQ-001 第 2.6 节，v2.5 加车辆编号、车辆位置、热销、banner
+  function vehicleDl(r, forApprove) {
     // TASK-038：显示真实缩略图，点击放大查看，可前后切换（做法同小程序登记页 TASK-037）
     pvSets = { '车辆照片': r.photos, '详情图片': r.detailImgs };
     var pics = thumbs('车辆照片', r.photos, r);
     var blocks = r.detailImgs.length ? thumbs('详情图片', r.detailImgs) : '<span class="muted">未添加</span>';
+    var flags = r.approve === '通过' && !forApprove
+      ? function (f) { return '<span class="sw-cell">' + sw(r, f) + '<span>' + (r[f] ? '是' : '否') + '</span></span>'; }
+      : function () { return '<span class="muted">审核通过后可设置</span>'; };
     return '<div class="detail-grid two">' +
-      '<dt>车辆 ID</dt><dd>' + r.id + '</dd>' +
+      '<dt>车辆编号</dt><dd>' + (r.no || '<span class="muted">审核通过后生成</span>') + '</dd>' +
       '<dt>车源类型</dt><dd>' + r.srcType + '</dd>' +
-      '<dt>促销标识</dt><dd>' + PROMO_NAMES[r.promo] + '</dd>' +
+      '<dt>车辆位置</dt><dd>' + r.location + '</dd>' +
       '<dt>标签</dt><dd>' + (r.labels.length ? r.labels.join('、') : '<span class="muted">无</span>') + '</dd>' +
+      '<dt>热销</dt><dd>' + flags('hot') + '</dd>' +
+      '<dt>banner</dt><dd>' + flags('banner') + '</dd>' +
       '<dt>品牌</dt><dd>' + esc(r.brand) + '</dd>' +
       '<dt>车型</dt><dd>' + esc(r.model + ' ' + r.variant) + '</dd>' +
       '<dt>外观颜色</dt><dd>' + r.color + '</dd>' +
@@ -322,8 +449,8 @@
       '<dt>实际售价</dt><dd><b style="color:#b73b3b">' + money(r.price) + '</b></dd>' +
       '<dt>车辆所在地</dt><dd>' + r.city.join(' ') + '</dd>' +
       '<dt>置顶</dt><dd>' + (isTop(r) ? '<span class="top-until">置顶至 ' + fmt(r.topEnd, true) + '</span>' : '未置顶') + '</dd>' +
-      '<dt>登记人</dt><dd>' + r.person + '</dd>' +
-      '<dt>所属机构</dt><dd>' + esc(r.org) + '</dd>' +
+      '<dt>登记人</dt><dd>' + esc(personText(r)) + '</dd>' +
+      '<dt>所属机构</dt><dd>' + esc(orgText(r)) + '</dd>' +
       '<dt>登记时间</dt><dd>' + r.time + '</dd>' +
       '<dt>备注</dt><dd>' + esc(r.remark) + '</dd>' +
       '<dt class="full">车辆照片' + (r.video ? '与视频' : '') + '</dt><dd class="full">' + pics + '</dd>' +
@@ -331,7 +458,7 @@
       '</div>';
   }
 
-  function openDetail(r) {
+  function openDetail(r, keepScroll) {
     $('#modal-root').innerHTML = '<div class="modal-backdrop"><div class="modal large" id="detail-modal">' +
       '<div class="modal-header"><h2>车源详情 ' + approveChip(r.approve) +
       (r.approve === '通过' ? ' <span class="status-dot' + (r.on ? ' on' : '') + '">' + (r.on ? '在售' : '已下架') + '</span>' : '') + '</h2>' +
@@ -339,15 +466,16 @@
       '<div class="modal-body">' +
       '<div class="stat-row">' +
       '<div class="stat"><b>' + r.views + '</b><span>查看次数</span></div>' +
-      '<div class="stat"><b class="' + (r.sold ? 'sold' : '') + '">' + (r.sold || 0) + '</b><span>疑似已售标记</span></div>' +
+      '<div class="stat"><b class="' + (r.sold ? 'sold' : '') + '">' + (r.sold || 0) + '</b><span>已售人数</span></div>' +
       '<div class="stat"><b style="font-size:15px">' + r.approve + (r.approve === '通过' ? ' · ' + (r.on ? '在售' : '已下架') : '') + '</b><span>当前状态</span></div>' +
       '<div class="stat"><b style="font-size:15px">' + r.time + '</b><span>登记时间</span></div>' +
       '</div>' +
+      (r.approve === '驳回' ? '<div class="danger-box" style="margin-bottom:12px"><strong>审核驳回</strong><div>驳回时间：' + r.auditAt + '　审核人：' + r.auditor + '</div><p style="margin:6px 0 0">驳回原因：' + esc(r.opinion) + '</p></div>' : '') +
+      (r.approve === '通过' && !r.on && r.offReason ? '<div class="off-box"><strong>已下架</strong><div>下架时间：' + r.offAt + '　操作人：' + esc(r.offBy) + '</div><p>下架原因：' + esc(r.offReason) + '</p></div>' : '') +
       vehicleDl(r) +
-      (r.approve === '不通过' ? '<div class="danger-box"><strong>审核不通过</strong><div>驳回时间：' + r.auditAt + '　审核人：' + r.auditor + '</div><p style="margin:6px 0 0">' + esc(r.opinion) + '</p></div>' : '') +
       '<h3 class="ops-title">操作记录</h3>' +
       (r.ops.length ? '<table class="data-table"><thead><tr><th>时间</th><th>操作人</th><th>动作</th></tr></thead><tbody>' +
-        r.ops.map(function (o) { return '<tr><td>' + o.t + '</td><td>' + o.who + '</td><td>' + o.act + '</td></tr>'; }).join('') +
+        r.ops.map(function (o) { return '<tr><td>' + o.t + '</td><td>' + esc(o.who) + '</td><td>' + esc(o.act) + '</td></tr>'; }).join('') +
         '</tbody></table>'
         : '<p class="muted" style="margin:6px 0 0">暂无上架／下架记录。浏览线索不在这里，去线索管理页面看。</p>') +
       '<h3 class="ops-title">置顶记录</h3>' +
@@ -363,6 +491,7 @@
       (r.approve === '通过' ? (r.on ? '<button class="danger" id="k-off">下架</button>' : '<button class="primary" id="k-on">上架</button>') : '') +
       (isTop(r) ? '<button class="ghost" id="k-untop">取消置顶</button>' : '') +
       '</div></div></div>';
+    if (keepScroll) $('#detail-modal').scrollTop = keepScroll;
 
     $('#k-x2').addEventListener('click', closeModal);
     $('#k-back').addEventListener('click', closeModal);
@@ -370,50 +499,77 @@
     if ($('#k-off')) $('#k-off').addEventListener('click', function () { doOff(r, true); });
     if ($('#k-on')) $('#k-on').addEventListener('click', function () { doOn(r, true); });
     if ($('#k-untop')) $('#k-untop').addEventListener('click', function () { doUntop(r, true); });
+    $('#detail-modal').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-flag]');
+      if (b && setFlag(r, b.dataset.flag)) openDetail(r, $('#detail-modal').scrollTop);
+    });
   }
 
   // R3-01 总部取消置顶（REQ-004 第 6.2 节）：立即恢复正常排序，系统不自动退款
   function doUntop(r, fromDetail) {
     confirmBox('确认取消该车置顶？',
-      '<b>' + r.id + '　' + esc(r.name) + '</b><br><br>取消后立即恢复正常排序，系统不自动退款。',
+      '<p style="margin:0"><b>' + esc(r.no) + '　' + esc(r.name) + '</b><br><br>取消后立即恢复正常排序，系统不自动退款。</p>',
       function () {
         var now = new Date();
         r.topEnd = now;
         if (r.topOrders[0]) { r.topOrders[0].cancelAt = now; r.topOrders[0].cancelBy = '总部 admin'; }
         toast('已取消置顶');
         render();
-        if (fromDetail) openDetail(r);
+        if (fromDetail) setTimeout(function () { openDetail(r); });
       }, '确认取消置顶');
   }
+
+  // 注意：审核状态与上下架的 id 用 pc- 前缀，避开小程序视图里的同名 id
+  var FIELDS = { code: 'q-code', brand: 'q-brand', model: 'q-model', person: 'q-person', org: 'q-org', stype: 'q-stype',
+    srctype: 'q-srctype', approve: 'pc-approve', shelf: 'pc-shelf', hot: 'q-hot', banner: 'q-banner', loc: 'q-loc',
+    prov: 'q-prov', city: 'q-city', dist: 'q-dist', from: 'q-from', to: 'q-to' };
+  function readQuery() { Object.keys(FIELDS).forEach(function (k) { q[k] = $('#' + FIELDS[k]).value.trim(); }); page = 1; render(); }
+  function clearFields() { Object.keys(FIELDS).forEach(function (k) { $('#' + FIELDS[k]).value = ''; }); fillBrand(); fillProv(); }
+
+  // 从「类型维护」「登记人维护」点「近 30 天上传车辆数」跳入：带入所属类型或登记人＋登记时间最近 30 天，自动查询一次（第 5.1 节）
+  function openWith(opt) {
+    if (!$('#view-stock')) return;
+    clearFields(); fillType();
+    if (opt.type) $('#q-stype').value = opt.type;
+    if (opt.person) $('#q-person').value = opt.person;
+    $('#q-from').value = recentFrom(); $('#q-to').value = ymd(new Date(NOW));
+    readQuery();
+    if (window.showPrototypeView) window.showPrototypeView('stock');
+    window.scrollTo(0, 0);
+  }
+  // 近 30 天上传车辆数：全部状态都算（含未审核、驳回、已下架）
+  function recentCount(f) {
+    var from = recentFrom();
+    return rows.filter(function (r) {
+      if (!r.staffId || r.time.slice(0, 10) < from) return false;
+      if (f.staffId) return r.staffId === f.staffId;
+      if (f.type) return rowType(r) === f.type;
+      return false;
+    }).length;
+  }
+  window.PcStock = { open: openWith, recentCount: recentCount };
+  window.dispatchEvent(new Event('pc-stock-ready'));
 
   function bind() {
     if (!$('#view-stock')) return;
 
-    // 注意：审核状态与上下架的 id 用 pc- 前缀，避开小程序视图里的同名 id
-    var FIELDS = { code: 'q-code', brand: 'q-brand', model: 'q-model', person: 'q-person',
-      org: 'q-org', srctype: 'q-srctype', approve: 'pc-approve', shelf: 'pc-shelf', promo: 'q-promo',
-      prov: 'q-prov', city: 'q-city', dist: 'q-dist', from: 'q-from', to: 'q-to' };
-
-    fillBrand(); fillProv();
+    fillBrand(); fillProv(); fillType();
+    $('#q-loc').innerHTML = '<option value="">全部</option>' + LOCATIONS.map(function (x) { return '<option>' + x + '</option>'; }).join('');
     $('#q-brand').addEventListener('change', fillModel);
     $('#q-prov').addEventListener('change', fillCity);
     $('#q-city').addEventListener('change', fillDist);
+    $('#q-stype').addEventListener('focus', fillType);
 
-    $('#stock-query').addEventListener('click', function () {
-      Object.keys(FIELDS).forEach(function (k) { q[k] = $('#' + FIELDS[k]).value.trim(); });
-      page = 1; render();
-    });
-    $('#stock-reset').addEventListener('click', function () {
-      Object.keys(FIELDS).forEach(function (k) { $('#' + FIELDS[k]).value = ''; q[k] = ''; });
-      fillBrand(); fillProv();
-      page = 1; render();
-    });
+    $('#stock-query').addEventListener('click', readQuery);
+    $('#stock-reset').addEventListener('click', function () { clearFields(); readQuery(); });
     $('#q-sort').addEventListener('change', function (e) { q.sort = e.target.value; page = 1; render(); });
     $('#stock-size').addEventListener('change', function (e) { size = Number(e.target.value); page = 1; render(); });
     $('#stock-prev').addEventListener('click', function () { if (page > 1) { page--; render(); } });
     $('#stock-next').addEventListener('click', function () { page++; render(); });
 
     $('#stock-body').addEventListener('click', function (e) {
+      var f = e.target.closest('button[data-flag]');
+      if (f) { setFlag(byId(f.dataset.id), f.dataset.flag); return; }
       var btn = e.target.closest('button[data-act]');
       if (!btn) return;
       var r = byId(btn.dataset.id);
@@ -426,8 +582,10 @@
 
     render();
 
-    // 便于核验时直接截到详情画面
     var p = new URLSearchParams(location.search);
+    // 带入查询：?type=A 或 ?person=李明（均为登记时间最近 30 天）
+    if (p.get('type') || p.get('person')) openWith({ type: (p.get('type') || '').toUpperCase(), person: p.get('person') || '' });
+    // 便于核验时直接截到详情画面
     if (p.get('detail') === '1') { var r0 = filtered().filter(function (x) { return x.on; })[0]; if (r0) openDetail(r0); }
   }
 

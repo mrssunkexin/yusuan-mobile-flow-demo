@@ -39,14 +39,12 @@
     ownerId:'demo-u1', vehicleVisible:20,
     q:{brand:'',model:'',variant:'',approve:'',shelf:''},
     notifyOpen:false,
-    storeQuery:'', storePage:1, storePageSize:20,
-    employeeQuery:{ name:'', phone:'', store:'', status:'' }, employeePage:1,
+    storeQuery:{ code:'', name:'' }, storePage:1, storePageSize:20,
+    employeeQuery:{ name:'', phone:'', store:'', status:'' }, employeePage:1, employeeSort:'',
     currentContactId:'hq-1', currentContactSnapshot:{id:'hq-1',name:'总部人员A',phone:'13900000001'}, selectedVehicle:null, photos:[], preservedNote:''
   };
 
   // 登记列表、修改与查看共用同车实拍资料；保留原审核状态及分页示例。
-  const STORE_NAMES=['杭州滨江4S店','宁波鄞州4S店','温州龙湾4S店','绍兴柯桥4S店','嘉兴南湖4S店','金华婺城4S店','台州椒江4S店','湖州吴兴4S店','丽水莲都4S店','衢州柯城4S店'];
-  const STAFF_NAMES=['李明','王海涛','张文静','陈思远','刘佳','周锦程','吴雅琴','郑浩然','孙立群','黄晓峰','徐志强','马丽华','高建国','林曼','朱天翔','何静怡','罗文博','梁秋萍','宋子豪','谢婉清'];
   const registrationSeeds=[
     ['inventory-m6',108000],['inventory-lc76',618000],['inventory-g63',2538000],
     ['inventory-yuan',78800],['inventory-prado',768000],['inventory-lc300',818000]
@@ -81,19 +79,53 @@
       unlistedAt:index===2||index>=39?'2026-09-08 19:00':''};
   });
 
-  const stores = Array.from({ length:23 }, (_, index) => ({
-    id:`store-${index+1}`,
-    name:index===0?'杭州滨江汽车销售服务有限公司旗舰交付中心':STORE_NAMES[index%STORE_NAMES.length],
-    region:index===0?'浙江省 杭州市 滨江区':index%2?'浙江省 杭州市 滨江区':'上海市 上海市 浦东新区',
-    address:index===0?'滨江区江南大道588号A座一层至三层（含展厅、维修车间与交车区，地址较长用于检验表格换行与全文展示）':`解放路${100+index}号`,
-    createdAt:23-index
-  }));
+  // REQ-005 v1.4：「4S店信息维护」改为「类型维护」。类型＝登记人所属机构，类型代码 A～Z 保存后不能改（车辆编号「Y＋代码」用它）
+  const TYPE_CODES='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const REGIONS={'浙江省':{'杭州市':['滨江区','西湖区','余杭区'],'宁波市':['鄞州区','海曙区']},'上海市':{'上海市':['浦东新区','闵行区']},'江苏省':{'南京市':['鼓楼区','玄武区']}};
+  // 列表默认按创建时间从新到旧：后建的类型排在前面
+  const stores=[
+    ['A','杭州滨江汽车销售服务有限公司','浙江省 杭州市 滨江区','江南大道588号A座一层至三层（含展厅、维修车间与交车区）'],
+    ['B','杭州余杭顺达汽车贸易有限公司','浙江省 杭州市 余杭区','文一西路1218号'],
+    ['C','宁波鄞州恒通汽车销售有限公司','浙江省 宁波市 鄞州区','天童南路699号'],
+    ['D','上海浦东嘉诚汽车服务有限公司','上海市 上海市 浦东新区','张杨路1588号'],
+    ['E','上海闵行瑞丰汽车贸易有限公司','上海市 上海市 闵行区','沪闵路6088号'],
+    ['F','南京鼓楼宏远汽车销售有限公司','江苏省 南京市 鼓楼区','中山北路281号'],
+    ['G','杭州西湖金诚汽车销售服务有限公司','浙江省 杭州市 西湖区','文三路477号'],
+    ['H','宁波海曙安达汽车贸易有限公司','浙江省 宁波市 海曙区','望春路218号']
+  ].map(([code,name,region,address],index)=>({id:`store-${code}`,code,name,region,address,createdAt:index+1})).reverse();
 
-  const employees = Array.from({ length:22 }, (_, index) => ({
-    id:`employee-${index+1}`, name:index===0?'欧阳明轩':STAFF_NAMES[index%STAFF_NAMES.length],
-    phone:`1380000${String(1000+index).slice(-4)}`, idCard:`00000019900101${String(1000+index).slice(-4)}`,
-    storeId:stores[index%stores.length].id, status:index%5===0?'停用':'启用', note:index%3===0?'负责展厅接待与车源登记，工作日在岗。':'', createdAt:22-index
-  }));
+  // 18 位身份证校验位（GB 11643）：前 17 位加权求和取模
+  function idCheckChar(body17){const w=[7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];let s=0;for(let i=0;i<17;i++)s+=Number(body17[i])*w[i];return '10X98765432'[s%11];}
+  function validIdCard(value){
+    const v=String(value||'').trim().toUpperCase();
+    if(!/^\d{17}[\dX]$/.test(v))return false;
+    const y=Number(v.slice(6,10)),m=Number(v.slice(10,12)),d=Number(v.slice(12,14)),dt=new Date(y,m-1,d);
+    if(y<1900||dt.getFullYear()!==y||dt.getMonth()!==m-1||dt.getDate()!==d||dt>new Date())return false;
+    return idCheckChar(v)===v[17];
+  }
+  const LOGIN_ID={'13800001234':'33010819850807123X','13800005678':'330108198503224567'};
+  const AREA={A:'330108',B:'330110',C:'330212',D:'310115',E:'310112',F:'320106',G:'330106'};
+  // REQ-006 v1.6：「4S店员工」改称「登记人」，所属改为「所属类型」。李明、陈思远与 REQ-009 登录页的启用／停用账号一致
+  const employees=[
+    ['李明','A','13800001234','启用'],['欧阳明轩','A','13800001001','启用'],['张文静','A','13800001002','启用'],['陈思远','A','13800005678','停用'],
+    ['王海涛','B','13800001004','启用'],['刘佳','B','13800001005','启用'],['周锦程','B','13800001006','停用'],
+    ['吴雅琴','C','13800001007','启用'],['郑浩然','C','13800001008','启用'],
+    ['孙立群','D','13800001009','启用'],['黄晓峰','D','13800001010','启用'],['徐志强','D','13800001011','启用'],
+    ['马丽华','E','13800001012','启用'],['高建国','E','13800001013','停用'],
+    ['林曼','F','13800001014','启用'],['朱天翔','F','13800001015','启用'],['何静怡','F','13800001016','启用'],
+    ['罗文博','G','13800001017','启用'],['梁秋萍','G','13800001018','启用'],['宋子豪','G','13800001019','启用'],['谢婉清','G','13800001020','停用']
+  ].map(([name,typeCode,phone,status],index)=>{
+    const body=AREA[typeCode]+(1984+index%12)+String(index%12+1).padStart(2,'0')+String(10+index%18)+String(101+index*7).slice(-3);
+    // 李明、陈思远的身份证后六位即 REQ-009 登录页演示的密码 07123X、224567
+    const idCard=LOGIN_ID[phone]||body+idCheckChar(body);
+    return {id:`employee-${index+1}`,name,phone,idCard,typeCode,status,note:index%3===0?'负责展厅接待与车源登记，工作日在岗。':'',createdAt:21-index};
+  });
+  function typeByCode(code){return stores.find((item)=>item.code===code);}
+  function typeLabel(code){const t=typeByCode(code);return t?`${t.code} ${t.name}`:'';}
+  function typesByCode(){return stores.slice().sort((a,b)=>a.code<b.code?-1:1);}
+  function typeAddress(t){return t?t.region+' '+t.address:'';}
+  // 供 PC 车源管理（req-004-stock.js）读取登记人所属类型
+  window.PcOrgs={types:stores,registrants:employees,typeLabel};
 
   const contacts = [
     { id:'hq-1', name:'总部人员A', phone:'13900000001', wecom:true, active:false },
@@ -272,17 +304,20 @@
       ()=>{ $$('[data-variant-index]').forEach((b)=>b.addEventListener('click',()=>showVehicleForm({selection:{brand,model,variant:catalog[brand][model][Number(b.dataset.variantIndex)]}}))); });
   }
 
-  function currentRole(){ return '一级代理商'; }
+  // 从「车源登记登录」进入（登记人，原4S员工）时按登记人显示；从代理商后台进入为一级代理商
+  function currentRole(){ return document.querySelector('#view-inventory.is-staff4s')?'4S店员工':'一级代理商'; }
   function showVehicleForm({selection=null,manual=false,vehicle=null}){
-    const role=currentRole(), sourceType=logic.sourceTypeForRole(role), isManual=manual||Boolean(vehicle&&vehicle.manual);
+    const role=vehicle?(vehicle.sourceType==='一手车源'?'4S店员工':'一级代理商'):currentRole(), sourceType=logic.sourceTypeForRole(role), isManual=manual||Boolean(vehicle&&vehicle.manual);
     const brand=vehicle?.brand||selection?.brand||'',model=vehicle?.model||selection?.model||'',variantName=vehicle?.variant||selection?.variant?.name||'';
     const reference=vehicle?.referencePrice??selection?.variant?.price??'',sale=vehicle?.salePrice??selection?.variant?.price??'';
     const returnToDetail=Boolean(vehicle&&pageStack.at(-1)?.title==='车辆详情');
     if(vehicle)state.photos=(vehicle.photos||[]).slice();
     let sourcePhotos=selection?(selection.variant.photos||[]).slice():[];
-    const storeName=role==='4S店员工'?'杭州滨江4S店':'华东代理商';
-    const organizationLabel=role==='4S店员工'?'所属4S店':'代理商／经营主体';
-    const address=role==='4S店员工'?'浙江省杭州市滨江区江南大道588号':'上海市浦东新区张杨路1188号';
+    // REQ-001 v2.11：登记人显示「所属类型」，内容为「代码 名称」；登记地址取所属类型的地址
+    const staffType=typeByCode('A');
+    const storeName=role==='4S店员工'?typeLabel('A'):'华东代理商';
+    const organizationLabel=role==='4S店员工'?'所属类型':'代理商／经营主体';
+    const address=role==='4S店员工'?staffType.region.replace(/ /g,'')+staffType.address:'上海市浦东新区张杨路1188号';
     // v2.11：修改页品牌、车型、型号一律只读（目录登记、手动登记都一样），要换车型须重新登记
     const lockCar=Boolean(vehicle)||!isManual, lockAttr=lockCar?'readonly class="read-only"':'';
     const rejectBox=vehicle&&vehicle.approve==='驳回'
@@ -304,7 +339,7 @@
         <div class="form-field full"><span>详情图片（选填）</span><div id="detail-blocks" class="detail-pics"></div><div class="detail-tools"><label class="ghost detail-add">＋ 添加图片<input id="add-detail-image" type="file" accept="image/jpeg,image/png" multiple hidden></label></div><span class="field-help">只能添加图片，最多 20 张，可调整顺序。</span></div>
         <label class="form-field">登记人<input readonly class="read-only" value="${role==='4S店员工'?'员工·李明':'代理商·周强'}"></label>
         <label class="form-field">登录手机号<input readonly class="read-only" value="${role==='4S店员工'?'13800001234':'18686636658'}"></label>
-        <label class="form-field">${organizationLabel}<input readonly class="read-only" value="${escapeHtml(storeName)}"></label>
+        <label class="form-field${role==='4S店员工'?' full':''}">${organizationLabel}<input readonly class="read-only" value="${escapeHtml(storeName)}"></label>
         <label class="form-field full">登记地址<textarea readonly class="read-only">${escapeHtml(address)}</textarea></label>
         <label class="form-field">车源类型<input readonly class="read-only" value="${sourceType||'无登记资格'}"></label>
         <label class="form-field">审核状态<input readonly class="read-only" value="${vehicle?escapeHtml(vehicle.approve):'提交后进入未审核'}"></label>
@@ -498,7 +533,7 @@
   }
 
   function showVehicleDetail(vehicle){
-    const organizationLabel=vehicle.sourceType==='一手车源'?'所属4S店':'代理商／经营主体';
+    const organizationLabel=vehicle.sourceType==='一手车源'?'所属类型':'代理商／经营主体';
     // v2.11：「车辆主键 ID」改为「车辆编号」（审核通过前显示「审核通过后生成」）；已下架显示下架原因；「促销标识」改为「车辆位置」
     const offReason=vehicle.approve==='通过'&&vehicle.status==='已下架'&&vehicle.unlistReason;
     const rows=[['审核状态',vehicle.approve],...(vehicle.approve==='驳回'?[['驳回时间',vehicle.rejectedAt],['驳回原因',vehicle.rejectReason]]:[]),...(vehicle.approve==='通过'?[['上下架',vehicle.status]]:[]),...(offReason?[['下架原因',vehicle.unlistReason]]:[]),['车源类型',vehicle.sourceType],['车辆编号',vehicle.vehicleNo||'审核通过后生成'],['车辆位置',vehicle.location||'暂无'],['标签',(vehicle.labels||[]).join('、')||'无'],['置顶',isTop(vehicle)?`置顶至 ${fmtTop(vehicle.topEnd,true)}`:'未置顶'],['品牌／车型／型号',`${vehicle.brand} ${vehicle.model} ${vehicle.variant}`],['参考价',vehicle.referencePrice?`${vehicle.referencePrice.toLocaleString()}元`:'暂无参考价'],['实际售价',`${vehicle.salePrice.toLocaleString()}元`],['外观／内饰颜色',`${vehicle.exterior}／${vehicle.interior}`],['备注',vehicle.note||'暂无备注'],['车辆照片',(vehicle.photos||[]).filter((src)=>!src.startsWith('data:video')).length+' 张'],['详情图片',(vehicle.detailImages||[]).length?`${vehicle.detailImages.length} 张`:'未添加'],['登记人',vehicle.ownerName],[organizationLabel,vehicle.storeName],['登记地址',vehicle.address],['首次登记时间',vehicle.createdAt],['最后修改时间',vehicle.updatedAt],...(vehicle.unlistedAt?[['下架时间',vehicle.unlistedAt]]:[]),...(vehicle.relistedAt?[['最后上架时间',vehicle.relistedAt]]:[])];
@@ -523,40 +558,155 @@
     });
   }
 
-  function filteredStores(){ return stores.filter((store)=>store.name.toLowerCase().includes(state.storeQuery.toLowerCase())); }
+  // ---- REQ-005 v1.4 类型维护 ----
+  // 近 30 天上传车辆数取自 PC 车源管理的同一份车辆（含未审核、驳回、已下架），点击带条件跳过去
+  function recentCount(filter){return window.PcStock?window.PcStock.recentCount(filter):0;}
+  function staffCount(code){return employees.filter((item)=>item.typeCode===code).length;}
+  function numLink(n,attr){return n?`<button type="button" class="num-link" ${attr}>${n}</button>`:'<span class="num-zero">0</span>';}
+  function filteredStores(){const q=state.storeQuery;return stores.filter((store)=>(!q.code||store.code===q.code)&&store.name.toLowerCase().includes(q.name.toLowerCase()));}
+  function fillTypeCodeFilter(){const sel=$('#store-code-filter');if(!sel)return;const old=sel.value;sel.innerHTML='<option value="">全部</option>'+stores.map((s)=>s.code).sort().map((c)=>`<option>${c}</option>`).join('');sel.value=stores.some((s)=>s.code===old)?old:'';}
   function renderStores(){
     const all=filteredStores(),totalPages=Math.max(1,Math.ceil(all.length/state.storePageSize)); if(state.storePage>totalPages)state.storePage=totalPages;
-    const rows=all.slice((state.storePage-1)*state.storePageSize,state.storePage*state.storePageSize); $('#store-table-body').innerHTML=rows.map((store)=>`<tr><td><div class="truncate-two" title="${escapeHtml(store.name)}">${escapeHtml(store.name)}</div></td><td>${store.region}</td><td><div class="truncate-two" title="${escapeHtml(store.address)}">${escapeHtml(store.address)}</div></td><td><div class="table-actions"><button data-store-view="${store.id}">查看</button><button data-store-edit="${store.id}">修改</button></div></td></tr>`).join('');
-    $('#store-empty').hidden=rows.length>0; $('#store-empty').textContent=state.storeQuery?'未找到匹配的4S店':'暂无4S店信息'; $('#store-total').textContent=`共 ${all.length} 条`; $('#store-page').textContent=`${state.storePage} / ${totalPages}`; $('#store-prev').disabled=state.storePage<=1; $('#store-next').disabled=state.storePage>=totalPages;
-    $$('[data-store-view]').forEach((button)=>button.addEventListener('click',()=>showStoreDetail(stores.find((item)=>item.id===button.dataset.storeView)))); $$('[data-store-edit]').forEach((button)=>button.addEventListener('click',()=>showStoreForm(stores.find((item)=>item.id===button.dataset.storeEdit)))); populateStoreOptions();
+    const rows=all.slice((state.storePage-1)*state.storePageSize,state.storePage*state.storePageSize);
+    $('#store-table-body').innerHTML=rows.map((store)=>`<tr><td><b class="type-code">${store.code}</b></td><td><div class="truncate-two" title="${escapeHtml(store.name)}">${escapeHtml(store.name)}</div></td><td>${numLink(staffCount(store.code),`data-type-staff="${store.code}" title="查看该类型的登记人"`)}</td><td>${numLink(recentCount({type:store.code}),`data-type-cars="${store.code}" title="查看近 30 天上传的车辆"`)}</td><td>${store.region}</td><td><div class="truncate-two" title="${escapeHtml(store.address)}">${escapeHtml(store.address)}</div></td><td><div class="table-actions"><button data-store-view="${store.id}">查看</button><button data-store-edit="${store.id}">修改</button></div></td></tr>`).join('');
+    $('#store-empty').hidden=rows.length>0; $('#store-empty').textContent=state.storeQuery.code||state.storeQuery.name?'未找到匹配的类型':'暂无类型'; $('#store-total').textContent=`共 ${all.length} 条`; $('#store-page').textContent=`${state.storePage} / ${totalPages}`; $('#store-prev').disabled=state.storePage<=1; $('#store-next').disabled=state.storePage>=totalPages;
+    $$('[data-store-view]').forEach((button)=>button.addEventListener('click',()=>showStoreDetail(stores.find((item)=>item.id===button.dataset.storeView)))); $$('[data-store-edit]').forEach((button)=>button.addEventListener('click',()=>showStoreForm(stores.find((item)=>item.id===button.dataset.storeEdit))));
+    $$('[data-type-staff]').forEach((button)=>button.addEventListener('click',()=>openEmployeesByType(button.dataset.typeStaff)));
+    $$('[data-type-cars]').forEach((button)=>button.addEventListener('click',()=>{if(window.PcStock)window.PcStock.open({type:button.dataset.typeCars});}));
+    fillTypeCodeFilter(); populateStoreOptions();
   }
-  function showStoreDetail(store){ openModal('查看4S店',`<dl class="detail-grid"><dt>4S店名称</dt><dd>${escapeHtml(store.name)}</dd><dt>省市区县</dt><dd>${store.region}</dd><dt>详细地址</dt><dd>${escapeHtml(store.address)}</dd></dl>`,`<button class="ghost" id="store-close">关闭</button><button class="primary" id="store-to-edit">修改</button>`); $('#store-close').addEventListener('click',closeModal); $('#store-to-edit').addEventListener('click',()=>showStoreForm(store)); }
+  function showStoreDetail(store){ openModal('查看类型',`<dl class="detail-grid"><dt>类型代码</dt><dd>${store.code}</dd><dt>类型名称</dt><dd>${escapeHtml(store.name)}</dd><dt>省市区县</dt><dd>${store.region}</dd><dt>详细地址</dt><dd>${escapeHtml(store.address)}</dd></dl>`,`<button class="ghost" id="store-close">关闭</button><button class="primary" id="store-to-edit">修改</button>`); $('#store-close').addEventListener('click',closeModal); $('#store-to-edit').addEventListener('click',()=>showStoreForm(store)); }
+  function regionOptions(list,value){return '<option value="">请选择</option>'+list.map((x)=>`<option ${x===value?'selected':''}>${x}</option>`).join('');}
   function showStoreForm(store=null,onReturn=null){
-    const parts=(store?.region||'').split(' '); openModal(store?'修改4S店':'新增4S店',`<form id="store-form" class="form-grid"><label class="form-field full">4S店名称<input name="name" maxlength="100" value="${escapeHtml(store?.name||'')}" placeholder="请输入4S店名称" required></label><label class="form-field">省<select name="province" required><option value="">请选择</option><option ${parts[0]==='浙江省'?'selected':''}>浙江省</option><option ${parts[0]==='上海市'?'selected':''}>上海市</option></select></label><label class="form-field">市<select name="city" required><option value="">请选择</option><option ${parts[1]==='杭州市'?'selected':''}>杭州市</option><option ${parts[1]==='上海市'?'selected':''}>上海市</option></select></label><label class="form-field">区县<select name="district" required><option value="">请选择</option><option ${parts[2]==='滨江区'?'selected':''}>滨江区</option><option ${parts[2]==='浦东新区'?'selected':''}>浦东新区</option></select></label><label class="form-field full">详细地址<input name="address" maxlength="200" value="${escapeHtml(store?.address||'')}" placeholder="请输入道路、门牌等详细地址" required></label><div class="source-mark form-field full">已确认：名称＋地区＋详细地址完全一致时拦截；同名不同地址允许。</div><div id="store-error" class="field-error form-field full"></div></form>`,`<button class="ghost" id="store-form-cancel">取消</button><button class="primary" id="store-form-save">保存</button>`);
-    $('#store-form-cancel').addEventListener('click',()=>{if(onReturn)onReturn(null);else closeModal();}); $('#store-form-save').addEventListener('click',()=>{const form=$('#store-form');if(!form.reportValidity())return;const data=new FormData(form),candidate={name:data.get('name').trim(),region:`${data.get('province')} ${data.get('city')} ${data.get('district')}`,address:data.get('address').trim()};const duplicate=stores.some((item)=>item.id!==store?.id&&item.name===candidate.name&&item.region===candidate.region&&item.address===candidate.address);if(duplicate){$('#store-error').textContent='该4S店已存在，请使用已有记录';return;}let savedStore=store;if(store)Object.assign(store,candidate);else{savedStore={id:`store-${Date.now()}`,...candidate,createdAt:Date.now()};stores.unshift(savedStore);}state.storePage=1;renderStores();renderEmployees();toast(store?'4S店信息已更新':'4S店新增成功');if(onReturn)onReturn(savedStore);else closeModal();});
+    const free=TYPE_CODES.filter((c)=>!stores.some((s)=>s.code===c));
+    if(!store&&!free.length){toast('类型代码已用完');return;}
+    const parts=(store?.region||'').split(' ');
+    const codeField=store
+      ? `<label class="form-field">类型代码<input value="${store.code}" readonly class="read-only"><span class="field-help">类型代码保存后不能修改</span></label>`
+      : `<label class="form-field">类型代码<select name="code" required>${'<option value="">请选择</option>'+free.map((c)=>`<option>${c}</option>`).join('')}</select><span class="field-help">已被其他类型使用的字母不显示；保存后不能修改</span></label>`;
+    openModal(store?'修改类型':'新增类型',`<form id="store-form" class="form-grid">${codeField}<label class="form-field">类型名称<input name="name" maxlength="100" value="${escapeHtml(store?.name||'')}" placeholder="请输入类型名称" required></label><label class="form-field">省<select name="province" required>${regionOptions(Object.keys(REGIONS),parts[0])}</select></label><label class="form-field">市<select name="city" required>${regionOptions(Object.keys(REGIONS[parts[0]]||{}),parts[1])}</select></label><label class="form-field">区县<select name="district" required>${regionOptions((REGIONS[parts[0]]||{})[parts[1]]||[],parts[2])}</select></label><label class="form-field full">详细地址<input name="address" maxlength="200" value="${escapeHtml(store?.address||'')}" placeholder="请输入道路、门牌等详细地址" required></label><div class="source-mark form-field full">已确认：名称＋地区＋详细地址完全一致时拦截；同名不同地址允许。</div><div id="store-error" class="field-error form-field full"></div></form>`,`<button class="ghost" id="store-form-cancel">取消</button><button class="primary" id="store-form-save">保存</button>`);
+    const prov=$('[name="province"]'),city=$('[name="city"]'),dist=$('[name="district"]');
+    prov.addEventListener('change',()=>{city.innerHTML=regionOptions(Object.keys(REGIONS[prov.value]||{}));dist.innerHTML=regionOptions([]);});
+    city.addEventListener('change',()=>{dist.innerHTML=regionOptions((REGIONS[prov.value]||{})[city.value]||[]);});
+    $('#store-form-cancel').addEventListener('click',()=>{if(onReturn)onReturn(null);else closeModal();}); $('#store-form-save').addEventListener('click',()=>{const form=$('#store-form');if(!form.reportValidity())return;const data=new FormData(form),candidate={name:data.get('name').trim(),region:`${data.get('province')} ${data.get('city')} ${data.get('district')}`,address:data.get('address').trim()};if(!candidate.name){$('#store-error').textContent='请输入类型名称';return;}const duplicate=stores.some((item)=>item.id!==store?.id&&item.name===candidate.name&&item.region===candidate.region&&item.address===candidate.address);if(duplicate){$('#store-error').textContent='该类型已存在，请使用已有记录';return;}let savedStore=store;if(store)Object.assign(store,candidate);else{const code=data.get('code');if(stores.some((item)=>item.code===code)){$('#store-error').textContent='该类型代码已被使用，请重新选择';return;}savedStore={id:`store-${code}`,code,...candidate,createdAt:Date.now()};stores.unshift(savedStore);state.storePage=1;}renderStores();renderEmployees();toast(store?'类型信息已更新':'类型新增成功');if(onReturn)onReturn(savedStore);else closeModal();});
   }
-
-  function storeById(id){return stores.find((item)=>item.id===id);}
-  function populateStoreOptions(){ $('#employee-store-options').innerHTML=stores.map((store)=>`<option value="${escapeHtml(store.name)}">${store.region}</option>`).join(''); }
-  function filteredEmployees(){const q=state.employeeQuery;return employees.filter((employee)=>employee.name.includes(q.name)&&employee.phone.includes(q.phone)&&(!q.store||storeById(employee.storeId)?.name===q.store)&&(!q.status||employee.status===q.status));}
+  // ---- REQ-006 v1.6 登记人维护 ----
+  function populateStoreOptions(){ const list=$('#employee-store-options'); if(list) list.innerHTML=typesByCode().map((store)=>`<option value="${escapeHtml(typeLabel(store.code))}">${store.region}</option>`).join(''); }
+  function staffRecent(employee){return recentCount({staffId:employee.id});}
+  function filteredEmployees(){const q=state.employeeQuery;const list=employees.filter((employee)=>employee.name.includes(q.name)&&employee.phone.includes(q.phone)&&(!q.store||typeLabel(employee.typeCode)===q.store)&&(!q.status||employee.status===q.status));if(state.employeeSort)list.sort((a,b)=>(staffRecent(a)-staffRecent(b))*(state.employeeSort==='asc'?1:-1));return list;}
   function renderEmployees(){
     const all=filteredEmployees(),pageSize=20,totalPages=Math.max(1,Math.ceil(all.length/pageSize));if(state.employeePage>totalPages)state.employeePage=totalPages;const rows=all.slice((state.employeePage-1)*pageSize,state.employeePage*pageSize);
-    $('#employee-table-body').innerHTML=rows.map((employee)=>`<tr><td>${escapeHtml(employee.name)}</td><td>${employee.phone}</td><td><div class="truncate-two" title="${escapeHtml(storeById(employee.storeId)?.name)}">${escapeHtml(storeById(employee.storeId)?.name)}</div></td><td><span class="status-dot ${employee.status==='启用'?'on':''}">${employee.status}</span></td><td>${escapeHtml(logic.remarkPreview(employee.note))}</td><td><div class="table-actions"><button data-employee-view="${employee.id}">查看</button><button data-employee-edit="${employee.id}">修改</button><button class="${employee.status==='启用'?'danger':''}" data-employee-toggle="${employee.id}">${employee.status==='启用'?'停用':'启用'}</button></div></td></tr>`).join('');
-    $('#employee-empty').hidden=rows.length>0;$('#employee-empty').textContent=Object.values(state.employeeQuery).some(Boolean)?'未找到符合条件的员工，请调整查询条件':'暂无4S店员工，请先新增员工';$('#employee-total').textContent=`共 ${all.length} 条`;$('#employee-page').textContent=`${state.employeePage} / ${totalPages}`;$('#employee-prev').disabled=state.employeePage<=1;$('#employee-next').disabled=state.employeePage>=totalPages;
+    $('#employee-table-body').innerHTML=rows.map((employee)=>`<tr><td>${escapeHtml(employee.name)}</td><td>${employee.phone}</td><td><div class="truncate-two" title="${escapeHtml(typeLabel(employee.typeCode))}">${escapeHtml(typeLabel(employee.typeCode))}</div></td><td>${numLink(staffRecent(employee),`data-employee-cars="${employee.id}" title="查看近 30 天上传的车辆"`)}</td><td><span class="status-dot ${employee.status==='启用'?'on':''}">${employee.status}</span></td><td>${escapeHtml(logic.remarkPreview(employee.note))}</td><td><div class="table-actions"><button data-employee-view="${employee.id}">查看</button><button data-employee-edit="${employee.id}">修改</button><button class="${employee.status==='启用'?'danger':''}" data-employee-toggle="${employee.id}">${employee.status==='启用'?'停用':'启用'}</button></div></td></tr>`).join('');
+    $('#employee-empty').hidden=rows.length>0;$('#employee-empty').textContent=Object.values(state.employeeQuery).some(Boolean)?'未找到符合条件的登记人，请调整查询条件':'暂无登记人，请先新增登记人';$('#employee-total').textContent=`共 ${all.length} 条`;$('#employee-page').textContent=`${state.employeePage} / ${totalPages}`;$('#employee-prev').disabled=state.employeePage<=1;$('#employee-next').disabled=state.employeePage>=totalPages;
+    const sortBtn=$('#employee-sort');if(sortBtn){sortBtn.querySelector('i').textContent=state.employeeSort==='desc'?'↓':state.employeeSort==='asc'?'↑':'↕';sortBtn.title=state.employeeSort==='desc'?'当前：多的在前，点击改为少的在前':state.employeeSort==='asc'?'当前：少的在前，点击恢复默认排序':'点击按近 30 天上传车辆数从多到少排序';}
     $$('[data-employee-view]').forEach((button)=>button.addEventListener('click',()=>showEmployeeDetail(employees.find((item)=>item.id===button.dataset.employeeView))));$$('[data-employee-edit]').forEach((button)=>button.addEventListener('click',()=>showEmployeeForm(employees.find((item)=>item.id===button.dataset.employeeEdit))));$$('[data-employee-toggle]').forEach((button)=>button.addEventListener('click',()=>confirmEmployeeToggle(employees.find((item)=>item.id===button.dataset.employeeToggle))));
+    $$('[data-employee-cars]').forEach((button)=>button.addEventListener('click',()=>{const e=employees.find((item)=>item.id===button.dataset.employeeCars);if(window.PcStock&&e)window.PcStock.open({person:e.name});}));
     populateStoreOptions();
   }
-  function showEmployeeDetail(employee){const store=storeById(employee.storeId);openModal('员工详情',`<dl class="detail-grid"><dt>员工姓名</dt><dd>${escapeHtml(employee.name)}</dd><dt>手机号</dt><dd>${employee.phone}</dd><dt>身份证号</dt><dd>${employee.idCard}</dd><dt>所属4S店</dt><dd>${escapeHtml(store.name)}</dd><dt>门店地址</dt><dd>${store.region}${escapeHtml(store.address)}</dd><dt>账号状态</dt><dd>${employee.status}</dd><dt>备注</dt><dd>${escapeHtml(employee.note||'暂无备注')}</dd></dl>`,`<button class="ghost" id="employee-detail-close">关闭</button><button class="primary" id="employee-detail-edit">修改</button>`);$('#employee-detail-close').addEventListener('click',closeModal);$('#employee-detail-edit').addEventListener('click',()=>showEmployeeForm(employee));}
-  function showEmployeeForm(employee=null){
-    const store=employee?storeById(employee.storeId):null;
-    const values={name:employee?.name??'',phone:employee?.phone??'',idCard:employee?.idCard??'',note:employee?.note??''};
-    openModal(employee?'修改4S店员工':'新增4S店员工',`<form id="employee-form" class="form-grid"><div class="source-mark form-field full">新增员工默认启用。启用／停用只在员工列表操作并二次确认。</div><label class="form-field">员工姓名<input name="name" maxlength="50" value="${escapeHtml(values.name)}" placeholder="请输入员工姓名" required></label><label class="form-field">手机号<input name="phone" value="${values.phone}" pattern="1[3-9][0-9]{9}" placeholder="请输入11位手机号" required></label><label class="form-field">身份证号<input name="idCard" value="${values.idCard}" pattern="[0-9]{17}[0-9Xx]" placeholder="请输入18位身份证号" required></label><label class="form-field">所属4S店<input name="store" list="form-store-options" value="${escapeHtml(store?.name||'')}" placeholder="输入店名搜索并选择" required><datalist id="form-store-options">${stores.map((item)=>`<option value="${escapeHtml(item.name)}">${item.region}</option>`).join('')}</datalist></label><label class="form-field full">门店地址<textarea id="employee-store-address" readonly class="read-only">${store?store.region+store.address:''}</textarea></label><label class="form-field full">备注<textarea name="note" maxlength="500">${escapeHtml(values.note)}</textarea></label><div class="field-help form-field full">若门店尚未配置，请先到“4S店信息维护”新增，再返回本页选择。</div><div id="employee-error" class="field-error form-field full"></div></form>`,`<button class="ghost" id="employee-form-cancel">取消</button><button class="primary" id="employee-form-save">保存</button>`,true);
-    const storeInput=$('[name="store"]');
-    storeInput.addEventListener('change',()=>{const chosen=stores.find((item)=>item.name===storeInput.value);$('#employee-store-address').value=chosen?chosen.region+chosen.address:'';});
-    $('#employee-form-cancel').addEventListener('click',closeModal);
-    $('#employee-form-save').addEventListener('click',()=>{const form=$('#employee-form');if(!form.reportValidity())return;const data=new FormData(form),chosen=stores.find((item)=>item.name===data.get('store'));if(!chosen){$('#employee-error').textContent='请选择所属4S店';return;}const phoneDecision=logic.employeePhoneDecision({usedByOtherRole:data.get('phone')==='13800009999'});if(!phoneDecision.allowed){$('#employee-error').textContent=phoneDecision.reason;return;}const duplicate=employees.some((item)=>item.id!==employee?.id&&(item.phone===data.get('phone')||item.idCard.toUpperCase()===data.get('idCard').toUpperCase()));if(duplicate){$('#employee-error').textContent='手机号或身份证号已关联4S店员工';return;}const update={name:data.get('name').trim(),phone:data.get('phone'),idCard:data.get('idCard').toUpperCase(),storeId:chosen.id,status:employee?.status||'启用',note:data.get('note').trim()};if(employee)Object.assign(employee,update);else employees.unshift({id:`employee-${Date.now()}`,...update,createdAt:Date.now()});closeModal();state.employeePage=1;renderEmployees();toast(employee?'员工信息已更新':'员工新增成功');});
+  // 类型维护点「登记人数」：带入所属类型并自动查询
+  function openEmployeesByType(code){
+    $('#employee-name').value='';$('#employee-phone').value='';$('#employee-status').value='';$('#employee-store-filter').value=typeLabel(code);
+    state.employeeQuery={name:'',phone:'',store:typeLabel(code),status:''};state.employeePage=1;renderEmployees();showView('employees');
   }
-  function confirmEmployeeToggle(employee){const target=employee.status==='启用'?'停用':'启用';openModal(`确认${target}员工`,`${target==='停用'?`<div class="danger-box">确认停用 ${escapeHtml(employee.name)}（${employee.phone}）？<br>停用后员工不能登录，已登记车辆保持当前状态。</div>`:`<p>确认启用 ${escapeHtml(employee.name)}（${employee.phone}）？</p>`}`,`<button class="ghost" id="toggle-cancel">取消</button><button class="primary" id="toggle-confirm">确认${target}</button>`);$('#toggle-cancel').addEventListener('click',closeModal);$('#toggle-confirm').addEventListener('click',()=>{employee.status=target;closeModal();renderEmployees();toast(`员工已${target}`);});}
+  function showEmployeeDetail(employee){const store=typeByCode(employee.typeCode);openModal('登记人详情',`<dl class="detail-grid"><dt>登记人姓名</dt><dd>${escapeHtml(employee.name)}</dd><dt>手机号</dt><dd>${employee.phone}</dd><dt>身份证号</dt><dd>${employee.idCard}</dd><dt>所属类型</dt><dd>${escapeHtml(typeLabel(employee.typeCode))}</dd><dt>类型地址</dt><dd>${escapeHtml(typeAddress(store))}</dd><dt>账号状态</dt><dd>${employee.status}</dd><dt>备注</dt><dd>${escapeHtml(employee.note||'暂无备注')}</dd></dl>`,`<button class="ghost" id="employee-detail-close">关闭</button><button class="primary" id="employee-detail-edit">修改</button>`);$('#employee-detail-close').addEventListener('click',closeModal);$('#employee-detail-edit').addEventListener('click',()=>showEmployeeForm(employee));}
+  function showEmployeeForm(employee=null){
+    const store=employee?typeByCode(employee.typeCode):null;
+    const values={name:employee?.name??'',phone:employee?.phone??'',idCard:employee?.idCard??'',note:employee?.note??''};
+    openModal(employee?'修改登记人':'新增登记人',`<form id="employee-form" class="form-grid"><div class="source-mark form-field full">新增登记人默认启用。启用／停用只在登记人列表操作并二次确认。</div><label class="form-field">登记人姓名<input name="name" maxlength="50" value="${escapeHtml(values.name)}" placeholder="请输入登记人姓名" required></label><label class="form-field">手机号<input name="phone" value="${values.phone}" pattern="1[3-9][0-9]{9}" placeholder="请输入11位手机号" required></label><label class="form-field">身份证号<input name="idCard" value="${values.idCard}" pattern="[0-9]{17}[0-9Xx]" placeholder="请输入18位身份证号" required></label><label class="form-field">所属类型<input name="store" list="form-store-options" value="${escapeHtml(store?typeLabel(store.code):'')}" placeholder="输入代码或名称搜索并选择" required><datalist id="form-store-options">${typesByCode().map((item)=>`<option value="${escapeHtml(typeLabel(item.code))}">${item.region}</option>`).join('')}</datalist></label><label class="form-field full">类型地址<textarea id="employee-store-address" readonly class="read-only">${escapeHtml(typeAddress(store))}</textarea></label><label class="form-field full">备注<textarea name="note" maxlength="500">${escapeHtml(values.note)}</textarea></label><div class="field-help form-field full">若类型尚未配置，请先到“类型维护”新增，再返回本页选择。</div><div id="employee-error" class="field-error form-field full"></div></form>`,`<button class="ghost" id="employee-form-cancel">取消</button><button class="primary" id="employee-form-save">保存</button>`,true);
+    const storeInput=$('[name="store"]');
+    const pick=()=>stores.find((item)=>typeLabel(item.code)===storeInput.value.trim());
+    storeInput.addEventListener('change',()=>{$('#employee-store-address').value=typeAddress(pick());});
+    $('#employee-form-cancel').addEventListener('click',closeModal);
+    $('#employee-form-save').addEventListener('click',()=>{const form=$('#employee-form');if(!form.reportValidity())return;const data=new FormData(form),chosen=pick();if(!chosen){$('#employee-error').textContent='请选择所属类型';return;}if(!validIdCard(data.get('idCard'))){$('#employee-error').textContent='请输入正确的18位身份证号';return;}const phoneDecision=logic.employeePhoneDecision({usedByOtherRole:data.get('phone')==='13800009999'});if(!phoneDecision.allowed){$('#employee-error').textContent='该手机号已属于其他账号，不能新增为登记人';return;}const others=employees.filter((item)=>item.id!==employee?.id);if(others.some((item)=>item.phone===data.get('phone'))){$('#employee-error').textContent='该手机号已关联登记人，请查询已有登记人';return;}if(others.some((item)=>item.idCard.toUpperCase()===data.get('idCard').toUpperCase())){$('#employee-error').textContent='该身份证号已关联登记人，请核对';return;}const update={name:data.get('name').trim(),phone:data.get('phone'),idCard:data.get('idCard').toUpperCase(),typeCode:chosen.code,status:employee?.status||'启用',note:data.get('note').trim()};if(employee)Object.assign(employee,update);else employees.unshift({id:`employee-${Date.now()}`,...update,createdAt:Date.now()});closeModal();state.employeePage=1;renderEmployees();renderStores();toast(employee?'登记人信息已更新':'登记人新增成功');});
+  }
+  function confirmEmployeeToggle(employee){const target=employee.status==='启用'?'停用':'启用';openModal(`确认${target}登记人`,`${target==='停用'?`<div class="danger-box">确认停用 ${escapeHtml(employee.name)}（${employee.phone}）？<br>停用后登记人不能登录，已登记车辆保持当前状态。</div>`:`<p>确认启用 ${escapeHtml(employee.name)}（${employee.phone}）？</p>`}`,`<button class="ghost" id="toggle-cancel">取消</button><button class="primary" id="toggle-confirm">确认${target}</button>`);$('#toggle-cancel').addEventListener('click',closeModal);$('#toggle-confirm').addEventListener('click',()=>{employee.status=target;closeModal();renderEmployees();toast(`登记人已${target}`);});}
+
+  // ---- REQ-006 第 2.10 节 批量导入：模板下载、上传 .xlsx、逐行校验，全部通过才导入 ----
+  const IMPORT_HEAD=['姓名','手机号','身份证号','类型代码','备注'],IMPORT_MAX=500;
+  const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+  function crc32(bytes){let c=0xFFFFFFFF;for(let i=0;i<bytes.length;i++)c=CRC_TABLE[(c^bytes[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+  function zipStore(files){
+    const enc=new TextEncoder(),parts=[],central=[];let offset=0;
+    files.forEach(([path,text])=>{const name=enc.encode(path),data=enc.encode(text),crc=crc32(data);
+      const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(12,0x21,true);lh.setUint32(14,crc,true);lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);lh.setUint16(26,name.length,true);
+      parts.push(new Uint8Array(lh.buffer),name,data);
+      const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(14,0x21,true);ch.setUint32(16,crc,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);ch.setUint16(28,name.length,true);ch.setUint32(42,offset,true);
+      central.push(new Uint8Array(ch.buffer),name);offset+=30+name.length+data.length;});
+    const size=central.reduce((s,p)=>s+p.length,0),end=new DataView(new ArrayBuffer(22));end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,size,true);end.setUint32(16,offset,true);
+    return new Blob([...parts,...central,new Uint8Array(end.buffer)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+  function xmlEsc(s){return String(s).replace(/[&<>"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function buildXlsx(rows){
+    const NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main',col=(i)=>String.fromCharCode(65+i);
+    const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="${NS}"><cols>${[12,16,22,10,30].map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" style="1" customWidth="1"/>`).join('')}</cols><sheetData>${rows.map((r,ri)=>`<row r="${ri+1}">${r.map((v,ci)=>`<c r="${col(ci)}${ri+1}" t="inlineStr" s="${ri?1:2}"><is><t>${xmlEsc(v)}</t></is></c>`).join('')}</row>`).join('')}</sheetData></worksheet>`;
+    return zipStore([
+      ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+      ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+      ['xl/workbook.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="${NS}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="登记人" sheetId="1" r:id="rId1"/></sheets></workbook>`],
+      ['xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+      ['xl/styles.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="${NS}"><fonts count="2"><font><sz val="11"/><name val="宋体"/></font><font><b/><sz val="11"/><name val="宋体"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="49" fontId="1" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="常规" xfId="0" builtinId="0"/></cellStyles></styleSheet>`],
+      ['xl/worksheets/sheet1.xml',sheet]
+    ]);
+  }
+  function templateBlob(){const body='33010619900101123';return buildXlsx([IMPORT_HEAD,['示例：王小明','13912345678',body+idCheckChar(body),'A','此行为填写示例，导入时自动跳过']]);}
+  function downloadTemplate(){const url=URL.createObjectURL(templateBlob()),a=document.createElement('a');a.href=url;a.download='登记人导入模板.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+  // 读取 .xlsx：解 zip（存储或 deflate），取第一张表的单元格文字
+  async function readXlsx(file){
+    const buf=new Uint8Array(await file.arrayBuffer()),dv=new DataView(buf.buffer),dec=new TextDecoder();
+    let eocd=-1;for(let i=buf.length-22;i>=Math.max(0,buf.length-66000);i--){if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;}}
+    if(eocd<0)throw new Error('not zip');
+    const count=dv.getUint16(eocd+10,true),entries={};let p=dv.getUint32(eocd+16,true);
+    for(let k=0;k<count;k++){if(dv.getUint32(p,true)!==0x02014b50)throw new Error('bad zip');const method=dv.getUint16(p+10,true),csize=dv.getUint32(p+20,true),nlen=dv.getUint16(p+28,true),xlen=dv.getUint16(p+30,true),clen=dv.getUint16(p+32,true),loc=dv.getUint32(p+42,true);entries[dec.decode(buf.subarray(p+46,p+46+nlen))]={method,csize,loc};p+=46+nlen+xlen+clen;}
+    async function text(name){const e=entries[name];if(!e)return null;const start=e.loc+30+dv.getUint16(e.loc+26,true)+dv.getUint16(e.loc+28,true),raw=buf.subarray(start,start+e.csize);if(e.method===0)return dec.decode(raw);if(e.method!==8)throw new Error('method');return dec.decode(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());}
+    const sheetName=Object.keys(entries).filter((n)=>/^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort()[0];
+    if(!sheetName)throw new Error('no sheet');
+    const parse=(s)=>new DOMParser().parseFromString(s,'application/xml'),tags=(node,name)=>[...node.getElementsByTagNameNS('*',name)];
+    const ssText=await text('xl/sharedStrings.xml'),shared=ssText?tags(parse(ssText),'si').map((si)=>tags(si,'t').map((t)=>t.textContent).join('')):[];
+    const rows=[];
+    tags(parse(await text(sheetName)),'row').forEach((row)=>{const r=Number(row.getAttribute('r'));const cells=[];tags(row,'c').forEach((c)=>{const ref=c.getAttribute('r')||'',ci=ref.replace(/\d+/g,'').split('').reduce((s,ch)=>s*26+ch.charCodeAt(0)-64,0)-1,t=c.getAttribute('t'),v=tags(c,'v')[0];let val='';if(t==='s')val=shared[Number(v?.textContent)]||'';else if(t==='inlineStr')val=tags(c,'t').map((x)=>x.textContent).join('');else val=v?v.textContent:'';if(ci>=0)cells[ci]=val;});rows.push({r,cells});});
+    return rows;
+  }
+  function validateImport(rows){
+    const head=(rows.find((x)=>x.r===1)||{cells:[]}).cells.map((v)=>String(v||'').trim());
+    if(IMPORT_HEAD.some((h,i)=>head[i]!==h))return {format:true};
+    const data=rows.filter((x)=>x.r>1).map((x)=>({r:x.r,v:IMPORT_HEAD.map((_,i)=>String(x.cells[i]??'').trim())})).filter((x)=>x.v.some(Boolean)&&!x.v[0].startsWith('示例'));
+    if(data.length>IMPORT_MAX)return {tooMany:true};
+    const errors=[],seenPhone={},seenId={};
+    data.forEach(({r,v})=>{const [name,phone,id,codeRaw,note]=v,code=codeRaw.toUpperCase(),idc=id.toUpperCase(),msg=[];
+      if(!name)msg.push('请填写姓名');else if(Array.from(name).length>50)msg.push('姓名不能超过50字');
+      if(!/^1[3-9]\d{9}$/.test(phone))msg.push('请输入正确的11位手机号');
+      else if(phone==='13800009999')msg.push('该手机号已属于其他账号，不能新增为登记人');
+      else if(employees.some((e)=>e.phone===phone))msg.push('该手机号已关联登记人');
+      else if(seenPhone[phone])msg.push(`手机号与第 ${seenPhone[phone]} 行重复`);
+      if(!validIdCard(idc))msg.push('请输入正确的18位身份证号');
+      else if(employees.some((e)=>e.idCard.toUpperCase()===idc))msg.push('该身份证号已关联登记人');
+      else if(seenId[idc])msg.push(`身份证号与第 ${seenId[idc]} 行重复`);
+      if(!code)msg.push('请填写类型代码');else if(!typeByCode(code))msg.push(`类型代码「${code}」不存在`);
+      if(Array.from(note).length>500)msg.push('备注不能超过500字');
+      if(/^1[3-9]\d{9}$/.test(phone)&&!seenPhone[phone])seenPhone[phone]=r;if(validIdCard(idc)&&!seenId[idc])seenId[idc]=r;
+      if(msg.length)errors.push({row:r,message:msg.join('；')});});
+    return {data,errors};
+  }
+  function showImport(){
+    openModal('批量导入登记人',`<div class="import-box"><div class="import-step"><b>1</b><div><strong>下载模板</strong><p>按表头填写：姓名、手机号、身份证号、类型代码、备注。第二行为填写示例，导入时自动跳过；类型代码填类型维护里的字母。</p><button type="button" class="ghost" id="import-template">下载模板</button></div></div><div class="import-step"><b>2</b><div><strong>上传文件</strong><p>只支持 .xlsx，单次最多 ${IMPORT_MAX} 人。全部校验通过才导入，导入的登记人默认启用；有任何一行不通过，一条都不导入。</p><label class="ghost import-pick">选择文件<input type="file" id="import-file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label><span id="import-file-name" class="field-help">未选择文件</span></div></div><div id="import-result" aria-live="polite"></div></div>`,`<button class="ghost" id="import-close">关闭</button>`);
+    $('#import-close').addEventListener('click',closeModal);
+    $('#import-template').addEventListener('click',downloadTemplate);
+    $('#import-file').addEventListener('change',async (event)=>{
+      const file=event.target.files[0],box=$('#import-result');if(!file)return;
+      $('#import-file-name').textContent=file.name;event.target.value='';
+      const fail=(text)=>{box.innerHTML=`<div class="import-result bad"><strong>${escapeHtml(text)}</strong></div>`;};
+      if(!/\.xlsx$/i.test(file.name))return fail('请上传模板格式的 .xlsx 文件');
+      box.innerHTML='<div class="import-result">正在校验…</div>';
+      let result;try{result=validateImport(await readXlsx(file));}catch(error){return fail('请上传模板格式的 .xlsx 文件');}
+      if(result.format)return fail('请上传模板格式的 .xlsx 文件');
+      if(result.tooMany)return fail(`单次最多导入 ${IMPORT_MAX} 人，请分批导入`);
+      if(!result.data.length)return fail('文件中没有可导入的登记人，请按模板填写后重新上传');
+      if(result.errors.length){box.innerHTML=`<div class="import-result bad"><strong>校验未通过，共 ${result.errors.length} 行有误，本次未导入任何登记人</strong><p>请修改文件后重新上传。</p><ul>${result.errors.map((e)=>`<li>第 ${e.row} 行：${escapeHtml(e.message)}</li>`).join('')}</ul></div>`;return;}
+      const now=Date.now();
+      result.data.slice().reverse().forEach(({v},i)=>employees.unshift({id:`employee-${now}-${i}`,name:v[0],phone:v[1],idCard:v[2].toUpperCase(),typeCode:v[3].toUpperCase(),status:'启用',note:v[4],createdAt:now+i}));
+      closeModal();state.employeePage=1;renderEmployees();renderStores();toast(`成功导入 ${result.data.length} 人`);
+    });
+  }
 
   function showContactSetting(){
     const available=contacts.filter((item)=>item.active&&item.wecom);
@@ -673,8 +823,12 @@
             })); });
   });
   $('#vehicle-list').addEventListener('scroll',(event)=>{const el=event.currentTarget;if(el.scrollTop+el.clientHeight>=el.scrollHeight-30){const total=filteredVehicles().length;if(state.vehicleVisible<total){state.vehicleVisible+=20;renderVehicles();}}});$('#add-vehicle').addEventListener('click',()=>{state.photos=[];state.preservedNote='';showBrandStep();});
-  $('#query-store').addEventListener('click',()=>{state.storeQuery=$('#store-search').value.trim();state.storePage=1;renderStores();});$('#reset-store').addEventListener('click',()=>{$('#store-search').value='';state.storeQuery='';state.storePage=1;renderStores();});$('#add-store').addEventListener('click',()=>showStoreForm());$('#store-page-size').addEventListener('change',(event)=>{state.storePageSize=Number(event.target.value);state.storePage=1;renderStores();});$('#store-prev').addEventListener('click',()=>{state.storePage--;renderStores();});$('#store-next').addEventListener('click',()=>{state.storePage++;renderStores();});
-  $('#query-employee').addEventListener('click',()=>{state.employeeQuery={name:$('#employee-name').value.trim(),phone:$('#employee-phone').value.trim(),store:$('#employee-store-filter').value.trim(),status:$('#employee-status').value};state.employeePage=1;renderEmployees();});$('#reset-employee').addEventListener('click',()=>{$('#employee-name').value='';$('#employee-phone').value='';$('#employee-store-filter').value='';$('#employee-status').value='';state.employeeQuery={name:'',phone:'',store:'',status:''};state.employeePage=1;renderEmployees();});$('#employee-prev').addEventListener('click',()=>{state.employeePage--;renderEmployees();});$('#employee-next').addEventListener('click',()=>{state.employeePage++;renderEmployees();});$('#add-employee').addEventListener('click',()=>showEmployeeForm());$('#contact-setting').addEventListener('click',showContactSetting);
+  $('#query-store').addEventListener('click',()=>{state.storeQuery={code:$('#store-code-filter')?.value||'',name:$('#store-search').value.trim()};state.storePage=1;renderStores();});$('#reset-store').addEventListener('click',()=>{$('#store-search').value='';if($('#store-code-filter'))$('#store-code-filter').value='';state.storeQuery={code:'',name:''};state.storePage=1;renderStores();});$('#add-store').addEventListener('click',()=>showStoreForm());$('#store-page-size').addEventListener('change',(event)=>{state.storePageSize=Number(event.target.value);state.storePage=1;renderStores();});$('#store-prev').addEventListener('click',()=>{state.storePage--;renderStores();});$('#store-next').addEventListener('click',()=>{state.storePage++;renderStores();});
+  $('#query-employee').addEventListener('click',()=>{const typeText=$('#employee-store-filter').value.trim();if(typeText&&!stores.some((item)=>typeLabel(item.code)===typeText)){toast('请选定类型或清空类型筛选');return;}state.employeeQuery={name:$('#employee-name').value.trim(),phone:$('#employee-phone').value.trim(),store:typeText,status:$('#employee-status').value};state.employeePage=1;renderEmployees();});$('#reset-employee').addEventListener('click',()=>{$('#employee-name').value='';$('#employee-phone').value='';$('#employee-store-filter').value='';$('#employee-status').value='';state.employeeQuery={name:'',phone:'',store:'',status:''};state.employeePage=1;renderEmployees();});$('#employee-prev').addEventListener('click',()=>{state.employeePage--;renderEmployees();});$('#employee-next').addEventListener('click',()=>{state.employeePage++;renderEmployees();});$('#add-employee').addEventListener('click',()=>showEmployeeForm());$('#contact-setting').addEventListener('click',showContactSetting);
+  if($('#import-employee'))$('#import-employee').addEventListener('click',showImport);
+  if($('#employee-sort'))$('#employee-sort').addEventListener('click',()=>{state.employeeSort=state.employeeSort===''?'desc':state.employeeSort==='desc'?'asc':'';state.employeePage=1;renderEmployees();});
+  // 车源管理的车辆数据加载完成后刷新两页的「近 30 天上传车辆数」
+  window.addEventListener('pc-stock-ready',()=>{renderStores();renderEmployees();});
   syncQueryLabels();renderDecisionResults();renderVehicles();renderStores();renderEmployees();registerWebMcp();
   if (window.location.hash) {
     showView(window.location.hash.slice(1), false);
