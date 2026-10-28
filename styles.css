@@ -875,3 +875,24 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .import-result.bad p{margin:4px 0 6px;color:#595959}
 .import-result ul{margin:0;padding-left:18px;max-height:220px;overflow:auto;color:#262626}
 .import-result li{margin:2px 0}
+
+/* 车源登记卡片：驳回原因、下架原因放在车图与右侧内容下方，整张卡片通栏，最多两行 */
+.vehicle-card{row-gap:7px}
+.vehicle-card>.reject-line,.vehicle-card>.unlist-line{grid-column:1/-1;min-width:0}
+/* 状态水印另一种样式：封面斜角条不显示，改在右侧文字区（登记时间这一行右侧空白处）叠倾斜水印字；
+   右侧列自成层叠上下文，水印 z-index:-1 压在车名、标签、价格、按钮之下，且不接收点击 */
+.vehicle-body{isolation:isolate}
+.vehicle-time{position:relative}
+.body-mark{display:none}
+.wm-b .vehicle-card .cover-mark{display:none}
+.wm-b .vehicle-time>.body-mark{display:block;position:absolute;z-index:-1;right:2px;top:50%;transform:translateY(-50%) rotate(-14deg);
+  font-size:24px;line-height:1;font-weight:800;letter-spacing:3px;white-space:nowrap;pointer-events:none;user-select:none}
+.body-mark.reject{color:rgba(245,34,45,.17)}
+.body-mark.review{color:rgba(250,140,22,.22)}
+.body-mark.off{color:rgba(80,86,96,.17)}
+/* 设计稿说明栏：状态水印样式切换 */
+.wm-switch{display:flex;align-items:center;gap:8px;margin:4px 0 12px;font-size:12.5px;color:#435963}
+.wm-switch-seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.wm-switch-seg button{border:0;background:#fff;color:#60717d;padding:4px 12px;font-size:12px;font-family:inherit;cursor:pointer}
+.wm-switch-seg button+button{border-left:1px solid var(--line)}
+.wm-switch-seg button.on{background:#173d4a;color:#fff}

@@ -174,6 +174,13 @@
     if(v.status==='已下架')return '<span class="cover-mark off">已下架</span>';
     return '';
   }
+  // 右侧文字区的倾斜水印字：与封面斜角条二选一显示，由根节点 wm-b 类切换（只在设计稿比较用）
+  function bodyMark(v){
+    if(v.approve==='驳回')return '<span class="body-mark reject" aria-hidden="true">驳回</span>';
+    if(v.approve==='未审核')return '<span class="body-mark review" aria-hidden="true">未审核</span>';
+    if(v.status==='已下架')return '<span class="body-mark off" aria-hidden="true">已下架</span>';
+    return '';
+  }
   function vehicleCover(vehicle){
     const src=(vehicle.photos||[]).find((item)=>!item.startsWith('data:video'))||vehicle.coverUrl;
     return src?`<img src="${escapeHtml(src)}" alt="${escapeHtml(vehicle.brand+' '+vehicle.model)}实拍">${promoHtml(vehicle)}${coverMark(vehicle)}`:'未添加车辆照片';
@@ -221,7 +228,7 @@
       // CHG-D051：原「车辆类型」位置改放标签
       const typeChips=(vehicle.labels||[]).map((t)=>`<span class="type-chip">${escapeHtml(t)}</span>`).join('');
       const rejected=vehicle.approve==='驳回', onSale=vehicle.approve==='通过'&&vehicle.status==='在售';
-      // v2.11：价格下面一行——驳回红字原因（最多两行），已下架灰字下架原因
+      // 驳回红字原因、已下架灰字下架原因：放在车图与右侧内容下方，整张卡片通栏，最多两行
       const rej=rejected?`<div class="reject-line">驳回原因：${escapeHtml(vehicle.rejectReason||'')}</div>`:'';
       const off=vehicle.approve==='通过'&&vehicle.status==='已下架'&&vehicle.unlistReason?`<div class="unlist-line">下架原因：${escapeHtml(vehicle.unlistReason)}</div>`:'';
       // R2-10：不设「查看」，点卡片主体即进详情；按钮与价格同一行靠右
@@ -233,7 +240,7 @@
       // R2-10：卡片只放 6 项——封面（左上角热销角标、右上角状态水印）、车名、状态、标签、价格、登记时间。不放备注、车源类型、内外颜色
       // R2-10：参考价放左列车图下方（右侧放不下三者并排，且图缩小后左下正好空着）
       const refPrice=`<div class="vehicle-ref">参考价 ${vehicle.referencePrice?`${vehicle.referencePrice.toLocaleString()}元`:'暂无'}</div>`;
-      return `<article class="vehicle-card${rejected?' is-reject':''}${onSale?' is-onsale':''}" data-id="${vehicle.id}"><div class="vehicle-side"><div class="vehicle-cover">${vehicleCover(vehicle)}</div>${refPrice}</div><div class="vehicle-body"><h3>${escapeHtml(vehicle.brand)} ${escapeHtml(vehicle.model)} ${escapeHtml(vehicle.variant)}</h3><div class="chip-row">${st}${topChip}${typeChips}</div><div class="vehicle-time"><span>${vehicle.createdAt}</span>${topBtn}</div><div class="vehicle-foot"><strong class="vehicle-sale${vehicle.salePrice>=1000000?' price-long':''}">${vehicle.salePrice.toLocaleString()}元</strong><div class="vehicle-actions">${acts}</div></div>${rej}${off}</div></article>`;
+      return `<article class="vehicle-card${rejected?' is-reject':''}${onSale?' is-onsale':''}" data-id="${vehicle.id}"><div class="vehicle-side"><div class="vehicle-cover">${vehicleCover(vehicle)}</div>${refPrice}</div><div class="vehicle-body"><h3>${escapeHtml(vehicle.brand)} ${escapeHtml(vehicle.model)} ${escapeHtml(vehicle.variant)}</h3><div class="chip-row">${st}${topChip}${typeChips}</div><div class="vehicle-time"><span>${vehicle.createdAt}</span>${topBtn}${bodyMark(vehicle)}</div><div class="vehicle-foot"><strong class="vehicle-sale${vehicle.salePrice>=1000000?' price-long':''}">${vehicle.salePrice.toLocaleString()}元</strong><div class="vehicle-actions">${acts}</div></div></div>${rej}${off}</article>`;
     }).join(''):`<div class="empty-build"><h2>${hasQuery?'未找到符合条件的车辆':'暂无车辆'}</h2><p>${hasQuery?'请调整查询条件。':'可使用增加车源创建一条记录。'}</p></div>`;
     $('#list-footer').textContent=shown.length<all.length?'向下滚动加载后续记录':'没有更多了';
     $$('[data-vehicle-action]').forEach((button)=>button.addEventListener('click',(event)=>{event.stopPropagation(); const vehicle=vehicles.find((item)=>item.id===button.dataset.id); if(button.dataset.vehicleAction==='view')showVehicleDetail(vehicle); if(button.dataset.vehicleAction==='edit')showVehicleForm({vehicle}); if(button.dataset.vehicleAction==='unlist')confirmUnlist(vehicle); if(button.dataset.vehicleAction==='relist')confirmRelist(vehicle); if(button.dataset.vehicleAction==='top')openTopSheet(vehicle,renderVehicles);}));
@@ -833,6 +840,23 @@
   if (window.location.hash) {
     showView(window.location.hash.slice(1), false);
   }
+})();
+
+/* 车源登记卡片状态水印两种样式：默认封面斜角条；URL 带 wm=b 或设计稿说明栏切换后改为右侧文字区水印字 */
+(function(){
+  var root=document.documentElement;
+  function apply(mode){
+    root.classList.toggle('wm-b',mode==='b');
+    document.querySelectorAll('[data-wm]').forEach(function(btn){
+      var on=btn.dataset.wm===mode; btn.classList.toggle('on',on); btn.setAttribute('aria-pressed',on?'true':'false');
+    });
+  }
+  var mode=new URLSearchParams(location.search).get('wm')==='b'?'b':'a';
+  function run(){
+    document.querySelectorAll('[data-wm]').forEach(function(btn){ btn.addEventListener('click',function(){ mode=btn.dataset.wm; apply(mode); }); });
+    apply(mode);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
 })();
 
 /* 右侧说明「隐藏文字」开关：给所有 .side-info 自动注入，样稿共用 */

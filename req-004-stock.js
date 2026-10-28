@@ -8,8 +8,6 @@
   var ORG = window.PcOrgs || { types: [], registrants: [] };
   var DAY = 86400000, NOW = Date.now();
   var PEOPLE_ORG = { '张伟': '华东名车行', '张三': '安信汽车', '李四': '德仁二手车', '王五': '天成车业', '赵六': '优选好车', '刘洋': '众诚车行', '周敏': '宏达名车' };
-  var CITY = [['浙江省', '杭州市', '余杭区'], ['江苏省', '南京市', '鼓楼区'], ['广东省', '深圳市', '南山区'],
-    ['上海市', '上海市', '浦东新区'], ['北京市', '北京市', '朝阳区'], ['四川省', '成都市', '高新区']];
   var LOCATIONS = ['东区', '西区', '南区', '北区', '大北区'];
   var HQ_REASON = '车辆照片与实车不符，请核实后重新上架';
   var SOLD_REASON = '三个用户标记该车辆已售';
@@ -70,7 +68,6 @@
     t.setHours(9 + (i * 7) % 10, (i * 13) % 60, 0, 0);
     if (t.getTime() > NOW) t = new Date(NOW - (i + 1) * 9 * 60000);
     var staff = src === '一手车源' ? staffByName(s.person) : null;
-    var type = staff ? typeOf(staff.typeCode) : null;
     var audit = approve === '未审核' ? null : new Date(t.getTime() + Math.min(2 * 3600000, (NOW - t.getTime()) / 2));
     var on = approve === '通过' && s.on !== false;
     var r = {
@@ -90,8 +87,6 @@
       video: false,   // 实拍素材均无视频，与小程序各页一致
       brand: m[1], model: m[2], variant: m[3], name: m[1] + ' ' + m[2], price: s.price, guide: Math.round(parseFloat(car.ref) * 10000),
       person: s.person, staffId: staff ? staff.id : '', org: staff ? '' : (PEOPLE_ORG[s.person] || ''),
-      // 车辆所在地：登记时带出并随车保存的地址所在省市区；登记人取所属类型的地址
-      city: type ? type.region.split(' ') : CITY[i % 6],
       time: fmt(t, true),
       views: s.views, sold: on ? (s.sold || 0) : 0, on: on,
       offReason: on ? '' : (approve === '通过' ? s.off || '' : ''), offAt: '', offBy: s.offBy || '',
@@ -126,7 +121,7 @@
   function orgText(r) { return r.staffId ? typeText(rowType(r)) : r.org; }
   function recentFrom() { return ymd(new Date(NOW - 29 * DAY)); }
 
-  var KEYS = ['code', 'brand', 'model', 'person', 'org', 'stype', 'srctype', 'approve', 'shelf', 'hot', 'banner', 'loc', 'prov', 'city', 'dist', 'from', 'to'];
+  var KEYS = ['code', 'brand', 'model', 'person', 'org', 'stype', 'srctype', 'approve', 'shelf', 'hot', 'banner', 'loc', 'from', 'to'];
   var q = { sort: 'time' };
   KEYS.forEach(function (k) { q[k] = ''; });
   var page = 1, size = 20;
@@ -136,7 +131,6 @@
   function num(n) { return n.toLocaleString('zh-CN'); }                // 列表用，单位写在表头
   var toastTimer;
   function toast(m, ms) { var e = $('#toast'); if (!e) return; e.textContent = m; e.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(function () { e.classList.remove('show'); }, ms || 1800); }
-  function cityText(c) { return c[0] === c[1] ? c[1] + ' ' + c[2] : c.join(' '); }
   function isTop(r) { return !!(r.topEnd && r.topEnd > new Date()); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function noText(r) { return r.no || '—'; }
@@ -158,9 +152,6 @@
       if (q.hot && r.hot !== (q.hot === '是')) return false;
       if (q.banner && r.banner !== (q.banner === '是')) return false;
       if (q.loc && r.location !== q.loc) return false;
-      if (q.prov && r.city[0] !== q.prov) return false;
-      if (q.city && r.city[1] !== q.city) return false;
-      if (q.dist && r.city[2] !== q.dist) return false;
       if (q.from && r.time.slice(0, 10) < q.from) return false;
       if (q.to && r.time.slice(0, 10) > q.to) return false;
       return true;
@@ -210,7 +201,6 @@
         '<td>' + num(r.price) + '</td>' +
         '<td>' + esc(personText(r)) + '</td>' +
         '<td>' + esc(orgText(r)) + '</td>' +
-        '<td>' + cityText(r.city) + '</td>' +
         '<td>' + r.time + '</td>' +
         '<td>' + r.views + '</td>' +
         '<td>' + (r.sold ? '<b class="sold">' + r.sold + ' 人</b>' : '<span class="muted">0</span>') + '</td>' +
@@ -245,7 +235,7 @@
     var c = a === '未审核' ? '#999' : a === '通过' ? '#158a36' : '#F5222D';
     return '<span class="ap-chip" style="color:' + c + '">' + a + '</span>';
   }
-  // 品牌→车型、省→市→区县：每级第一项都是「不限」
+  // 品牌→车型：每级第一项都是「不限」
   function fillSel(sel, anyText, list, keep) {
     var e = $(sel), old = keep ? e.value : '';
     e.innerHTML = '<option value="">' + anyText + '</option>' +
@@ -260,21 +250,6 @@
   function fillModel() {
     var b = $('#q-brand').value;
     fillSel('#q-model', '不限车型', uniq(rows.filter(function (r) { return !b || r.brand === b; }).map(function (r) { return r.model; })), true);
-  }
-  function fillProv() {
-    fillSel('#q-prov', '不限省', uniq(rows.map(function (r) { return r.city[0]; })));
-    fillCity();
-  }
-  function fillCity() {
-    var p = $('#q-prov').value;
-    fillSel('#q-city', '不限市', uniq(rows.filter(function (r) { return !p || r.city[0] === p; }).map(function (r) { return r.city[1]; })), true);
-    fillDist();
-  }
-  function fillDist() {
-    var p = $('#q-prov').value, c = $('#q-city').value;
-    fillSel('#q-dist', '不限区县', uniq(rows.filter(function (r) {
-      return (!p || r.city[0] === p) && (!c || r.city[1] === c);
-    }).map(function (r) { return r.city[2]; })), true);
   }
   // 所属类型：第一项「全部」，其后「代码 名称」（REQ-004 第 5.1 节 2.1）
   function fillType() {
@@ -447,7 +422,6 @@
       '<dt>内饰颜色</dt><dd>' + r.inner + '</dd>' +
       '<dt>官方指导价</dt><dd>' + money(r.guide) + '</dd>' +
       '<dt>实际售价</dt><dd><b style="color:#b73b3b">' + money(r.price) + '</b></dd>' +
-      '<dt>车辆所在地</dt><dd>' + r.city.join(' ') + '</dd>' +
       '<dt>置顶</dt><dd>' + (isTop(r) ? '<span class="top-until">置顶至 ' + fmt(r.topEnd, true) + '</span>' : '未置顶') + '</dd>' +
       '<dt>登记人</dt><dd>' + esc(personText(r)) + '</dd>' +
       '<dt>所属机构</dt><dd>' + esc(orgText(r)) + '</dd>' +
@@ -522,9 +496,9 @@
   // 注意：审核状态与上下架的 id 用 pc- 前缀，避开小程序视图里的同名 id
   var FIELDS = { code: 'q-code', brand: 'q-brand', model: 'q-model', person: 'q-person', org: 'q-org', stype: 'q-stype',
     srctype: 'q-srctype', approve: 'pc-approve', shelf: 'pc-shelf', hot: 'q-hot', banner: 'q-banner', loc: 'q-loc',
-    prov: 'q-prov', city: 'q-city', dist: 'q-dist', from: 'q-from', to: 'q-to' };
+    from: 'q-from', to: 'q-to' };
   function readQuery() { Object.keys(FIELDS).forEach(function (k) { q[k] = $('#' + FIELDS[k]).value.trim(); }); page = 1; render(); }
-  function clearFields() { Object.keys(FIELDS).forEach(function (k) { $('#' + FIELDS[k]).value = ''; }); fillBrand(); fillProv(); }
+  function clearFields() { Object.keys(FIELDS).forEach(function (k) { $('#' + FIELDS[k]).value = ''; }); fillBrand(); }
 
   // 从「类型维护」「登记人维护」点「近 30 天上传车辆数」跳入：带入所属类型或登记人＋登记时间最近 30 天，自动查询一次（第 5.1 节）
   function openWith(opt) {
@@ -553,11 +527,9 @@
   function bind() {
     if (!$('#view-stock')) return;
 
-    fillBrand(); fillProv(); fillType();
+    fillBrand(); fillType();
     $('#q-loc').innerHTML = '<option value="">全部</option>' + LOCATIONS.map(function (x) { return '<option>' + x + '</option>'; }).join('');
     $('#q-brand').addEventListener('change', fillModel);
-    $('#q-prov').addEventListener('change', fillCity);
-    $('#q-city').addEventListener('change', fillDist);
     $('#q-stype').addEventListener('focus', fillType);
 
     $('#stock-query').addEventListener('click', readQuery);
