@@ -174,7 +174,7 @@
     if(v.status==='已下架')return '<span class="cover-mark off">已下架</span>';
     return '';
   }
-  // 右侧文字区的倾斜水印字：与封面斜角条二选一显示，由根节点 wm-b 类切换（只在设计稿比较用）
+  // 右侧文字区的倾斜水印字：与封面斜角条同时显示，两种样式供选择，定后只留一种
   function bodyMark(v){
     if(v.approve==='驳回')return '<span class="body-mark reject" aria-hidden="true">驳回</span>';
     if(v.approve==='未审核')return '<span class="body-mark review" aria-hidden="true">未审核</span>';
@@ -840,23 +840,6 @@
   if (window.location.hash) {
     showView(window.location.hash.slice(1), false);
   }
-})();
-
-/* 车源登记卡片状态水印两种样式：默认封面斜角条；URL 带 wm=b 或设计稿说明栏切换后改为右侧文字区水印字 */
-(function(){
-  var root=document.documentElement;
-  function apply(mode){
-    root.classList.toggle('wm-b',mode==='b');
-    document.querySelectorAll('[data-wm]').forEach(function(btn){
-      var on=btn.dataset.wm===mode; btn.classList.toggle('on',on); btn.setAttribute('aria-pressed',on?'true':'false');
-    });
-  }
-  var mode=new URLSearchParams(location.search).get('wm')==='b'?'b':'a';
-  function run(){
-    document.querySelectorAll('[data-wm]').forEach(function(btn){ btn.addEventListener('click',function(){ mode=btn.dataset.wm; apply(mode); }); });
-    apply(mode);
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
 })();
 
 /* 右侧说明「隐藏文字」开关：给所有 .side-info 自动注入，样稿共用 */
