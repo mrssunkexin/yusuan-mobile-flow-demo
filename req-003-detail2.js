@@ -1,4 +1,4 @@
-/* REQ-003 车辆详情页 · 含车辆信息（已采用；v2.11：车辆编号、车辆位置、特价车浮钮、一键拨号后确认已售）
+/* REQ-003 车辆详情页 · 含车辆信息（已采用；v2.11：车辆编号、车辆位置、特价车浮钮、一键拨号后确认已售；2026-10-29：上传时间、特价车显示车辆信息区）
    与「车辆详情页改造」样稿并列，原样稿不动，用于对比详情页要不要增加车辆信息。
    本地演示数据，不连接接口，不真实拨号。本页元素 id 统一以 d2- 开头，避免与其他样稿重名。*/
 (function () {
@@ -35,18 +35,19 @@
 
     var c = car();
     window.DemoCarUI.gallery(document.querySelector('#view-contact2 .d2-swiper'),c,c.source!=='special_price');
-    document.querySelector('#view-contact2 .d2-info').hidden=c.source==='special_price';
+    // 2026-10-29：特价车也显示车辆信息区，与库存车、一手车源同一结构
+    document.querySelector('#view-contact2 .d2-info').hidden=false;
     $('#d2-big').textContent = c.sale;
     $('#d2-ref').textContent = c.ref;
     $('#d2-sale').textContent = c.sale;
     $('#d2-name').textContent = c.name;
-    // v2.11：特价车在车名下面一行显示车辆编号；车源详情的编号放在车辆信息区第一行
+    // 三类车的车辆编号都放在车辆信息区第一行，第二行上传时间（最后一次上架日期）；车名下面不再单独显示编号
     var special = c.source === 'special_price';
-    $('#d2-model-no').hidden = !special || !c.vehicleNo;
-    $('#d2-model-no').textContent = '车辆编号 ' + (c.vehicleNo || '');
     $('#d2-src').textContent = c.srcLabel;
     $('#d2-vno-row').hidden = !c.vehicleNo;
     $('#d2-vno').textContent = c.vehicleNo || '';
+    $('#d2-up-row').hidden = !c.listedAt;
+    $('#d2-uptime').textContent = c.listedAt || '';
     $('#d2-color-out').textContent = c.colorOut || '暂无';
     $('#d2-color-in').textContent = c.colorIn || '暂无';
     $('#d2-location').textContent = c.location || '暂无';

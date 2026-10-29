@@ -1,6 +1,7 @@
 /* 各页面共用的本地演示车辆；素材出处见 assets/demo-cars/sources.json。
    售价/指导价及车源属性为排版演示，不代表真实报价或在售车。
-   2026-10-28：促销标识取消，改为总部勾选的 hot（热销）、banner；加车辆编号 vehicleNo、车辆位置 location，标签换成会上定的 9 个。 */
+   2026-10-28：促销标识取消，改为总部勾选的 hot（热销）、banner；加车辆编号 vehicleNo、车辆位置 location，标签换成会上定的 9 个。
+   2026-10-29：加上传时间 listedAt（最后一次上架日期）。 */
 (function(root,factory){var api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.DemoCars=api;})(typeof window==='object'?window:globalThis,function(){
   'use strict';
   var A='assets/demo-cars/';
@@ -22,24 +23,27 @@
   // 车辆编号（REQ-001 第 1.8 节）：特价车 TG、库存车 KC、一手车源 Y＋机构代码
   var PREFIX={special_price:'TG',inventory:'KC',firsthand:'YA'},SEQ={};
   var records=[];
+  // 上传时间（REQ-003 详情车辆信息区）：该车最后一次上架的日期 YYYY-MM-DD，与列表「上传N天」同一口径（今天往前推 days 天）
+  function p2(n){return String(n).padStart(2,'0');}
+  function listedAt(days){var d=new Date(Date.now()-days*86400000);return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
   // labels：会上定的 9 个标签里勾选的（REQ-001 第 2.6 节）；extra.hot／banner 为总部在 PC 勾的「热销」「banner」，hotAt／bannerAt 越大表示勾得越晚
   function add(source,key,sale,days,location,tags,extra){
     var m=MODELS[key],id=source+'-'+key+(extra&&extra.suffix||'');
     SEQ[source]=(SEQ[source]||0)+1;
-    records.push(Object.assign({},m,{id:id,source:source,srcLabel:labels[source],sale:sale,days:days,cats:tags,chip:key==='m6'?'10万–15万':'',video:null,img:m.photos[0].src,position:m.photos[0].position,blocks:m.photos.map(function(p){return p.src;}),location:location,labels:tags,vehicleNo:PREFIX[source]+String(SEQ[source]).padStart(5,'0'),contact:CONTACT[source],hot:false,banner:false},extra||{}));
+    records.push(Object.assign({},m,{id:id,source:source,srcLabel:labels[source],sale:sale,days:days,cats:tags,chip:key==='m6'?'10万–15万':'',video:null,img:m.photos[0].src,position:m.photos[0].position,blocks:m.photos.map(function(p){return p.src;}),location:location,labels:tags,listedAt:listedAt(days),vehicleNo:PREFIX[source]+String(SEQ[source]).padStart(5,'0'),contact:CONTACT[source],hot:false,banner:false},extra||{}));
   }
   add('special_price','m6','10.XX万',0,'东区',['现车','包牌包税','全国可上牌'],{hot:true,hotAt:2,banner:true,bannerAt:3});
   add('special_price','prado','77.XX万',1,'北区',['现车','可分期'],{banner:true,bannerAt:1});
   add('special_price','lc300','82.XX万',3,'大北区',['包牌包税','活动车'],{hot:true,hotAt:1,banner:true,bannerAt:2});
   add('special_price','lc76','62.XX万',12,'西区',['包牌包税','急售']);
   add('special_price','g63','255.XX万',30,'南区',['现车']);
-  add('special_price','prado','76.XX万',99,'东区',[],{suffix:'-2'});
+  add('special_price','prado','76.XX万',99,'东区',['活动车'],{suffix:'-2'});
   add('special_price','lc76','61.XX万',120,'北区',['包牌包税'],{suffix:'-2'});
   add('firsthand','yuan','8.XX万',0,'东区',['现车','可分期'],{banner:true,bannerAt:2});
   add('firsthand','prado','77.XX万',2,'南区',['商品车','全国可上牌'],{hot:true,hotAt:1});
   add('firsthand','lc300','82.XX万',11,'西区',['运损车','急售'],{banner:true,bannerAt:1});
   add('firsthand','lc76','62.XX万',20,'北区',['运损车','现车'],{top:2});
-  add('firsthand','g63','255.XX万',45,'大北区',['现车']);
+  add('firsthand','g63','255.XX万',28,'大北区',['现车']);
   add('inventory','m6','10.XX万',0,'东区',['库存车','现车','可分期']);
   add('inventory','lc76','61.XX万',0,'西区',['运损车','库存车'],{hot:true,hotAt:1});
   add('inventory','g63','253.XX万',5,'南区',['库存车','全国可上牌']);

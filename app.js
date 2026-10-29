@@ -55,12 +55,12 @@
       hot:Boolean(car.hot),location:car.location,labels:car.labels.slice(),
       photos:car.photos.map((photo)=>photo.src)};
   });
-  // 下架原因三种来源各给一例：本人下架、总部在 PC 填写的原因、三个用户标记已售自动下架
-  const UNLIST_REASONS={2:'三个用户标记该车辆已售',39:SELF_UNLIST,40:'车辆照片与实车不符，请核实后重新上架',41:'三个用户标记该车辆已售'};
+  // 下架原因各来源各给一例：本人下架、总部在 PC 填写的原因、三个用户标记已售自动下架、上架超过 30 天自动下架（天数为参数，默认 30）
+  const UNLIST_REASONS={2:'三个用户标记该车辆已售',39:SELF_UNLIST,40:'车辆照片与实车不符，请核实后重新上架',41:'三个用户标记该车辆已售',42:'上架超过 30 天自动下架'};
   let approvedNo=0;
   const vehicles = Array.from({ length:46 }, (_, index) => {
     const seed=registrationSeeds[index%registrationSeeds.length];
-    const approve=index===0?'驳回':index===1?'未审核':'通过';
+    const approve=index===0?'驳回':index===1?'等待审核':'通过';
     const status=index<3?'已下架':index<39?'在售':'已下架';
     return {...seed,labels:seed.labels.slice(),photos:seed.photos.slice(),
       id:'1789562340117'+String(index*137).padStart(6,'0'), ownerId:index===45?'another-owner':'demo-u1',
@@ -164,26 +164,19 @@
       // 审核状态与上下架是两个独立字段，各自筛（R2-11：两个维度互不合并）
       .filter((v)=>!state.q.approve||v.approve===state.q.approve)
       .filter((v)=>!state.q.shelf||v.status===state.q.shelf)
-      // REQ-001 第 2.2 节：驳回最前，其次未审核，其余在后；段内按登记时间倒序
-      .map((v,i)=>({v,i})).sort((a,b)=>{ const r=(x)=>x.approve==='驳回'?0:x.approve==='未审核'?1:2; return r(a.v)-r(b.v)||String(b.v.createdAt).localeCompare(String(a.v.createdAt))||a.i-b.i; }).map((x)=>x.v);
+      // REQ-001 第 2.2 节：驳回最前，其次等待审核，其余在后；段内按登记时间倒序
+      .map((v,i)=>({v,i})).sort((a,b)=>{ const r=(x)=>x.approve==='驳回'?0:x.approve==='等待审核'?1:2; return r(a.v)-r(b.v)||String(b.v.createdAt).localeCompare(String(a.v.createdAt))||a.i-b.i; }).map((x)=>x.v);
   }
-  // v2.11：封面右上角半透明斜角水印——驳回、未审核、已下架三种，在架的不打
-  function coverMark(v){
-    if(v.approve==='驳回')return '<span class="cover-mark reject">驳回</span>';
-    if(v.approve==='未审核')return '<span class="cover-mark review">未审核</span>';
-    if(v.status==='已下架')return '<span class="cover-mark off">已下架</span>';
-    return '';
-  }
-  // 右侧文字区的倾斜水印字：与封面斜角条同时显示，两种样式供选择，定后只留一种
+  // 2026-10-29 会议：状态水印只留一种——卡片中间横穿的倾斜半透明大字（驳回、等待审核、已下架），在架的不打
   function bodyMark(v){
     if(v.approve==='驳回')return '<span class="body-mark reject" aria-hidden="true">驳回</span>';
-    if(v.approve==='未审核')return '<span class="body-mark review" aria-hidden="true">未审核</span>';
+    if(v.approve==='等待审核')return '<span class="body-mark review" aria-hidden="true">等待审核</span>';
     if(v.status==='已下架')return '<span class="body-mark off" aria-hidden="true">已下架</span>';
     return '';
   }
   function vehicleCover(vehicle){
     const src=(vehicle.photos||[]).find((item)=>!item.startsWith('data:video'))||vehicle.coverUrl;
-    return src?`<img src="${escapeHtml(src)}" alt="${escapeHtml(vehicle.brand+' '+vehicle.model)}实拍">${promoHtml(vehicle)}${coverMark(vehicle)}`:'未添加车辆照片';
+    return src?`<img src="${escapeHtml(src)}" alt="${escapeHtml(vehicle.brand+' '+vehicle.model)}实拍">${promoHtml(vehicle)}`:'未添加车辆照片';
   }
   // R3-01 付费置顶：价格与天数取配置 car_source_top_price／car_source_top_days（REQ-001 第 2.17 节）
   const TOP_PRICE=9.9, TOP_DAYS=7;
@@ -209,7 +202,7 @@
     });
   }
   function statusChip(v){
-    if(v.approve==='未审核')return '<span class="status-chip review">未审核</span>';
+    if(v.approve==='等待审核')return '<span class="status-chip review">等待审核</span>';
     if(v.approve==='驳回')return '<span class="status-chip reject">驳回</span>';
     return `<span class="status-chip ok">通过</span><span class="status-chip ${v.status==='在售'?'on':'off'}">${v.status}</span>`;
   }
@@ -237,10 +230,10 @@
       const acts=vehicle.approve==='通过'
         ? `<button data-vehicle-action="edit" data-id="${vehicle.id}">修改</button>${vehicle.status==='在售'?`<button data-vehicle-action="unlist" data-id="${vehicle.id}">下架</button>`:`<button data-vehicle-action="relist" data-id="${vehicle.id}">重新上架</button>`}`
         : `<button class="${rejected?'edit-big':''}" data-vehicle-action="edit" data-id="${vehicle.id}">修改</button>`;
-      // R2-10：卡片只放 6 项——封面（左上角热销角标、右上角状态水印）、车名、状态、标签、价格、登记时间。不放备注、车源类型、内外颜色
+      // R2-10：卡片只放 6 项——封面（左上角热销角标）、车名、状态、标签、价格、登记时间。不放备注、车源类型、内外颜色
       // R2-10：参考价放左列车图下方（右侧放不下三者并排，且图缩小后左下正好空着）
       const refPrice=`<div class="vehicle-ref">参考价 ${vehicle.referencePrice?`${vehicle.referencePrice.toLocaleString()}元`:'暂无'}</div>`;
-      return `<article class="vehicle-card${rejected?' is-reject':''}${onSale?' is-onsale':''}" data-id="${vehicle.id}"><div class="vehicle-side"><div class="vehicle-cover">${vehicleCover(vehicle)}</div>${refPrice}</div><div class="vehicle-body"><h3>${escapeHtml(vehicle.brand)} ${escapeHtml(vehicle.model)} ${escapeHtml(vehicle.variant)}</h3><div class="chip-row">${st}${topChip}${typeChips}</div><div class="vehicle-time"><span>${vehicle.createdAt}</span>${topBtn}${bodyMark(vehicle)}</div><div class="vehicle-foot"><strong class="vehicle-sale${vehicle.salePrice>=1000000?' price-long':''}">${vehicle.salePrice.toLocaleString()}元</strong><div class="vehicle-actions">${acts}</div></div></div>${rej}${off}</article>`;
+      return `<article class="vehicle-card${rejected?' is-reject':''}${onSale?' is-onsale':''}" data-id="${vehicle.id}">${bodyMark(vehicle)}<div class="vehicle-side"><div class="vehicle-cover">${vehicleCover(vehicle)}</div>${refPrice}</div><div class="vehicle-body"><h3>${escapeHtml(vehicle.brand)} ${escapeHtml(vehicle.model)} ${escapeHtml(vehicle.variant)}</h3><div class="chip-row">${st}${topChip}${typeChips}</div><div class="vehicle-time"><span>${vehicle.createdAt}</span>${topBtn}</div><div class="vehicle-foot"><strong class="vehicle-sale${vehicle.salePrice>=1000000?' price-long':''}">${vehicle.salePrice.toLocaleString()}元</strong><div class="vehicle-actions">${acts}</div></div></div>${rej}${off}</article>`;
     }).join(''):`<div class="empty-build"><h2>${hasQuery?'未找到符合条件的车辆':'暂无车辆'}</h2><p>${hasQuery?'请调整查询条件。':'可使用增加车源创建一条记录。'}</p></div>`;
     $('#list-footer').textContent=shown.length<all.length?'向下滚动加载后续记录':'没有更多了';
     $$('[data-vehicle-action]').forEach((button)=>button.addEventListener('click',(event)=>{event.stopPropagation(); const vehicle=vehicles.find((item)=>item.id===button.dataset.id); if(button.dataset.vehicleAction==='view')showVehicleDetail(vehicle); if(button.dataset.vehicleAction==='edit')showVehicleForm({vehicle}); if(button.dataset.vehicleAction==='unlist')confirmUnlist(vehicle); if(button.dataset.vehicleAction==='relist')confirmRelist(vehicle); if(button.dataset.vehicleAction==='top')openTopSheet(vehicle,renderVehicles);}));
@@ -328,7 +321,7 @@
     // v2.11：修改页品牌、车型、型号一律只读（目录登记、手动登记都一样），要换车型须重新登记
     const lockCar=Boolean(vehicle)||!isManual, lockAttr=lockCar?'readonly class="read-only"':'';
     const rejectBox=vehicle&&vehicle.approve==='驳回'
-      ? `<div class="reject-box"><strong>该车已被驳回</strong><div class="reject-time">驳回时间：${escapeHtml(vehicle.rejectedAt||'')}</div><p>${escapeHtml(vehicle.rejectReason||'')}</p><small>修改后提交，将重新进入未审核。</small></div>` : '';
+      ? `<div class="reject-box"><strong>该车已被驳回</strong><div class="reject-time">驳回时间：${escapeHtml(vehicle.rejectedAt||'')}</div><p>${escapeHtml(vehicle.rejectReason||'')}</p><small>修改后提交，将重新进入等待审核。</small></div>` : '';
     pushPage(vehicle?'修改车源':isManual?'手动登记车源':'车源登记',`
       ${rejectBox}
       <form id="vehicle-form" class="form-grid" style="margin-top:14px">
@@ -343,13 +336,13 @@
         <div class="form-field full" id="location-field"><span>车辆位置（必填）</span><div class="chip-select" data-chip-group="location">${VEHICLE_LOCATIONS.map((t)=>`<button type="button" class="chip-choice ${vehicle?.location===t?'selected':''}" data-val="${t}">${t}</button>`).join('')}</div><div class="field-error" id="location-error"></div></div>
         <div class="form-field full"><span>标签（选填，可多选）</span><div class="chip-select" data-chip-group="labels">${VEHICLE_LABELS.map((t)=>`<button type="button" class="chip-choice ${(vehicle?.labels||[]).includes(t)?'selected':''}" data-val="${t}">${t}</button>`).join('')}</div></div>
         <label class="form-field full">备注<textarea name="note" maxlength="500" placeholder="请输入车辆备注">${escapeHtml(vehicle?.note??state.preservedNote??'')}</textarea><span class="field-help">最多500字。</span></label>
-        <div class="form-field full"><span>详情图片（选填）</span><div id="detail-blocks" class="detail-pics"></div><div class="detail-tools"><label class="ghost detail-add">＋ 添加图片<input id="add-detail-image" type="file" accept="image/jpeg,image/png" multiple hidden></label></div><span class="field-help">只能添加图片，最多 20 张，可调整顺序。</span></div>
+        <div class="form-field full"><span>详情图片（选填）</span><div id="detail-blocks" class="detail-pics"></div><div class="detail-tools"><label class="ghost detail-add">＋ 添加图片<input id="add-detail-image" type="file" accept="image/jpeg,image/png" multiple hidden></label></div><span class="field-help">只能添加图片，最多 9 张，可调整顺序。</span></div>
         <label class="form-field">登记人<input readonly class="read-only" value="${role==='4S店员工'?'员工·李明':'代理商·周强'}"></label>
         <label class="form-field">登录手机号<input readonly class="read-only" value="${role==='4S店员工'?'13800001234':'18686636658'}"></label>
         <label class="form-field${role==='4S店员工'?' full':''}">${organizationLabel}<input readonly class="read-only" value="${escapeHtml(storeName)}"></label>
         <label class="form-field full">登记地址<textarea readonly class="read-only">${escapeHtml(address)}</textarea></label>
         <label class="form-field">车源类型<input readonly class="read-only" value="${sourceType||'无登记资格'}"></label>
-        <label class="form-field">审核状态<input readonly class="read-only" value="${vehicle?escapeHtml(vehicle.approve):'提交后进入未审核'}"></label>
+        <label class="form-field">审核状态<input readonly class="read-only" value="${vehicle?escapeHtml(vehicle.approve):'提交后进入等待审核'}"></label>
         <input type="hidden" name="exterior" value="${escapeHtml(vehicle?.exterior||'')}"><input type="hidden" name="interior" value="${escapeHtml(vehicle?.interior||'')}">
         <div id="vehicle-error" class="field-error form-field full"></div>
       </form>`,
@@ -387,8 +380,8 @@
     renderDetail();
     $('#add-detail-image').addEventListener('change',async(event)=>{
       const files=[...event.target.files];event.target.value='';
-      const available=20-state.formDetail.length;
-      if(files.length>available)mToast('详情图片最多20张');
+      const available=9-state.formDetail.length;
+      if(files.length>available)mToast('详情图片最多9张');
       // v2.11 第 2.8 节：超过 10MB 自动压缩后上传，不提示、不拒绝
       const picked=files.slice(0,available).filter((file)=>{
         if(!['image/jpeg','image/png'].includes(file.type)){mToast('详情只能添加JPG或PNG图片');return false;}
@@ -400,7 +393,7 @@
         const images=await Promise.all(picked.map((file)=>new Promise((resolve,reject)=>{
           const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);
         })));
-        state.formDetail.push(...images.slice(0,20-state.formDetail.length));renderDetail();
+        state.formDetail.push(...images.slice(0,9-state.formDetail.length));renderDetail();
       }catch(error){mToast('图片读取失败，请重新添加');}
       finally{saveButton.disabled=false;}
     });
@@ -450,12 +443,12 @@
       // R2-11：值比对判定是否重审，不以「点了保存」为依据
       const changed=Object.keys(next).some((k)=>JSON.stringify(next[k])!==JSON.stringify(vehicle[k]));
       Object.assign(vehicle,next,{updatedAt:'2026-09-13 20:30'});
-      if(changed){ Object.assign(vehicle,{approve:'未审核',status:'已下架',rejectReason:'',rejectedAt:'',unlistReason:''});
-        mToast('信息已修改，重新进入未审核'); }
+      if(changed){ Object.assign(vehicle,{approve:'等待审核',status:'已下架',rejectReason:'',rejectedAt:'',unlistReason:''});
+        mToast('信息已修改，重新进入等待审核'); }
       else mToast('未作任何修改，审核状态不变');
     } else {
       vehicles.unshift({id:'1789562340117'+String(vehicles.length*137).padStart(6,'0'),ownerId:state.ownerId,...next,
-        approve:'未审核',vehicleNo:'',hot:false,unlistReason:'',rejectReason:'',rejectedAt:'',status:'已下架',sourceType:meta.sourceType,
+        approve:'等待审核',vehicleNo:'',hot:false,unlistReason:'',rejectReason:'',rejectedAt:'',status:'已下架',sourceType:meta.sourceType,
         ownerName:meta.role==='4S店员工'?'员工·李明':'代理商·周强',storeName:meta.storeName,address:meta.address,
         createdAt:'2026-09-13 20:30',updatedAt:'2026-09-13 20:30',unlistedAt:'',manual:meta.isManual});
       mToast('已提交，等待审核');
@@ -566,7 +559,7 @@
   }
 
   // ---- REQ-005 v1.4 类型维护 ----
-  // 近 30 天上传车辆数取自 PC 车源管理的同一份车辆（含未审核、驳回、已下架），点击带条件跳过去
+  // 近 30 天上传车辆数取自 PC 车源管理的同一份车辆（含等待审核、驳回、已下架），点击带条件跳过去
   function recentCount(filter){return window.PcStock?window.PcStock.recentCount(filter):0;}
   function staffCount(code){return employees.filter((item)=>item.typeCode===code).length;}
   function numLink(n,attr){return n?`<button type="button" class="num-link" ${attr}>${n}</button>`:'<span class="num-zero">0</span>';}
@@ -728,12 +721,19 @@
 
   function registerWebMcp(){const context=document.modelContext;if(!context?.registerTool)return;try{context.registerTool({name:'read_requirement_decisions',title:'读取需求决策结果',description:'读取本地原型中24项原问题的最终处理结果。',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:false},execute(){return decisionResults.map(([id,result])=>({id,result}));}});context.registerTool({name:'navigate_prototype_view',title:'打开原型功能',description:'在当前本地原型中打开核验总览、库存车、4S店、员工维护或REQ-002首页改造视图。',inputSchema:{type:'object',properties:{view:{type:'string',enum:['overview','inventory','stores','employees','home002','notice','contact','stock']}},required:['view'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute({view}){const safeView=logic.normalizeView(view);showView(safeView);return{view:safeView};}});}catch(error){console.info('WebMCP not registered',error);}}
 
-  $$('.nav-item').forEach((button)=>button.addEventListener('click',()=>showView(button.dataset.view)));$$('[data-go]').forEach((button)=>button.addEventListener('click',()=>showView(button.dataset.go)));
+  $$('.nav-item').forEach((button)=>button.addEventListener('click',()=>showView(button.dataset.view)));
+  // 2026-10-29 PC 商铺管理：一级代理商商铺编辑页节选，开关点击切换；「是否可登记车源」默认关闭
+  const setSw=(button,on)=>{ button.classList.toggle('on',on); button.setAttribute('aria-checked',String(on)); };
+  $$('#view-shop .sw').forEach((button)=>{ button.dataset.saved=String(button.classList.contains('on')); button.addEventListener('click',()=>setSw(button,!button.classList.contains('on'))); });
+  // 确定：记住当前开关；取消：回到上次保存的状态
+  if($('#shop-save'))$('#shop-save').addEventListener('click',()=>{ $$('#view-shop .sw').forEach((b)=>{ b.dataset.saved=String(b.classList.contains('on')); }); toast('保存成功'); });
+  if($('#shop-cancel'))$('#shop-cancel').addEventListener('click',()=>$$('#view-shop .sw').forEach((b)=>setSw(b,b.dataset.saved==='true')));
+  $$('[data-go]').forEach((button)=>button.addEventListener('click',()=>showView(button.dataset.go)));
   window.addEventListener('hashchange',()=>{const view=window.location.hash.slice(1); if(view) showView(view,false);});
   // ---- 查询区（R2-07／R2-08）----
   // 品牌→车系→车型合为一个入口，逐级钻取；类型、审核状态、上下架各为一个下拉。
   // 依据用户 2026-09-13：「不存在车系独立车型存在的」「你不需要分开 3 个字段」「这是手机屏幕，很小，不要占位太大」。
-  const APPROVE_OPTIONS=[{label:'全部',value:''},{label:'未审核',value:'未审核'},{label:'通过',value:'通过'},{label:'驳回',value:'驳回'}];
+  const APPROVE_OPTIONS=[{label:'全部',value:''},{label:'等待审核',value:'等待审核'},{label:'通过',value:'通过'},{label:'驳回',value:'驳回'}];
   const SHELF_OPTIONS=[{label:'全部',value:''},{label:'在售',value:'在售'},{label:'已下架',value:'已下架'}];
 
   function ownVehicles(){ return vehicles.filter((v)=>v.ownerId===state.ownerId); }

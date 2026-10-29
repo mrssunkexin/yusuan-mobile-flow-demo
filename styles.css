@@ -797,24 +797,18 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 /* 车源登记：「增加车源」固定在页面底部、通栏，沿用原按钮样式 */
 .inv-add-bar{flex:none;padding:8px 12px 12px;background:#fff;border-top:1px solid #eef0f2}
 .inv-add-bar>.primary{width:100%;height:44px;background:linear-gradient(90deg,#ffcf31,#f5aa00);border:0;color:#2b2413;font-size:15px;font-weight:600;border-radius:6px;box-shadow:0 3px 8px rgba(235,167,0,.2)}
-/* 封面右上角半透明斜角水印：驳回、未审核、已下架；在架的不打 */
-.cover-mark{position:absolute;top:10px;right:-27px;z-index:2;width:92px;transform:rotate(45deg);text-align:center;color:#fff;font-size:11px;line-height:17px;font-weight:600;letter-spacing:1px;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.cover-mark.reject{background:rgba(245,34,45,.78)}
-.cover-mark.review{background:rgba(250,140,22,.8)}
-.cover-mark.off{background:rgba(70,74,80,.68)}
 /* 价格下面一行：驳回原因红字、下架原因灰字，最多两行 */
 .vehicle-card .reject-line,.vehicle-card .unlist-line{margin:0;font-size:11px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .vehicle-card .unlist-line{color:#9096a0}
 .vehicle-card.is-reject{cursor:default}
-/* 驳回卡片「修改」加大、绿色实底；在架卡片「修改」「下架」同为小号描边 */
-.vehicle-card .vehicle-actions button.edit-big{height:32px;padding:0 22px;font-size:14px;line-height:30px;border-radius:16px;background:#217C34;border-color:#217C34;color:#fff;font-weight:600}
+/* 驳回卡片「修改」加大、绿色实底（2026-10-29 再大一档）；在架卡片「修改」「下架」同为小号描边 */
+.vehicle-card .vehicle-actions button.edit-big{height:36px;padding:0 28px;font-size:15px;line-height:34px;border-radius:18px;background:#217C34;border-color:#217C34;color:#fff;font-weight:600}
 .vehicle-card.is-onsale .vehicle-actions button{height:22px;padding:0 9px;font-size:11px;line-height:20px;border-radius:11px}
-/* 详情页：特价车车名下的车辆编号；车辆信息区第一行车辆编号 */
+/* 详情页车辆信息区：第一行车辆编号、第二行上传时间（三类车相同，特价车车名下不再单独显示编号） */
 .d2-model-main{flex:1 1 auto;min-width:0}
-.d2-model-no{margin:4px 0 0;font-size:12.5px;line-height:1.4;color:#999}
 .d2-row.d2-vno-row{padding:0 0 12px}
 .d2-vno{font-size:14.6px;line-height:22px;color:#333}
-.d2-vno-row[hidden],.d2-model-no[hidden]{display:none}
+.d2-vno-row[hidden]{display:none}
 /* 登记人弹窗：手机号下方通栏绿色大按钮「一键拨号」（88rpx 高、32rpx 字） */
 .d-dial{display:block;width:100%;height:46px;margin:18px 0 0;border:0;border-radius:23px;background:#217C34;color:#fff;font-size:16.6px;font-weight:600;font-family:inherit;cursor:pointer}
 .d-dial:disabled{background:#c8d1cc;cursor:default}
@@ -879,12 +873,38 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 /* 车源登记卡片：驳回原因、下架原因放在车图与右侧内容下方，整张卡片通栏，最多两行 */
 .vehicle-card{row-gap:7px}
 .vehicle-card>.reject-line,.vehicle-card>.unlist-line{grid-column:1/-1;min-width:0}
-/* 状态水印两种样式同时显示供选择：封面斜角条照旧，右侧文字区（登记时间这一行右侧空白处）再叠倾斜水印字；
-   右侧列自成层叠上下文，水印 z-index:-1 压在车名、标签、价格、按钮之下，且不接收点击 */
-.vehicle-body{isolation:isolate}
-.vehicle-time{position:relative}
-.vehicle-time>.body-mark{display:block;position:absolute;z-index:-1;right:2px;top:50%;transform:translateY(-50%) rotate(-14deg);
-  font-size:24px;line-height:1;font-weight:800;letter-spacing:3px;white-space:nowrap;pointer-events:none;user-select:none}
-.body-mark.reject{color:rgba(245,34,45,.17)}
-.body-mark.review{color:rgba(250,140,22,.22)}
-.body-mark.off{color:rgba(80,86,96,.17)}
+/* 状态水印（2026-10-29 定为单一做法）：驳回、等待审核、已下架三种，在架的不打。
+   以整张卡片为参照水平、垂直居中，横穿卡片中间的倾斜半透明大字；压在车图之上、车名标签价格按钮等文字之下，不接收点击。
+   卡片自成层叠上下文：车图 z-index:0 ＜ 水印 1 ＜ 右侧内容、参考价、通栏原因 2 */
+.vehicle-card{position:relative;isolation:isolate}
+.vehicle-card>.vehicle-side>.vehicle-cover{z-index:0}
+.vehicle-card>.vehicle-body,.vehicle-card>.vehicle-side>.vehicle-ref,.vehicle-card>.reject-line,.vehicle-card>.unlist-line{position:relative;z-index:2}
+.vehicle-card>.body-mark{position:absolute;z-index:1;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-12deg);
+  font-size:44px;line-height:1;font-weight:800;letter-spacing:8px;padding-left:8px;white-space:nowrap;pointer-events:none;user-select:none}
+.body-mark.reject{color:rgba(245,34,45,.22)}
+.body-mark.review{color:rgba(250,140,22,.24)}
+.body-mark.off{color:rgba(80,86,96,.26)}
+
+/* 2026-10-29 PC 车源管理：热销、banner 列头 ⓘ 悬停（或键盘聚焦）显示说明浮层 */
+.th-tip{position:relative;display:inline-block;margin:-4px -4px -4px 0;padding:4px;color:#8c8c8c;font-size:13px;font-weight:400;line-height:1;cursor:help;outline:0}
+.th-tip:hover,.th-tip:focus-visible{color:#1890ff}
+.th-tip-pop{display:none;position:absolute;left:-10px;top:calc(100% + 8px);z-index:20;width:260px;padding:8px 10px;border-radius:4px;background:rgba(0,0,0,.8);color:#fff;font-size:12.5px;line-height:1.6;font-weight:400;white-space:normal;text-align:left;box-shadow:0 3px 6px -4px rgba(0,0,0,.12),0 6px 16px rgba(0,0,0,.08);pointer-events:none}
+.th-tip-pop::before{content:"";position:absolute;left:12px;top:-5px;border:5px solid transparent;border-top:0;border-bottom-color:rgba(0,0,0,.8)}
+.th-tip:hover>.th-tip-pop,.th-tip:focus>.th-tip-pop{display:block}
+/* 2026-10-29 PC 商铺管理：一级代理商商铺编辑页节选，开关组沿用现有顺序，最后为「是否可登记车源」 */
+.shop-layout{display:flex;align-items:flex-start;gap:22px;flex-wrap:wrap}
+.shop-edit{flex:0 1 580px;min-width:320px;background:#fff;border:1px solid #e8e8e8;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.shop-edit .modal-header{position:static}
+.shop-edit .modal-header h2{margin:0;font-size:16px;font-weight:500}
+.shop-body{padding:20px 24px 8px}
+.shop-row{display:flex;align-items:center;gap:12px;min-height:40px;margin-bottom:12px}
+.shop-k{flex:0 0 176px;white-space:nowrap;text-align:right;font-size:14px;color:#262626}
+.shop-k::after{content:"："}
+.shop-k.req::before{content:"*";margin-right:4px;color:#f5222d;font-family:SimSun,sans-serif}
+.shop-v{flex:1 1 auto;min-width:0}
+.shop-v input,.shop-v select{width:100%;max-width:300px;height:32px;padding:4px 11px;border:1px solid #d9d9d9;border-radius:4px;background:#fff;color:#262626;font-size:14px}
+.shop-v select:disabled{background:#f5f5f5;color:rgba(0,0,0,.45);cursor:not-allowed}
+.shop-v .sw{width:44px;height:22px;border-radius:11px}
+.shop-v .sw i{top:2px;left:2px;width:18px;height:18px}
+.shop-v .sw.on i{left:24px}
+.shop-edit .modal-footer{position:static}

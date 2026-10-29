@@ -18,12 +18,12 @@
   function typeText(code) { var t = typeOf(code); return t ? t.code + ' ' + t.name : ''; }
 
   /* 车辆清单。mapped：与小程序共用 demo-cars.js 的那台车，车辆编号、热销、banner、车辆位置、标签、置顶都取它；
-     其余为同一批实拍车型由其他登记人登记的车（库存车 4 台未审核／驳回、2 台已下架；一手车源 8 台由其他类型的登记人登记）。 */
+     其余为同一批实拍车型由其他登记人登记的车（库存车 4 台等待审核／驳回、2 台已下架；一手车源 8 台由其他类型的登记人登记）。 */
   var SPECS = [
-    // 库存车：未审核、驳回的车还没有车辆编号
-    { car: 'inventory-m6', price: 109800, days: 0, person: '张三', approve: '未审核', views: 12 },
-    { car: 'inventory-lc76', price: 615000, days: 1, person: '李四', approve: '未审核', views: 8 },
-    { car: 'inventory-g63', price: 2528000, days: 2, person: '王五', approve: '未审核', views: 21 },
+    // 库存车：等待审核、驳回的车还没有车辆编号
+    { car: 'inventory-m6', price: 109800, days: 0, person: '张三', approve: '等待审核', views: 12 },
+    { car: 'inventory-lc76', price: 615000, days: 1, person: '李四', approve: '等待审核', views: 8 },
+    { car: 'inventory-g63', price: 2528000, days: 2, person: '王五', approve: '等待审核', views: 21 },
     { car: 'inventory-yuan', price: 79800, days: 4, person: '赵六', approve: '驳回', opinion: '照片不清晰，请补拍车身正面与内饰', views: 9 },
     { car: 'inventory-m6', mapped: true, price: 108000, person: '张伟', views: 126, sold: 1 },
     { car: 'inventory-lc76', mapped: true, price: 618000, person: '张伟', views: 212, sold: 2 },
@@ -48,8 +48,8 @@
     { car: 'firsthand-lc76', no: 'YE00001', price: 625000, days: 16, person: '马丽华', banner: 4, on: false, off: SOLD_REASON, offBy: '系统', location: '东区', views: 118 },
     { car: 'firsthand-lc300', no: 'YF00001', price: 831000, days: 25, person: '林曼', banner: 3, location: '西区', views: 70 },
     { car: 'firsthand-prado', no: 'YG00001', price: 769000, days: 33, person: '罗文博', banner: 2, on: false, off: '本人下架', offBy: '罗文博', location: '大北区', views: 36 },
-    // 一手车源：未审核、驳回
-    { car: 'firsthand-lc300', price: 826000, days: 1, person: '朱天翔', approve: '未审核', views: 5 },
+    // 一手车源：等待审核、驳回
+    { car: 'firsthand-lc300', price: 826000, days: 1, person: '朱天翔', approve: '等待审核', views: 5 },
     { car: 'firsthand-g63', price: 2560000, days: 7, person: '梁秋萍', approve: '驳回', opinion: '实际售价与同款车差距较大，请核实后重新提交', views: 14 }
   ];
 
@@ -68,7 +68,7 @@
     t.setHours(9 + (i * 7) % 10, (i * 13) % 60, 0, 0);
     if (t.getTime() > NOW) t = new Date(NOW - (i + 1) * 9 * 60000);
     var staff = src === '一手车源' ? staffByName(s.person) : null;
-    var audit = approve === '未审核' ? null : new Date(t.getTime() + Math.min(2 * 3600000, (NOW - t.getTime()) / 2));
+    var audit = approve === '等待审核' ? null : new Date(t.getTime() + Math.min(2 * 3600000, (NOW - t.getTime()) / 2));
     var on = approve === '通过' && s.on !== false;
     var r = {
       id: 'cs-' + (i + 1),
@@ -157,8 +157,8 @@
       return true;
     });
     list.sort(function (a, b) {
-      // R2-11 细则4：未审核排最前，照搬线上 ORDER BY CASE WHEN audit_status = 0 THEN 0 ELSE 1 END
-      var pa = a.approve === '未审核' ? 0 : 1, pb = b.approve === '未审核' ? 0 : 1;
+      // R2-11 细则4：等待审核排最前，照搬线上 ORDER BY CASE WHEN audit_status = 0 THEN 0 ELSE 1 END
+      var pa = a.approve === '等待审核' ? 0 : 1, pb = b.approve === '等待审核' ? 0 : 1;
       if (pa !== pb) return pa - pb;
       if (q.sort === 'sold' && b.sold !== a.sold) return b.sold - a.sold;
       if (q.sort === 'views' && b.views !== a.views) return b.views - a.views;
@@ -178,7 +178,7 @@
     if (!$('#view-stock')) return;
     var list = filtered();
     var stat = { total: list.length, pend: 0, on: 0, off: 0, views: 0 };
-    list.forEach(function (r) { if (r.approve === '未审核') stat.pend++; r.on ? stat.on++ : stat.off++; stat.views += r.views; });
+    list.forEach(function (r) { if (r.approve === '等待审核') stat.pend++; r.on ? stat.on++ : stat.off++; stat.views += r.views; });
     $('#s-total').textContent = stat.total;
     $('#s-pend').textContent = stat.pend;
     $('#s-on').textContent = stat.on;
@@ -210,7 +210,7 @@
           : '<span class="muted">—</span>') + '</td>' +
         '<td>' + (isTop(r) ? '<span class="top-until">至 ' + fmt(r.topEnd) + '</span>' : '') + '</td>' +
         '<td><div class="table-actions">' +
-        (r.approve === '未审核'
+        (r.approve === '等待审核'
           ? '<button class="primary" data-act="approve" data-id="' + r.id + '">审核</button>'
           : '<button data-act="detail" data-id="' + r.id + '">查看</button>') +
         (r.approve === '通过'
@@ -232,7 +232,7 @@
 
   // 状态配色照线上 carSalesRegistration.vue 的 statusMap
   function approveChip(a) {
-    var c = a === '未审核' ? '#999' : a === '通过' ? '#158a36' : '#F5222D';
+    var c = a === '等待审核' ? '#999' : a === '通过' ? '#158a36' : '#F5222D';
     return '<span class="ap-chip" style="color:' + c + '">' + a + '</span>';
   }
   // 品牌→车型：每级第一项都是「不限」
@@ -461,7 +461,7 @@
         : '<p class="muted" style="margin:6px 0 0">无</p>') +
       '</div>' +
       '<div class="modal-footer"><button class="ghost" id="k-back">关闭</button>' +
-      (r.approve === '未审核' ? '<button class="primary" id="k-ap">审核</button>' : '') +
+      (r.approve === '等待审核' ? '<button class="primary" id="k-ap">审核</button>' : '') +
       (r.approve === '通过' ? (r.on ? '<button class="danger" id="k-off">下架</button>' : '<button class="primary" id="k-on">上架</button>') : '') +
       (isTop(r) ? '<button class="ghost" id="k-untop">取消置顶</button>' : '') +
       '</div></div></div>';
@@ -511,7 +511,7 @@
     if (window.showPrototypeView) window.showPrototypeView('stock');
     window.scrollTo(0, 0);
   }
-  // 近 30 天上传车辆数：全部状态都算（含未审核、驳回、已下架）
+  // 近 30 天上传车辆数：全部状态都算（含等待审核、驳回、已下架）
   function recentCount(f) {
     var from = recentFrom();
     return rows.filter(function (r) {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="预蒜 车源登记与 4S 店维护 页面方案">
   <title>预蒜 · 页面方案</title>
-  <link rel="stylesheet" href="styles.css?v=6.24.0">
+  <link rel="stylesheet" href="styles.css?v=6.25.0">
 </head>
 <body>
   <header class="topbar">
@@ -35,6 +35,7 @@
       <button class="nav-item" data-view="employees"><i>REQ-006</i>登记人维护 <span>登记人与联系人 · 批量导入 · 待审阅</span></button>
       <button class="nav-item" data-view="stock"><i>REQ-004</i>车源管理 <span>热销·banner·审核·下架原因 · 待审阅</span></button>
       <button class="nav-item" data-view="notice"><i>REQ-007</i>公告配置 <span>底部滚动文字 · 已放行</span></button>
+      <button class="nav-item" data-view="shop"><i>REQ-001</i>商铺管理 <span>是否可登记车源 · 待审阅</span></button>
 
       <div class="scope-note">
         <strong>本次不展开</strong>
@@ -120,7 +121,7 @@
           <ul>
             <li><strong>改名（R2-05／R2-06）</strong>：入口、页面、表单标题统一为「车源登记」，按钮为「增加车源」。车源类型名「库存车」「一手车源」不变。</li>
             <li><strong>查询区（R2-07／R2-08）</strong>：取消在售／已下架页签，改为品牌→车系→车型三级级联、审核、上下架三个条件（车辆类型已取消，CHG-D051），逐字段查询。</li>
-            <li><strong>审核流程（R2-11）</strong>：登记提交后进入未审核；审核状态与上下架是两个互不合并的维度，只有通过才可能上架。</li>
+            <li><strong>审核流程（R2-11）</strong>：登记提交后进入等待审核；审核状态与上下架是两个互不合并的维度，只有通过才可能上架。</li>
             <li><strong>驳回通知（R2-11 细则 2）</strong>：右上角铃铛带未读角标，点开看驳回时间，点条目直接进该车修改页，原因显示在顶部。不做「被驳回的车」独立分区。</li>
             <li><strong>登记表 18 项（R2-09／R2-12）</strong>：车辆类型、标签、详情图片（仅图片）；照片区支持视频。推荐已由付费置顶替代。</li>
           </ul>
@@ -128,16 +129,16 @@
           <ul>
             <li><strong>付费置顶（R3-01）</strong>：去掉「推荐」。审核通过且在售的车，登记时间右侧有「置顶」按钮，点开付款面板（9.9元／7天，后台可配），付款后卡片显示「置顶至…」、按钮变「续期」。置顶车在对应车源类型列表排最前。</li>
             <li><strong>登录手机号（R3-06）</strong>：登记表在「登记人」下方反显当前登录手机号，只读。</li>
-            <li><strong>详情图片（R3-07）</strong>：原「车辆详情」图文改为只能加图片，最多 20 张，可上移、下移、移除，不裁切。</li>
+            <li><strong>详情图片（R3-07）</strong>：原「车辆详情」图文改为只能加图片，最多 9 张（超出提示「详情图片最多9张」），可上移、下移、移除，不裁切。</li>
             <li><strong>车辆照片裁成正方形（R3-08）</strong>：不是正方形的照片先进裁剪页，拖动选择保留区域（手机上可双指缩放）；点上传选择非正方形照片后自动弹出裁剪，不单设「待裁剪」入口。</li>
           </ul>
           <h3>本轮新增（R2-10，2026-09-16）</h3>
-          <ul><li><strong>卡片精简为 6 项</strong>：封面（左上角热销角标）、车名、状态、标签、价格、登记时间。去掉备注、车源类型、内外颜色与「查看」按钮；操作按钮移到价格同一行。</li><li><strong>查询区一行横排</strong>：品牌／类型／审核／上下架，点选即生效，去掉查询、重置、收起三个按钮。</li><li><strong>排序</strong>：驳回最前，其次未审核，其余按登记时间倒序。</li></ul>
+          <ul><li><strong>卡片精简为 6 项</strong>：封面（左上角热销角标）、车名、状态、标签、价格、登记时间。去掉备注、车源类型、内外颜色与「查看」按钮；操作按钮移到价格同一行。</li><li><strong>查询区一行横排</strong>：品牌／类型／审核／上下架，点选即生效，去掉查询、重置、收起三个按钮。</li><li><strong>排序</strong>：驳回最前，其次等待审核，其余按登记时间倒序。</li></ul>
           <h3>2026-10-28 会议后（v2.11）</h3>
           <ul>
-            <li><strong>驳回卡片</strong>：审核状态「不通过」改叫「驳回」；点卡片不进详情，只有加大的绿色「修改」；驳回原因红字，整张卡片通栏，最多两行。</li>
+            <li><strong>驳回卡片</strong>：审核状态「不通过」改叫「驳回」；点卡片不进详情，只有加大的绿色实底「修改」；驳回原因红字，整张卡片通栏，最多两行。</li>
             <li><strong>在架卡片</strong>：「修改」变小，与「下架」同样大小的描边按钮。</li>
-            <li><strong>状态水印</strong>：「驳回」「未审核」「已下架」，在架的不打；两种样式同时显示供选择：封面图右上角斜角条，卡片右侧文字区大号倾斜水印字（驳回红、未审核橙、已下架灰），定后只保留一种；已下架卡片通栏灰字下架原因（本人下架／总部填写的原因／三个用户标记该车辆已售）。</li>
+            <li><strong>状态水印</strong>：「驳回」「等待审核」「已下架」，在架的不打；卡片中间横穿倾斜半透明大字，驳回红、等待审核橙、已下架灰，压在车图上、车名价格按钮下，不挡点击。已下架卡片通栏灰字下架原因（本人下架／总部填写的原因／三个用户标记该车辆已售／上架超过 30 天自动下架，天数为参数，默认 30）。</li>
             <li><strong>增加车源</strong>：固定在页面底部，通栏。</li>
             <li><strong>登记表与修改表</strong>：「促销标识」改为「车辆位置」单选必填（东区／西区／南区／北区／大北区）；标签换成 9 个、选填；修改页品牌、车型、型号都只读（手动登记的也一样），没有「重选型号」；照片超过 10MB 自动压缩，不再提示；选车页入口「找不到？手动登记车源」。</li>
             <li><strong>车辆详情</strong>：「车辆主键 ID」改为「车辆编号」，审核通过前显示「审核通过后生成」；已下架显示下架原因。</li>
@@ -181,7 +182,7 @@
             <label>品牌<select id="q-brand"><option value="">不限品牌</option></select></label>
             <label>车型<select id="q-model"><option value="">不限车型</option></select></label>
             <label>车源类型<select id="q-srctype"><option value="">全部</option><option>库存车</option><option>一手车源</option></select></label>
-            <label>审核状态<select id="pc-approve"><option value="">全部</option><option>未审核</option><option>通过</option><option>驳回</option></select></label>
+            <label>审核状态<select id="pc-approve"><option value="">全部</option><option>等待审核</option><option>通过</option><option>驳回</option></select></label>
             <label>上下架<select id="pc-shelf"><option value="">全部</option><option>在售</option><option>已下架</option></select></label>
             <label>热销<select id="q-hot"><option value="">全部</option><option>是</option><option>否</option></select></label>
             <label>banner<select id="q-banner"><option value="">全部</option><option>是</option><option>否</option></select></label>
@@ -193,14 +194,14 @@
           </div>
           <div class="stat-row panel compact">
             <div class="stat"><b id="s-total">0</b><span>车源总数</span></div>
-            <div class="stat"><b id="s-pend" style="color:#b25b00">0</b><span>未审核</span></div>
+            <div class="stat"><b id="s-pend" style="color:#b25b00">0</b><span>等待审核</span></div>
             <div class="stat"><b id="s-on" style="color:#21a081">0</b><span>在售</span></div>
             <div class="stat"><b id="s-off" style="color:#b73b3b">0</b><span>已下架</span></div>
             <div class="stat"><b id="s-views">0</b><span>累计查看</span></div>
           </div>
           <div class="panel table-panel">
             <div class="table-wrap"><table class="data-table"><thead><tr>
-              <th>#</th><th class="col-id">车辆编号</th><th>车源类型</th><th>热销</th><th>banner</th><th>车辆位置</th><th>品牌车型</th><th>实际售价（元）</th><th>登记人</th><th>所属机构</th><th>登记时间</th><th>查看</th><th>已售人数</th><th>审核状态</th><th>上下架</th><th>置顶</th><th>操作</th>
+              <th>#</th><th class="col-id">车辆编号</th><th>车源类型</th><th>热销<span class="th-tip" tabindex="0" aria-label="热销说明">ⓘ<span class="th-tip-pop" role="tooltip">勾选后，该车在小程序车辆列表排在付费置顶的车之后、其他车之前，首图左上角显示「热销」角标</span></span></th><th>banner<span class="th-tip" tabindex="0" aria-label="banner说明">ⓘ<span class="th-tip-pop" role="tooltip">勾选后，该车显示在小程序本列表顶部横幅轮播；每个列表最多 10 台</span></span></th><th>车辆位置</th><th>品牌车型</th><th>实际售价（元）</th><th>登记人</th><th>所属机构</th><th>登记时间</th><th>查看</th><th>已售人数</th><th>审核状态</th><th>上下架</th><th>置顶</th><th>操作</th>
             </tr></thead><tbody id="stock-body"></tbody></table></div>
             <div id="stock-empty" class="table-empty" hidden></div>
             <div class="pagination"><span id="stock-total"></span><label>每页<select id="stock-size"><option>20</option><option>50</option><option>100</option></select></label><button id="stock-prev">上一页</button><span id="stock-page"></span><button id="stock-next">下一页</button></div>
@@ -227,6 +228,41 @@
             <div class="table-wrap"><table class="data-table"><thead><tr><th>公告文案</th><th>排序值</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody id="notice-table-body"></tbody></table></div>
             <div id="notice-empty" class="table-empty" hidden></div>
             <div class="pagination"><span id="notice-total"></span><label>每页<select id="notice-page-size"><option>20</option><option>50</option><option>100</option></select></label><button id="notice-prev">上一页</button><span id="notice-page"></span><button id="notice-next">下一页</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-shop">
+        <div class="pc-page">
+          <div class="page-heading"><div><p class="kicker">PC端</p><h2>商铺管理</h2></div></div>
+          <div class="shop-layout">
+            <section class="shop-edit" aria-label="编辑商铺">
+              <header class="modal-header"><h2>编辑商铺</h2><button type="button" class="modal-close" aria-label="关闭">×</button></header>
+              <div class="shop-body">
+              <div class="shop-row"><span class="shop-k">上级店铺</span><div class="shop-v"><select disabled><option>预蒜汽车总部</option></select></div></div>
+              <div class="shop-row"><span class="shop-k req">店铺名称</span><div class="shop-v"><input value="华东名车行" maxlength="50"></div></div>
+              <div class="shop-row"><span class="shop-k req">联系电话</span><div class="shop-v"><input value="13916582047" maxlength="11"></div></div>
+              <div class="shop-row"><span class="shop-k req">店铺类型</span><div class="shop-v"><select disabled><option>一级代理</option></select></div></div>
+              <div class="shop-row"><span class="shop-k">是否启用</span><div class="shop-v"><button type="button" class="sw on" role="switch" aria-checked="true" aria-label="是否启用"><i></i></button></div></div>
+              <div class="shop-row"><span class="shop-k">是否可见下级店铺</span><div class="shop-v"><button type="button" class="sw on" role="switch" aria-checked="true" aria-label="是否可见下级店铺"><i></i></button></div></div>
+              <div class="shop-row"><span class="shop-k">是否可见下级店铺线索</span><div class="shop-v"><button type="button" class="sw on" role="switch" aria-checked="true" aria-label="是否可见下级店铺线索"><i></i></button></div></div>
+              <div class="shop-row"><span class="shop-k">是否可见QA</span><div class="shop-v"><button type="button" class="sw" role="switch" aria-checked="false" aria-label="是否可见QA"><i></i></button></div></div>
+              <div class="shop-row"><span class="shop-k">是否可见车源管理</span><div class="shop-v"><button type="button" class="sw on" role="switch" aria-checked="true" aria-label="是否可见车源管理"><i></i></button></div></div>
+              <div class="shop-row"><span class="shop-k">是否可见考试</span><div class="shop-v"><button type="button" class="sw" role="switch" aria-checked="false" aria-label="是否可见考试"><i></i></button></div></div>
+              <div class="shop-row"><span class="shop-k">是否可登记车源</span><div class="shop-v"><button type="button" class="sw" role="switch" aria-checked="false" aria-label="是否可登记车源" id="shop-reg-switch"><i></i></button></div></div>
+              </div>
+              <footer class="modal-footer"><button type="button" class="ghost" id="shop-cancel">取消</button><button type="button" class="primary" id="shop-save">确定</button></footer>
+            </section>
+            <aside class="side-info">
+              <div class="side-info-head"><h2>商铺管理 · 是否可登记车源</h2><span class="chip">待审阅</span></div>
+              <p>左侧为 PC「商铺管理」中一级代理商某商铺的编辑页节选，开关可点切换。</p>
+              <ul>
+                <li><strong>只对一级代理商显示此开关</strong>：店铺类型为「一级代理」的商铺编辑页才有「是否可登记车源」。</li>
+                <li><strong>开通后小程序管理后台才显示「车源登记」入口</strong>，未开通不显示。</li>
+                <li><strong>默认关闭</strong>，上线后总部逐个开通。</li>
+                <li>开关顺序沿用现有系统：是否启用、是否可见下级店铺、是否可见下级店铺线索、是否可见QA、是否可见车源管理、是否可见考试，新开关放在最后。</li>
+              </ul>
+            </aside>
           </div>
         </div>
       </section>
@@ -315,10 +351,11 @@
                     <p class="d2-yellow">预蒜价: <span id="d2-sale"></span></p>
                   </div>
                 </div>
-                <div class="d2-model"><span class="d2-model-tag">车型:</span><div class="d2-model-main"><span class="d2-model-name" id="d2-name"></span><p class="d2-model-no" id="d2-model-no" hidden></p></div></div>
+                <div class="d2-model"><span class="d2-model-tag">车型:</span><div class="d2-model-main"><span class="d2-model-name" id="d2-name"></span></div></div>
                 <div class="d2-info">
                   <div class="d2-info-head"><b>车辆信息</b><span class="d2-src" id="d2-src"></span></div>
                   <div class="d2-row d2-vno-row" id="d2-vno-row"><span class="d2-k">车辆编号</span><span class="d2-vno" id="d2-vno"></span></div>
+                  <div class="d2-row d2-vno-row" id="d2-up-row"><span class="d2-k">上传时间</span><span class="d2-vno" id="d2-uptime"></span></div>
                   <dl class="d2-grid">
                     <div><dt>外观颜色</dt><dd id="d2-color-out"></dd></div>
                     <div><dt>内饰颜色</dt><dd id="d2-color-in"></dd></div>
@@ -363,15 +400,15 @@
               <li><b>顶部轮播</b>：登记时上传的全部照片和视频，右下角显示张数。</li>
               <li><b>价格条</b>：大字和「预蒜价」是实际售价，「指导价」是参考价。</li>
               <li><b>车型</b>：品牌＋车系＋车型。</li>
-              <li><b>车辆信息</b>：车源类型、车辆编号、外观颜色、内饰颜色、车辆位置（东区／西区／南区／北区／大北区）、标签、备注；顶部第一张图左上角只显示「热销」角标（v2.11）。</li>
-              <li><b>特价车</b>（v2.11）：车名下面一行显示「车辆编号 TG00001」；不显示车辆信息区。</li>
+              <li><b>车辆信息</b>：车源类型、车辆编号（第一行）、上传时间（第二行，该车最后一次上架日期 YYYY-MM-DD）、外观颜色、内饰颜色、车辆位置（东区／西区／南区／北区／大北区）、标签、备注；顶部第一张图左上角只显示「热销」角标（v2.11）。</li>
+              <li><b>特价车</b>：与库存车、一手车源一样显示车辆信息区，车源类型为「特价车」，车辆编号在车辆信息区第一行；车名下面不再单独显示编号。</li>
               <li><b>商品详情</b>：登记时上传的详情图片，按上传顺序，保持原比例。</li>
             </ul>
             <h3>不展示什么，为什么</h3>
             <ul>
               <li><b>登记人姓名和电话</b>：客户咨询由转发人承接，只有一级代理商点「登记人」浮钮才看得到（R3-12）。</li>
               <li><b>代理商或 4S 店名称、详细地址、省市</b>：客户看到后可以绕开转发人直接找过去，所以只显示车辆位置（v2.11）。</li>
-              <li><b>登记时间</b>：上传天数放在列表卡片上，详情页先不放。</li>
+              <li><b>登记时间</b>：上传天数放在列表卡片上；详情页只在车辆信息区显示上传时间（最后一次上架日期），不另放登记时间。</li>
               <li><b>审核状态、内部置顶记录</b>：对看车的人没有用。</li>
             </ul>
             <h3>其余不变</h3>
@@ -557,7 +594,7 @@
 
       <section class="view" id="view-home002">
         <div class="embedded-prototype">
-          <iframe id="home002-frame" src="req-002-home.html?v=5.13.0" title="REQ-002 小程序首页改造"></iframe>
+          <iframe id="home002-frame" src="req-002-home.html?v=5.15.0" title="REQ-002 小程序首页改造"></iframe>
         </div>
       </section>
     </main>
@@ -565,19 +602,19 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
   <div id="modal-root"></div>
-  <script src="demo-cars.js?v=1.6.0"></script>
+  <script src="demo-cars.js?v=1.7.1"></script>
   <script src="demo-car-ui.js?v=1.2.0"></script>
-  <script src="logic.js?v=6.3.0"></script>
-  <script src="app.js?v=5.15.0"></script>
+  <script src="logic.js?v=6.4.0"></script>
+  <script src="app.js?v=5.16.0"></script>
   <script src="req-007-notice.js?v=4.9.0"></script>
   <script src="req-003-contact.js?v=5.3.0"></script>
   <script src="req-003-fav.js?v=1.2.0"></script>
-  <script src="req-003-detail2.js?v=5.6.0"></script>
+  <script src="req-003-detail2.js?v=5.7.0"></script>
   <script src="req-008-list.js?v=1.9.0"></script>
   <script src="req-009-login.js?v=1.5.0"></script>
   <script src="req-010-clue.js?v=1.3.0"></script>
-  <script src="req-004-stock.js?v=5.4.0"></script>
-  <script src="req-pending.js?v=5.11.0"></script>
+  <script src="req-004-stock.js?v=5.5.0"></script>
+  <script src="req-pending.js?v=5.12.0"></script>
   <script>
     // REQ-002 样稿按自身真实高度撑开，避免内层滚动条或底部空白
     window.addEventListener('message', function (e) {
