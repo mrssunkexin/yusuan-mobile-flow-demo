@@ -1,13 +1,15 @@
 /* REQ-004 PC 车源管理样稿
    依据：REQ-004-PC车源管理需求方案 v2.5（2026-10-28 CHG-D065：热销／banner 开关与 10 台上限、车辆编号、车辆位置、所属类型、
-   已售人数、总部下架填原因、「不通过」改叫「驳回」）。本地演示数据，不连接接口。*/
+   已售人数、总部下架填原因、「不通过」改叫「驳回」）。本地演示数据，不连接接口。
+   2026-10-29 特价车重建方案（TASK-042）：车源类型加「特价车」；只有总部在 PC 新增特价车，表单与小程序车源登记相同，
+   保存即通过、上架、生成 TG 编号；修改时品牌、车型、型号只读。库存车、一手车源仍不能在 PC 新增或修改。*/
 (function () {
   'use strict';
 
   var DC = window.DemoCars;
   var ORG = window.PcOrgs || { types: [], registrants: [] };
   var DAY = 86400000, NOW = Date.now();
-  var PEOPLE_ORG = { '张伟': '华东名车行', '张三': '安信汽车', '李四': '德仁二手车', '王五': '天成车业', '赵六': '优选好车', '刘洋': '众诚车行', '周敏': '宏达名车' };
+  var PEOPLE_ORG = { '总部': '总部', '张伟': '华东名车行', '张三': '安信汽车', '李四': '德仁二手车', '王五': '天成车业', '赵六': '优选好车', '刘洋': '众诚车行', '周敏': '宏达名车' };
   var LOCATIONS = ['东区', '西区', '南区', '北区', '大北区'];
   var HQ_REASON = '车辆照片与实车不符，请核实后重新上架';
   var SOLD_REASON = '三个用户标记该车辆已售';
@@ -50,8 +52,17 @@
     { car: 'firsthand-prado', no: 'YG00001', price: 769000, days: 33, person: '罗文博', banner: 2, on: false, off: '本人下架', offBy: '罗文博', location: '大北区', views: 36 },
     // 一手车源：等待审核、驳回
     { car: 'firsthand-lc300', price: 826000, days: 1, person: '朱天翔', approve: '等待审核', views: 5 },
-    { car: 'firsthand-g63', price: 2560000, days: 7, person: '梁秋萍', approve: '驳回', opinion: '实际售价与同款车差距较大，请核实后重新提交', views: 14 }
+    { car: 'firsthand-g63', price: 2560000, days: 7, person: '梁秋萍', approve: '驳回', opinion: '实际售价与同款车差距较大，请核实后重新提交', views: 14 },
+    // 特价车：总部在 PC 登记，保存即通过并上架；与小程序共用的 7 台，编号、热销、banner、位置、标签都取 demo-cars.js
+    { car: 'special_price-m6', mapped: true, price: 106800, person: '总部', views: 342 },
+    { car: 'special_price-prado', mapped: true, price: 775800, person: '总部', views: 268 },
+    { car: 'special_price-lc300', mapped: true, price: 826800, person: '总部', views: 305 },
+    { car: 'special_price-lc76', mapped: true, price: 623800, person: '总部', views: 187 },
+    { car: 'special_price-g63', mapped: true, price: 2553000, person: '总部', views: 241 },
+    { car: 'special_price-prado-2', mapped: true, price: 763800, person: '总部', views: 129 },
+    { car: 'special_price-lc76-2', mapped: true, price: 614800, person: '总部', views: 116 }
   ];
+  var SRC_TEXT = { inventory: '库存车', firsthand: '一手车源', special_price: '特价车' };
 
   function p2(n) { return String(n).padStart(2, '0'); }
   function fmt(d, full) { return (full ? d.getFullYear() + '-' : '') + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes()); }
@@ -60,7 +71,7 @@
 
   var rows = SPECS.map(function (s, i) {
     var car = DC.get(s.car), m = car.name.match(/^(\S+)\s+(.+?)\s+(\d{4}款.*)$/);
-    var src = car.source === 'inventory' ? '库存车' : '一手车源';
+    var src = SRC_TEXT[car.source], special = src === '特价车';
     var approve = s.approve || '通过';
     var days = s.mapped ? car.days : s.days;
     // 登记时间落在白天 9～18 点；当天登记的不晚于此刻
@@ -68,35 +79,38 @@
     t.setHours(9 + (i * 7) % 10, (i * 13) % 60, 0, 0);
     if (t.getTime() > NOW) t = new Date(NOW - (i + 1) * 9 * 60000);
     var staff = src === '一手车源' ? staffByName(s.person) : null;
-    var audit = approve === '等待审核' ? null : new Date(t.getTime() + Math.min(2 * 3600000, (NOW - t.getTime()) / 2));
+    // 特价车保存即通过，通过时间就是登记时间
+    var audit = approve === '等待审核' ? null : special ? t : new Date(t.getTime() + Math.min(2 * 3600000, (NOW - t.getTime()) / 2));
     var on = approve === '通过' && s.on !== false;
     var r = {
       id: 'cs-' + (i + 1),
       no: approve === '通过' ? (s.mapped ? car.vehicleNo : s.no) : '',
-      srcType: src,
+      srcType: src, special: special,
       hot: s.mapped ? !!car.hot : !!s.hot, hotAt: s.mapped ? (car.hotAt || 0) : (s.hot || 0),
       banner: s.mapped ? !!car.banner : !!s.banner, bannerAt: s.mapped ? (car.bannerAt || 0) : (s.banner || 0),
       location: s.mapped ? car.location : (s.location || car.location),
       labels: car.labels.slice(),
       approve: approve,
       opinion: s.opinion || '',
-      auditAt: audit ? fmt(audit, true) : '', auditor: audit ? '总部 admin' : '',
+      auditAt: audit ? fmt(audit, true) : '', auditor: audit ? (special ? '总部' : '总部 admin') : '',
       photos: car.photos.map(function (p) { return p.src; }),
       detailImgs: i % 5 === 4 ? [] : car.photos.map(function (p) { return p.src; }),
       topEnd: null, topOrders: [],
-      video: false,   // 实拍素材均无视频，与小程序各页一致
+      video: false, videoName: '',   // 实拍素材均无视频，与小程序各页一致
       brand: m[1], model: m[2], variant: m[3], name: m[1] + ' ' + m[2], price: s.price, guide: Math.round(parseFloat(car.ref) * 10000),
       person: s.person, staffId: staff ? staff.id : '', org: staff ? '' : (PEOPLE_ORG[s.person] || ''),
       time: fmt(t, true),
       views: s.views, sold: on ? (s.sold || 0) : 0, on: on,
       offReason: on ? '' : (approve === '通过' ? s.off || '' : ''), offAt: '', offBy: s.offBy || '',
       color: car.colorOut, inner: car.colorIn, remark: car.remark,
+      manual: false,
       ops: []
     };
     // 置顶：与小程序同一台车一致（REQ-001 第 2.17 节），每次付款买下的时段从付款时刻或原结束时间起
     if (s.mapped && car.top === 1) { r.topEnd = new Date(NOW + 3 * DAY); r.topOrders = [{ pay: new Date(NOW - 4 * DAY), money: 9.9, days: 7, start: new Date(NOW - 4 * DAY), end: r.topEnd }]; }
     if (s.mapped && car.top === 2) { r.topEnd = new Date(NOW + 9 * DAY); r.topOrders = [{ pay: new Date(NOW - DAY), money: 9.9, days: 7, start: new Date(NOW + 2 * DAY), end: r.topEnd }, { pay: new Date(NOW - 5 * DAY), money: 9.9, days: 7, start: new Date(NOW - 5 * DAY), end: new Date(NOW + 2 * DAY) }]; }
-    if (approve === '通过') r.ops.push({ t: r.auditAt, who: r.auditor, act: '审核通过' });
+    if (special) r.ops.push({ t: r.time, who: '总部', act: '登记，保存即通过并上架' });
+    else if (approve === '通过') r.ops.push({ t: r.auditAt, who: r.auditor, act: '审核通过' });
     if (approve === '驳回') r.ops.push({ t: r.auditAt, who: r.auditor, act: '审核驳回：' + r.opinion });
     if (r.offReason) {
       r.offAt = fmt(new Date(Math.min(NOW - 3600000, audit.getTime() + Math.max(1, days - 1) * DAY)), true);
@@ -110,7 +124,7 @@
   rows.forEach(function (r) { bump(r.no); });
   function bump(no) { if (!no) return; var k = no.slice(0, 2), n = Number(no.slice(2)); SEQ[k] = Math.max(SEQ[k] || 0, n); }
   function nextNo(r) {
-    var staff = staffById(r.staffId), k = r.srcType === '库存车' ? 'KC' : 'Y' + (staff ? staff.typeCode : 'A');
+    var staff = staffById(r.staffId), k = r.srcType === '特价车' ? 'TG' : r.srcType === '库存车' ? 'KC' : 'Y' + (staff ? staff.typeCode : 'A');
     SEQ[k] = (SEQ[k] || 0) + 1;
     return k + String(SEQ[k]).padStart(5, '0');
   }
@@ -193,7 +207,7 @@
       return '<tr>' +
         '<td>' + ((page - 1) * size + i + 1) + '</td>' +
         '<td class="cell-id">' + (r.no || '<span class="muted">—</span>') + '</td>' +
-        '<td><span class="tag2 ' + (r.srcType === '库存车' ? 't-inv' : 't-4s') + '">' + r.srcType + '</span></td>' +
+        '<td><span class="tag2 ' + (r.special ? 't-sp' : r.srcType === '库存车' ? 't-inv' : 't-4s') + '">' + r.srcType + '</span></td>' +
         '<td>' + sw(r, 'hot') + '</td>' +
         '<td>' + sw(r, 'banner') + '</td>' +
         '<td>' + r.location + '</td>' +
@@ -203,7 +217,7 @@
         '<td>' + esc(orgText(r)) + '</td>' +
         '<td>' + r.time + '</td>' +
         '<td>' + r.views + '</td>' +
-        '<td>' + (r.sold ? '<b class="sold">' + r.sold + ' 人</b>' : '<span class="muted">0</span>') + '</td>' +
+        '<td>' + (r.special ? '<span class="muted">—</span>' : r.sold ? '<b class="sold">' + r.sold + ' 人</b>' : '<span class="muted">0</span>') + '</td>' +
         '<td>' + approveChip(r.approve) + '</td>' +
         '<td>' + (r.approve === '通过'
           ? '<span class="status-dot' + (r.on ? ' on' : '') + '">' + (r.on ? '在售' : '已下架') + '</span>'
@@ -218,6 +232,7 @@
                   : '<button data-act="on" data-id="' + r.id + '">上架</button>')
           : '') +
         (isTop(r) ? '<button data-act="untop" data-id="' + r.id + '">取消置顶</button>' : '') +
+        (r.special ? '<button data-act="edit" data-id="' + r.id + '">修改</button>' : '') +
         '</div></td></tr>';
     }).join('');
 
@@ -244,7 +259,7 @@
   }
   function uniq(a) { return a.filter(function (x, i) { return x && a.indexOf(x) === i; }); }
   function fillBrand() {
-    fillSel('#q-brand', '不限品牌', uniq(rows.map(function (r) { return r.brand; })));
+    fillSel('#q-brand', '不限品牌', uniq(rows.map(function (r) { return r.brand; })), true);
     fillModel();
   }
   function fillModel() {
@@ -332,7 +347,8 @@
   // R2-14 总部也可以上架；重新上架后下架原因不再显示
   function doOn(r, fromDetail) {
     confirmBox('上架车源',
-      '<p style="margin:0">确定上架 <b>' + esc(r.no) + '　' + esc(r.name) + '</b>？<br><br>上架后小程序端恢复展示。总部只做上下架、不改车辆信息，因此不触发重新审核。</p>',
+      '<p style="margin:0">确定上架 <b>' + esc(r.no) + '　' + esc(r.name) + '</b>？<br><br>上架后小程序端恢复展示。' +
+      (r.special ? '特价车由总部登记，不走审核。' : '总部只做上下架、不改车辆信息，因此不触发重新审核。') + '</p>',
       function () {
         r.on = true; r.offReason = ''; r.offAt = '';
         r.ops.unshift({ t: nowText(), who: '总部 admin', act: '上架' });
@@ -342,7 +358,7 @@
       });
   }
 
-  // 热销、banner：立即保存，不弹确认；banner 每个列表（库存车、一手车源分别算）最多 10 台
+  // 热销、banner：立即保存，不弹确认；banner 每个列表（库存车、一手车源、特价车分别算）最多 10 台
   function setFlag(r, flag) {
     if (!r || r.approve !== '通过') return false;
     var v = !r[flag];
@@ -420,7 +436,7 @@
       '<dt>车型</dt><dd>' + esc(r.model + ' ' + r.variant) + '</dd>' +
       '<dt>外观颜色</dt><dd>' + r.color + '</dd>' +
       '<dt>内饰颜色</dt><dd>' + r.inner + '</dd>' +
-      '<dt>官方指导价</dt><dd>' + money(r.guide) + '</dd>' +
+      '<dt>官方指导价</dt><dd>' + (r.guide ? money(r.guide) : '<span class="muted">暂无</span>') + '</dd>' +
       '<dt>实际售价</dt><dd><b style="color:#b73b3b">' + money(r.price) + '</b></dd>' +
       '<dt>置顶</dt><dd>' + (isTop(r) ? '<span class="top-until">置顶至 ' + fmt(r.topEnd, true) + '</span>' : '未置顶') + '</dd>' +
       '<dt>登记人</dt><dd>' + esc(personText(r)) + '</dd>' +
@@ -440,7 +456,7 @@
       '<div class="modal-body">' +
       '<div class="stat-row">' +
       '<div class="stat"><b>' + r.views + '</b><span>查看次数</span></div>' +
-      '<div class="stat"><b class="' + (r.sold ? 'sold' : '') + '">' + (r.sold || 0) + '</b><span>已售人数</span></div>' +
+      '<div class="stat"><b class="' + (r.sold ? 'sold' : '') + '">' + (r.special ? '—' : (r.sold || 0)) + '</b><span>已售人数</span></div>' +
       '<div class="stat"><b style="font-size:15px">' + r.approve + (r.approve === '通过' ? ' · ' + (r.on ? '在售' : '已下架') : '') + '</b><span>当前状态</span></div>' +
       '<div class="stat"><b style="font-size:15px">' + r.time + '</b><span>登记时间</span></div>' +
       '</div>' +
@@ -464,6 +480,7 @@
       (r.approve === '等待审核' ? '<button class="primary" id="k-ap">审核</button>' : '') +
       (r.approve === '通过' ? (r.on ? '<button class="danger" id="k-off">下架</button>' : '<button class="primary" id="k-on">上架</button>') : '') +
       (isTop(r) ? '<button class="ghost" id="k-untop">取消置顶</button>' : '') +
+      (r.special ? '<button class="ghost" id="k-edit">修改</button>' : '') +
       '</div></div></div>';
     if (keepScroll) $('#detail-modal').scrollTop = keepScroll;
 
@@ -473,6 +490,7 @@
     if ($('#k-off')) $('#k-off').addEventListener('click', function () { doOff(r, true); });
     if ($('#k-on')) $('#k-on').addEventListener('click', function () { doOn(r, true); });
     if ($('#k-untop')) $('#k-untop').addEventListener('click', function () { doUntop(r, true); });
+    if ($('#k-edit')) $('#k-edit').addEventListener('click', function () { openSpForm({ row: r }); });
     $('#detail-modal').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-flag]');
       if (b && setFlag(r, b.dataset.flag)) openDetail(r, $('#detail-modal').scrollTop);
@@ -491,6 +509,260 @@
         render();
         if (fromDetail) setTimeout(function () { openDetail(r); });
       }, '确认取消置顶');
+  }
+
+  /* ===== 新增／修改特价车（2026-10-29 特价车重建方案）=====
+     只有总部在 PC 录入；流程、字段与小程序车源登记相同：先选品牌，再车型、型号（分燃油车、新能源），带出参考价和颜色；
+     找不到可手动登记。保存即通过、上架，生成 TG 编号。修改时品牌、车型、型号只读，其余可改，不改审核状态。 */
+  var SP_LABELS = ['库存车', '运损车', '商品车', '包牌包税', '活动车', '可分期', '现车', '全国可上牌', '急售'];
+  var DEF_OUT = ['冰川白', '曜石黑', '星河灰'], DEF_IN = ['黑色', '棕色', '米色'];   // 与小程序登记表默认颜色相同
+  var MODEL_COLORS = {
+    '传祺M6 MAX': [['典雅黑', '珍珠白', '星河灰'], ['黑色 / 朱砂棕', '黑色']],
+    '元UP': [['浅绿色', '冰川白', '星河灰'], ['黑色 / 米色', '黑色']],
+    '普拉多': [['白色', '黑色', '灰色'], ['黑色', '棕色']],
+    '兰德酷路泽': [['白色', '黑色', '灰色'], ['黑色', '棕色']],
+    '兰德酷路泽LC76': [['白色', '米色', '灰色'], ['黑色']],
+    'G级AMG': [['白色', '黑色', '灰色'], ['黑色', '红色']]
+  };
+  function uniqList(a) { return a.filter(function (x, i) { return x && a.indexOf(x) === i; }); }
+  function splitName(name) { var m = name.match(/^(\S+)\s+(.+?)\s+(\d{4}款.*)$/); return m ? { brand: m[1], model: m[2], variant: m[3] } : null; }
+  // 车型目录：燃油车取小程序登记同一份目录（app.js 的 window.CarCatalog），再补上实拍车型；新能源同理
+  var CATALOG = (function () {
+    var cat = { '燃油车': {}, '新能源': {} };
+    function put(en, b, m, v) { var x = cat[en][b] = cat[en][b] || {}; var list = x[m] = x[m] || []; if (!list.some(function (o) { return o.name === v.name; })) list.push(v); }
+    var base = window.CarCatalog || {};
+    Object.keys(base).forEach(function (b) { Object.keys(base[b]).forEach(function (m) { base[b][m].forEach(function (v) {
+      put('燃油车', b, m, { name: v.name, price: v.price, out: DEF_OUT, inn: DEF_IN, photos: (v.photos || []).slice() });
+    }); }); });
+    DC.all().forEach(function (c) {
+      var n = splitName(c.name); if (!n) return;
+      var col = MODEL_COLORS[n.model] || [DEF_OUT, DEF_IN];
+      put(/\d+KM|纯电|DM-i|增程/.test(c.name) ? '新能源' : '燃油车', n.brand, n.model,
+        { name: n.variant, price: Math.round(parseFloat(c.ref) * 10000), out: uniqList([c.colorOut].concat(col[0])), inn: uniqList([c.colorIn].concat(col[1])), photos: c.photos.map(function (p) { return p.src; }) });
+    });
+    put('新能源', '比亚迪', '秦L', { name: '2025款 DM-i 120KM 超越型', price: 109800, out: DEF_OUT, inn: DEF_IN, photos: [] });
+    put('新能源', '特斯拉', 'Model Y', { name: '2025款 后轮驱动版', price: 263500, out: ['珍珠白', '星空灰', '烈焰红'], inn: ['黑色', '黑白'], photos: [] });
+    put('新能源', '理想', 'L6', { name: '2025款 Pro', price: 249800, out: ['青山绿', '珠光白', '星辰灰'], inn: ['黑色', '橙色'], photos: [] });
+    return cat;
+  })();
+  function findVariant(brand, model, variant) {
+    var hit = null;
+    Object.keys(CATALOG).forEach(function (en) { var b = CATALOG[en][brand], list = b && b[model]; (list || []).forEach(function (v) { if (v.name === variant) hit = v; }); });
+    return hit;
+  }
+
+  var sp = null;   // 当前新增流程的草稿：选车所在页签、已选品牌车型，以及已填内容（重选型号时保留图片、视频和备注）
+  function spModal(title, body, foot, cls) {
+    $('#modal-root').innerHTML = '<div class="modal-backdrop"><div class="modal large ' + (cls || '') + '" role="dialog" aria-modal="true" aria-label="' + esc(title) + '" id="sp-modal">' +
+      '<div class="modal-header"><h2>' + esc(title) + '</h2><button class="modal-close" id="sp-x" aria-label="关闭">×</button></div>' +
+      '<div class="modal-body">' + body + '</div><div class="modal-footer">' + foot + '</div></div></div>';
+    $('#sp-x').addEventListener('click', closeModal);
+  }
+
+  // 第一步：选车。先选品牌，再车型、型号；分「燃油车」「新能源」两个页签
+  function openSpPicker(keep) {
+    if (!keep) sp = { en: '燃油车', brand: '', model: '', draft: null };
+    sp.brand = ''; sp.model = '';
+    function draw() {
+      var brands = Object.keys(CATALOG[sp.en]), models = sp.brand ? Object.keys(CATALOG[sp.en][sp.brand]) : [],
+        vars = sp.brand && sp.model ? CATALOG[sp.en][sp.brand][sp.model] : [];
+      $('#sp-pick').innerHTML =
+        '<div class="sp-tabs" role="tablist">' + ['燃油车', '新能源'].map(function (en) { return '<button type="button" role="tab" data-en="' + en + '"' + (en === sp.en ? ' class="on" aria-selected="true"' : '') + '>' + en + '</button>'; }).join('') + '</div>' +
+        '<div class="sp-cascade">' +
+        '<div class="sp-col"><div class="sp-col-h">品牌</div>' + brands.map(function (b) { return '<button type="button" class="sp-item' + (b === sp.brand ? ' on' : '') + '" data-b="' + esc(b) + '"><span>' + esc(b) + '</span><span class="sp-arrow">›</span></button>'; }).join('') + '</div>' +
+        '<div class="sp-col"><div class="sp-col-h">车型</div>' + (sp.brand ? models.map(function (m) { return '<button type="button" class="sp-item' + (m === sp.model ? ' on' : '') + '" data-m="' + esc(m) + '"><span>' + esc(m) + '</span><small>' + CATALOG[sp.en][sp.brand][m].length + ' 个型号</small></button>'; }).join('') : '<div class="sp-hint">请先选择品牌</div>') + '</div>' +
+        '<div class="sp-col"><div class="sp-col-h">型号</div>' + (sp.model ? vars.map(function (v, i) { return '<button type="button" class="sp-item" data-v="' + i + '"><span>' + esc(v.name) + '</span><small>指导价 ' + num(v.price) + ' 元</small></button>'; }).join('') : '<div class="sp-hint">' + (sp.brand ? '请选择车型' : '') + '</div>') + '</div>' +
+        '</div>';
+    }
+    spModal('新增特价车 · 选择车型', '<div id="sp-pick"></div>',
+      '<button type="button" class="sp-manual" id="sp-manual">找不到？手动登记车源</button><button class="ghost" id="sp-cancel">取消</button>', 'sp-modal');
+    draw();
+    $('#sp-pick').addEventListener('click', function (e) {
+      var t = e.target.closest('button'); if (!t) return;
+      if (t.dataset.en) { sp.en = t.dataset.en; sp.brand = ''; sp.model = ''; draw(); return; }
+      if (t.dataset.b) { sp.brand = t.dataset.b; sp.model = ''; draw(); return; }
+      if (t.dataset.m) { sp.model = t.dataset.m; draw(); return; }
+      if (t.dataset.v) openSpForm({ pick: { brand: sp.brand, model: sp.model, v: CATALOG[sp.en][sp.brand][sp.model][Number(t.dataset.v)] } });
+    });
+    $('#sp-cancel').addEventListener('click', closeModal);
+    $('#sp-manual').addEventListener('click', function () { openSpForm({ manual: true }); });
+  }
+
+  // 方图：不是正方形的照片按中间裁成正方形（与小程序登记同一要求）
+  function squareImage(file) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onerror = rej;
+      fr.onload = function () {
+        var img = new Image();
+        img.onerror = rej;
+        img.onload = function () {
+          var side = Math.min(img.naturalWidth, img.naturalHeight), out = Math.min(side, 1080), cv = document.createElement('canvas');
+          cv.width = cv.height = out;
+          cv.getContext('2d').drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, out, out);
+          res(cv.toDataURL('image/jpeg', 0.88));
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+  function readImage(file) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(file); }); }
+
+  // 第二步：填写车辆信息。opt.pick 目录选车、opt.manual 手动登记、opt.row 修改已有特价车
+  function openSpForm(opt) {
+    var r = opt.row || null, manual = r ? !!r.manual : !!opt.manual, pick = opt.pick || null;
+    var old = r ? null : (sp && sp.draft);
+    var brand = r ? r.brand : pick ? pick.brand : '', model = r ? r.model : pick ? pick.model : '', variant = r ? r.variant : pick ? pick.v.name : '';
+    var cv = r ? findVariant(r.brand, r.model, r.variant) : pick ? pick.v : null;
+    var d = r ? { ref: r.guide || '', sale: r.price, out: r.color, inn: r.inner, loc: r.location, labels: r.labels.slice(), photos: r.photos.slice(),
+                  video: r.video ? { name: r.videoName || '视频', src: r.videoSrc || '' } : null, details: r.detailImgs.slice(), remark: r.remark || '' }
+      : { ref: pick ? pick.v.price : '', sale: pick ? pick.v.price : '', out: '', inn: '', loc: old ? old.loc : '', labels: old ? old.labels.slice() : [],
+          photos: old && old.photos.length ? old.photos.slice() : (pick ? pick.v.photos.slice() : []), video: old ? old.video : null,
+          details: old ? old.details.slice() : [], remark: old ? old.remark : '' };
+    var outs = uniqList([d.out].concat(cv ? cv.out : DEF_OUT)), inns = uniqList([d.inn].concat(cv ? cv.inn : DEF_IN));
+    var lockCar = !!r || !manual, lockAttr = lockCar ? ' readonly class="read-only"' : '';
+    var saleTouched = !!r;
+    var title = r ? '修改特价车' : manual ? '新增特价车 · 手动登记车源' : '新增特价车';
+    function chips(group, list, picked, multi) {
+      return '<div class="chip-select" data-sp-group="' + group + '">' + list.map(function (t) {
+        var on = multi ? picked.indexOf(t) > -1 : picked === t;
+        return '<button type="button" class="' + (group === 'out' || group === 'inn' ? 'color-choice' : 'chip-choice') + (on ? ' selected' : '') + '" data-val="' + esc(t) + '">' + esc(t) + '</button>';
+      }).join('') + '</div>';
+    }
+    spModal(title,
+      '<form id="sp-form" class="form-grid" novalidate autocomplete="off">' +
+      '<label class="form-field">品牌<input name="brand" maxlength="50" value="' + esc(brand) + '"' + lockAttr + ' placeholder="请输入品牌"><span class="field-error" data-err="brand"></span></label>' +
+      '<label class="form-field">车型<input name="model" maxlength="100" value="' + esc(model) + '"' + lockAttr + ' placeholder="请输入车型"><span class="field-error" data-err="model"></span></label>' +
+      '<label class="form-field full">型号<input name="variant" maxlength="150" value="' + esc(variant) + '"' + lockAttr + ' placeholder="请输入型号"><span class="field-error" data-err="variant"></span>' +
+      (r ? '<span class="field-help">品牌、车型、型号不能修改；要换车型请重新新增特价车。</span>' : '') + '</label>' +
+      '<label class="form-field">参考价（元）<input name="ref" type="number" step="0.01" min="0.01" value="' + d.ref + '"' + (manual ? ' placeholder="选填"' : ' readonly class="read-only"') + '><span class="field-error" data-err="ref"></span></label>' +
+      '<label class="form-field">实际售价（元）（必填）<input name="sale" type="number" step="0.01" min="0.01" value="' + d.sale + '" placeholder="请输入实际售价"><span class="field-help" id="sp-wan"></span><span class="field-error" data-err="sale"></span></label>' +
+      '<div class="form-field full" data-field="color"><span>外观颜色（必填）</span>' + chips('out', outs, d.out) + '</div>' +
+      '<div class="form-field full" data-field="color2"><span>内饰颜色（必填）</span>' + chips('inn', inns, d.inn) + '<span class="field-error" data-err="color"></span></div>' +
+      '<div class="form-field full" data-field="loc"><span>车辆位置（必填）</span>' + chips('loc', LOCATIONS, d.loc) + '<span class="field-error" data-err="loc"></span></div>' +
+      '<div class="form-field full"><span>标签（选填，可多选）</span>' + chips('labels', SP_LABELS, d.labels, true) + '</div>' +
+      '<div class="form-field full" data-field="photos"><span>车辆照片（必填）</span><div class="sp-up" id="sp-photos"></div><span class="field-help">最多 9 张，不是正方形的照片会先裁成正方形；第一张为封面。</span><span class="field-error" data-err="photos"></span></div>' +
+      '<div class="form-field full"><span>视频（选填）</span><div class="sp-up" id="sp-video"></div><span class="field-help">可上传 1 个视频。</span></div>' +
+      '<div class="form-field full"><span>详情图片（选填）</span><div class="sp-up" id="sp-details"></div><span class="field-help">只能添加图片，最多 9 张，可调整顺序。</span></div>' +
+      '<label class="form-field full">备注<textarea name="remark" maxlength="500" placeholder="请输入车辆备注">' + esc(d.remark) + '</textarea><span class="field-help sp-count" id="sp-count">0 / 500</span></label>' +
+      '<label class="form-field">登记人<input readonly class="read-only" value="总部"></label>' +
+      '<label class="form-field">车源类型<input readonly class="read-only" value="特价车"></label>' +
+      '<label class="form-field">车辆编号<input readonly class="read-only" value="' + (r ? esc(r.no) : '保存后生成') + '"></label>' +
+      '<label class="form-field">审核状态<input readonly class="read-only" value="' + (r ? esc(r.approve) : '保存即通过并上架') + '"></label>' +
+      '</form>',
+      '<button class="ghost" id="sp-cancel">取消</button>' + (!r && !manual ? '<button class="ghost" id="sp-reselect">重选型号</button>' : '') + '<button class="primary" id="sp-save">保存</button>',
+      'sp-modal');
+
+    var form = $('#sp-form');
+    function f(n) { return form.querySelector('[name="' + n + '"]'); }
+    function err(k, m) { var e = form.querySelector('[data-err="' + k + '"]'); if (e) e.textContent = m || ''; }
+    function count() { $('#sp-count').textContent = Array.from(f('remark').value).length + ' / 500'; }
+    // 录真实售价；小程序对外只显示整数万位（REQ-003 第 8.4 节）
+    function wan() { var n = Number(f('sale').value); $('#sp-wan').textContent = n > 0 ? '小程序显示「' + Math.floor(n / 10000) + '.XX万」' : '填真实售价，小程序显示为「XX.XX万」'; }
+    count(); wan();
+    f('remark').addEventListener('input', count);
+    f('sale').addEventListener('input', function () { saleTouched = true; err('sale'); wan(); });
+    // 手动登记：没改过实际售价时，实际售价跟着参考价走（与小程序手动登记相同）
+    if (manual && !r) f('ref').addEventListener('input', function () { if (!saleTouched) { f('sale').value = f('ref').value; wan(); } });
+    ['brand', 'model', 'variant', 'ref'].forEach(function (n) { f(n).addEventListener('input', function () { err(n); }); });
+
+    form.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-sp-group] button'); if (!b) return;
+      var g = b.parentNode.dataset.spGroup, v = b.dataset.val;
+      if (g === 'labels') { var i = d.labels.indexOf(v); if (i > -1) d.labels.splice(i, 1); else d.labels.push(v); b.classList.toggle('selected'); return; }
+      d[g] = v;
+      Array.prototype.forEach.call(b.parentNode.children, function (x) { x.classList.toggle('selected', x === b); });
+      if (g === 'loc') err('loc'); else if (d.out && d.inn) err('color');
+    });
+
+    function pics(box, list, kind) {
+      var max = 9, html = list.map(function (src, i) {
+        return '<div class="sp-pic"><img src="' + src + '" alt="' + (kind === 'photos' ? '车辆照片' : '详情图片') + (i + 1) + '">' +
+          (kind === 'photos' && i === 0 ? '<span class="sp-cover">封面</span>' : '') +
+          '<button type="button" class="sp-del" data-del="' + i + '" aria-label="删除">×</button>' +
+          (kind === 'details' && list.length > 1 ? '<span class="sp-move"><button type="button" data-mv="' + i + '" data-d="-1"' + (i === 0 ? ' disabled' : '') + ' aria-label="前移">‹</button><button type="button" data-mv="' + i + '" data-d="1"' + (i === list.length - 1 ? ' disabled' : '') + ' aria-label="后移">›</button></span>' : '') +
+          '</div>';
+      }).join('');
+      if (list.length < max) html += '<label class="sp-add">＋<span>' + (kind === 'photos' ? '上传照片' : '添加图片') + '</span><small>' + list.length + ' / 9</small><input type="file" accept="image/jpeg,image/png" multiple hidden data-up="' + kind + '"></label>';
+      box.innerHTML = html;
+    }
+    function drawVideo() {
+      $('#sp-video').innerHTML = d.video
+        ? '<div class="sp-pic sp-vid"><span>▶</span><small>' + esc(d.video.name) + '</small><button type="button" class="sp-del" data-delv="1" aria-label="删除视频">×</button></div>'
+        : '<label class="sp-add">＋<span>上传视频</span><small>0 / 1</small><input type="file" accept="video/*" hidden data-up="video"></label>';
+    }
+    function drawAll() { pics($('#sp-photos'), d.photos, 'photos'); pics($('#sp-details'), d.details, 'details'); drawVideo(); }
+    drawAll();
+    form.addEventListener('click', function (e) {
+      var del = e.target.closest('[data-del]'), mv = e.target.closest('[data-mv]');
+      if (e.target.closest('[data-delv]')) { d.video = null; drawVideo(); return; }
+      if (del) { (del.closest('#sp-photos') ? d.photos : d.details).splice(Number(del.dataset.del), 1); drawAll(); return; }
+      if (mv) { var i = Number(mv.dataset.mv), j = i + Number(mv.dataset.d), a = d.details; if (j < 0 || j >= a.length) return; var t = a[i]; a[i] = a[j]; a[j] = t; drawAll(); }
+    });
+    form.addEventListener('change', function (e) {
+      var inp = e.target.closest('[data-up]'); if (!inp) return;
+      var kind = inp.dataset.up, files = Array.prototype.slice.call(inp.files); inp.value = '';
+      if (!files.length) return;
+      if (kind === 'video') { var v = files[0]; d.video = { name: v.name, src: URL.createObjectURL(v) }; drawVideo(); return; }
+      var list = kind === 'photos' ? d.photos : d.details, room = 9 - list.length;
+      if (files.length > room) toast(kind === 'photos' ? '最多上传9张车辆照片' : '详情图片最多9张');
+      var ok = files.slice(0, room).filter(function (x) { if (/^image\/(jpeg|png)$/.test(x.type)) return true; toast('只能上传JPG或PNG图片'); return false; });
+      if (!ok.length) return;
+      $('#sp-save').disabled = true;
+      Promise.all(ok.map(kind === 'photos' ? squareImage : readImage)).then(function (srcs) {
+        Array.prototype.push.apply(list, srcs.slice(0, 9 - list.length));
+        if (kind === 'photos') err('photos');
+        drawAll();
+      }).catch(function () { toast('图片读取失败，请重新上传'); }).then(function () { $('#sp-save').disabled = false; });
+    });
+
+    $('#sp-cancel').addEventListener('click', function () { sp = null; closeModal(); });
+    if ($('#sp-reselect')) $('#sp-reselect').addEventListener('click', function () {
+      // 重选后更新参考价、实际售价和颜色；已有图片、视频、位置、标签和备注保留（与小程序「重选型号」相同）
+      var keepPhotos = pick && d.photos.join() === pick.v.photos.join() ? [] : d.photos.slice();
+      sp.draft = { loc: d.loc, labels: d.labels.slice(), photos: keepPhotos, video: d.video, details: d.details.slice(), remark: f('remark').value };
+      openSpPicker(true);
+    });
+
+    $('#sp-save').addEventListener('click', function () {
+      ['brand', 'model', 'variant', 'ref', 'sale', 'color', 'loc', 'photos'].forEach(function (k) { err(k); });
+      var v = { brand: f('brand').value.trim(), model: f('model').value.trim(), variant: f('variant').value.trim() };
+      var refText = f('ref').value.trim(), saleText = f('sale').value.trim(), ref = Number(refText), sale = Number(saleText), first = null;
+      function bad(k, m, at) { err(k, m); if (!first) first = { el: at || form.querySelector('[data-err="' + k + '"]'), m: m }; }
+      if (!v.brand) bad('brand', '请输入品牌');
+      if (!v.model) bad('model', '请输入车型');
+      if (!v.variant) bad('variant', '请输入型号');
+      if (manual && refText && !(ref > 0)) bad('ref', '参考价须大于0');
+      if (!saleText) bad('sale', '请输入实际售价');
+      else if (!(sale > 0)) bad('sale', '实际售价须大于0');
+      if (!d.out || !d.inn) bad('color', '请选择外观颜色和内饰颜色', form.querySelector('[data-field="color"]'));
+      if (!d.photos.length) bad('photos', '请至少上传1张车辆照片');
+      if (!d.loc) bad('loc', '请选择车辆位置');
+      if (first) { first.el.closest('.form-field').scrollIntoView({ block: 'center' }); toast(first.m); return; }
+      var now = nowText(), patch = {
+        price: Math.round(sale * 100) / 100, guide: manual ? (refText ? ref : null) : (r ? r.guide : pick.v.price),
+        color: d.out, inner: d.inn, location: d.loc, labels: d.labels.slice(), photos: d.photos.slice(), detailImgs: d.details.slice(),
+        video: !!d.video, videoName: d.video ? d.video.name : '', videoSrc: d.video ? d.video.src : '', remark: f('remark').value.trim()
+      };
+      if (r) {
+        Object.assign(r, patch);
+        r.ops.unshift({ t: now, who: '总部', act: '修改车辆信息' });
+        closeModal(); render(); toast('保存成功');
+        return;
+      }
+      var row = Object.assign({
+        id: 'cs-sp-' + Date.now(), srcType: '特价车', special: true, manual: manual,
+        hot: false, hotAt: 0, banner: false, bannerAt: 0, approve: '通过', opinion: '', auditAt: now, auditor: '总部',
+        topEnd: null, topOrders: [], brand: v.brand, model: v.model, variant: v.variant, name: v.brand + ' ' + v.model,
+        person: '总部', staffId: '', org: '总部', time: now, views: 0, sold: 0, on: true, offReason: '', offAt: '', offBy: '',
+        ops: [{ t: now, who: '总部', act: '登记，保存即通过并上架' }]
+      }, patch);
+      row.no = nextNo(row);
+      rows.unshift(row);
+      sp = null;
+      closeModal(); fillBrand(); page = 1; render(); toast('保存成功，已上架', 2600);
+    });
   }
 
   // 注意：审核状态与上下架的 id 用 pc- 前缀，避开小程序视图里的同名 id
@@ -550,7 +822,9 @@
       if (btn.dataset.act === 'off') doOff(r);
       if (btn.dataset.act === 'on') doOn(r);
       if (btn.dataset.act === 'untop') doUntop(r);
+      if (btn.dataset.act === 'edit') openSpForm({ row: r });
     });
+    $('#sp-add').addEventListener('click', function () { openSpPicker(); });
 
     render();
 

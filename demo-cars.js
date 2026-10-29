@@ -1,7 +1,7 @@
 /* 各页面共用的本地演示车辆；素材出处见 assets/demo-cars/sources.json。
    售价/指导价及车源属性为排版演示，不代表真实报价或在售车。
    2026-10-28：促销标识取消，改为总部勾选的 hot（热销）、banner；加车辆编号 vehicleNo、车辆位置 location，标签换成会上定的 9 个。
-   2026-10-29：加上传时间 listedAt（最后一次上架日期）。 */
+   2026-10-29：加上传时间 listedAt（最后一次上架日期）；特价车也是上架满 30 天自动下架，在架的特价车上传天数都在 30 天以内。 */
 (function(root,factory){var api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.DemoCars=api;})(typeof window==='object'?window:globalThis,function(){
   'use strict';
   var A='assets/demo-cars/';
@@ -36,9 +36,9 @@
   add('special_price','prado','77.XX万',1,'北区',['现车','可分期'],{banner:true,bannerAt:1});
   add('special_price','lc300','82.XX万',3,'大北区',['包牌包税','活动车'],{hot:true,hotAt:1,banner:true,bannerAt:2});
   add('special_price','lc76','62.XX万',12,'西区',['包牌包税','急售']);
-  add('special_price','g63','255.XX万',30,'南区',['现车']);
-  add('special_price','prado','76.XX万',99,'东区',['活动车'],{suffix:'-2'});
-  add('special_price','lc76','61.XX万',120,'北区',['包牌包税'],{suffix:'-2'});
+  add('special_price','g63','255.XX万',29,'南区',['现车']);
+  add('special_price','prado','76.XX万',22,'东区',['活动车'],{suffix:'-2'});
+  add('special_price','lc76','61.XX万',27,'北区',['包牌包税'],{suffix:'-2'});
   add('firsthand','yuan','8.XX万',0,'东区',['现车','可分期'],{banner:true,bannerAt:2});
   add('firsthand','prado','77.XX万',2,'南区',['商品车','全国可上牌'],{hot:true,hotAt:1});
   add('firsthand','lc300','82.XX万',11,'西区',['运损车','急售'],{banner:true,bannerAt:1});

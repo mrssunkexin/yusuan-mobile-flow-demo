@@ -136,6 +136,8 @@
     宝马:{ X3:[{name:'2026款 xDrive 30L 尊享型',price:449900,photos:[]}], '5系':[{name:'2026款 530Li 领先型',price:489900,photos:[]}] },
     奔驰:{ GLC:[{name:'2026款 GLC 300 L 动感型',price:478800,photos:[]}], 'E级':[{name:'2026款 E 300 L 豪华型',price:529800,photos:[]}] }
   };
+  // 供 PC 新增特价车（req-004-stock.js）选车读取，与小程序登记同一套车型目录
+  window.CarCatalog=catalog;
 
   function showView(view, syncHash = true) {
     view=logic.normalizeView(view);

@@ -908,3 +908,38 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .shop-v .sw i{top:2px;left:2px;width:18px;height:18px}
 .shop-v .sw.on i{left:24px}
 .shop-edit .modal-footer{position:static}
+/* 2026-10-29 PC 车源管理：特价车类型标、新增／修改特价车（选车三栏、上传格） */
+.t-sp{color:#c4321f;background:#fdece8}
+.sp-tabs{display:flex;border-bottom:1px solid #e8e8e8;margin-bottom:12px}
+.sp-tabs button{border:0;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;padding:8px 20px;font-size:14px;color:#595959}
+.sp-tabs button.on{color:#1890ff;border-bottom-color:#1890ff;font-weight:600}
+.sp-cascade{display:grid;grid-template-columns:1fr 1fr 1.7fr;height:360px;border:1px solid #e8e8e8;border-radius:4px;overflow:hidden}
+.sp-col{overflow-y:auto;border-left:1px solid #e8e8e8;min-width:0}
+.sp-col:first-child{border-left:0;background:#fafafa}
+.sp-col-h{position:sticky;top:0;z-index:1;background:#f5f5f5;padding:8px 12px;font-size:12px;color:#8c8c8c;border-bottom:1px solid #eee}
+.sp-item{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:10px 12px;font-size:14px;color:#262626}
+.sp-item:hover{background:#f0f7ff}
+.sp-item.on{background:#e6f7ff;color:#1890ff;font-weight:600}
+.sp-item small{color:#8c8c8c;font-weight:400;white-space:nowrap;font-size:12px}
+.sp-arrow{color:#bfbfbf}
+.sp-hint{padding:14px 12px;color:#8c8c8c;font-size:13px}
+.sp-manual{margin-right:auto;border:0;background:none;color:#1890ff;padding:0;font-size:14px}
+.sp-manual:hover{text-decoration:underline}
+.sp-modal .form-field>span:first-child{color:#465c66}
+.sp-up{display:flex;flex-wrap:wrap;gap:8px}
+.sp-pic{position:relative;width:96px;height:96px;border:1px solid #e8e8e8;border-radius:4px;overflow:hidden;background:#f5f5f5}
+.sp-pic img{width:100%;height:100%;object-fit:cover;display:block}
+.sp-del{position:absolute;right:3px;top:3px;width:20px;height:20px;line-height:18px;border:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:14px;padding:0}
+.sp-cover{position:absolute;left:0;bottom:0;right:0;background:rgba(0,0,0,.5);color:#fff;font-size:11px;text-align:center;line-height:18px}
+.sp-move{position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(0,0,0,.45)}
+.sp-move button{flex:1;border:0;background:none;color:#fff;font-size:15px;line-height:18px;padding:0}
+.sp-move button:disabled{opacity:.35;cursor:default}
+.sp-vid{display:grid;place-items:center;align-content:center;gap:4px;background:#262626;color:#fff}
+.sp-vid span{font-size:22px;line-height:1}
+.sp-vid small{max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#d9d9d9}
+.sp-add{width:96px;height:96px;border:1px dashed #d9d9d9;border-radius:4px;background:#fafafa;display:grid;place-items:center;align-content:center;gap:2px;color:#8c8c8c;font-size:22px;cursor:pointer}
+.sp-add span{font-size:12px;color:#595959}
+.sp-add small{font-size:11px}
+.sp-add:hover{border-color:#1890ff;color:#1890ff}
+.sp-count{justify-self:end}
+.sp-modal .chip-select{margin-top:2px}
