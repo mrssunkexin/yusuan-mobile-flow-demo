@@ -123,9 +123,8 @@
   function sheet(id, show) { $(id).hidden = !show; }
 
   function renderBrandPage() {
-    var car = state.entry !== 'special_price';
     var html = '<div class="l8-bgroup"><div class="l8-bcell" data-all="1">不限</div>' +
-      (car ? '<div class="l8-bcell other" data-other="1">其他品牌</div>' : '') + '</div>';
+      '<div class="l8-bcell other" data-other="1">其他品牌</div></div>';
     html += BRANDS.map(function (g) {
       return '<div class="l8-anchor">' + g[0] + '</div><div class="l8-bgroup">' +
         g[1].map(function (b) { return '<div class="l8-bcell" data-brand="' + b + '">' + b + '</div>'; }).join('') + '</div>';

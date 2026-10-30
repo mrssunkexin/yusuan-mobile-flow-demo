@@ -109,7 +109,7 @@
     // 置顶：与小程序同一台车一致（REQ-001 第 2.17 节），每次付款买下的时段从付款时刻或原结束时间起
     if (s.mapped && car.top === 1) { r.topEnd = new Date(NOW + 3 * DAY); r.topOrders = [{ pay: new Date(NOW - 4 * DAY), money: 9.9, days: 7, start: new Date(NOW - 4 * DAY), end: r.topEnd }]; }
     if (s.mapped && car.top === 2) { r.topEnd = new Date(NOW + 9 * DAY); r.topOrders = [{ pay: new Date(NOW - DAY), money: 9.9, days: 7, start: new Date(NOW + 2 * DAY), end: r.topEnd }, { pay: new Date(NOW - 5 * DAY), money: 9.9, days: 7, start: new Date(NOW - 5 * DAY), end: new Date(NOW + 2 * DAY) }]; }
-    if (special) r.ops.push({ t: r.time, who: '总部', act: '登记，保存即通过并上架' });
+    if (special) r.ops.push({ t: r.time, who: '总部', act: '上架' });
     else if (approve === '通过') r.ops.push({ t: r.auditAt, who: r.auditor, act: '审核通过' });
     if (approve === '驳回') r.ops.push({ t: r.auditAt, who: r.auditor, act: '审核驳回：' + r.opinion });
     if (r.offReason) {
@@ -756,7 +756,7 @@
         hot: false, hotAt: 0, banner: false, bannerAt: 0, approve: '通过', opinion: '', auditAt: now, auditor: '总部',
         topEnd: null, topOrders: [], brand: v.brand, model: v.model, variant: v.variant, name: v.brand + ' ' + v.model,
         person: '总部', staffId: '', org: '总部', time: now, views: 0, sold: 0, on: true, offReason: '', offAt: '', offBy: '',
-        ops: [{ t: now, who: '总部', act: '登记，保存即通过并上架' }]
+        ops: [{ t: now, who: '总部', act: '上架' }]
       }, patch);
       row.no = nextNo(row);
       rows.unshift(row);

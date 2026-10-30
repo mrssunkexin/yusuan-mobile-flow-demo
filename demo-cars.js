@@ -57,8 +57,8 @@
   function get(id){return records.find(function(c){return c.id===id;})||null;}
   // 排序（REQ-008 第 3.3 节）：付费置顶最前（top 越小付款越近），其次热销（后勾的在前），其余按上架时间从新到旧
   function list(source){return records.filter(function(c){return c.source===normalize(source);}).sort(function(a,b){return (a.top?0:1)-(b.top?0:1)||(a.top&&b.top?a.top-b.top:0)||(a.hot?0:1)-(b.hot?0:1)||(a.hot&&b.hot?(b.hotAt||0)-(a.hotAt||0):0)||a.days-b.days;});}
-  // 列表顶部横幅：本列表内勾了 banner 的车，后勾的在前，最多 10 台（REQ-008 第 3.7 节）
-  function banners(source){return records.filter(function(c){return c.source===normalize(source)&&c.banner;}).sort(function(a,b){return (b.bannerAt||0)-(a.bannerAt||0);}).slice(0,10);}
+  // 列表顶部横幅：本列表内勾了 banner 的车，后勾的在前；10 台上限在 PC 勾选时控制，这里不截取（REQ-008 第 3.7 节）
+  function banners(source){return records.filter(function(c){return c.source===normalize(source)&&c.banner;}).sort(function(a,b){return (b.bannerAt||0)-(a.bannerAt||0);});}
   function createFavorites(){var ids=[];return {has:function(id){return ids.indexOf(id)>=0;},toggle:function(id){if(!get(id))return false;var i=ids.indexOf(id);if(i>=0)ids.splice(i,1);else ids.unshift(id);return i<0;},items:function(){return ids.map(get);}};}
   return {get:get,list:list,banners:banners,promoHtml:promoHtml,home:function(s){return list(s).slice(0,5);},normalize:normalize,createFavorites:createFavorites,all:function(){return records.slice();}};
 });
