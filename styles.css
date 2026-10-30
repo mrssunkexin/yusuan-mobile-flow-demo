@@ -348,6 +348,10 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 .m-choice { display: block; width: 100%; text-align: left; background: #fff; border: 0; border-bottom: 1px solid #f0f1f3; padding: 13px 12px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
 .m-choice:last-child { border-bottom: 0 }
 .m-choice small { color: #868c94; font-size: 12px; font-weight: 400 }
+/* 2026-10-30 选品牌页顶部「燃油车／新能源」切换（REQ-001 第 2.5 节车源类别） */
+.m-energy { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px }
+.m-energy button { border: 1px solid #dcdfe6; background: #fff; color: #333; border-radius: 6px; padding: 8px 0; font-size: 14px; cursor: pointer }
+.m-energy button.on { border-color: #217C34; background: #217C34; color: #fff; font-weight: 600 }
 .m-choice .m-arrow { color: #128132; font-size: 15px }
 .m-dialog-wrap { position: absolute; inset: 0; z-index: 8; background: rgba(12,28,18,.45); display: grid; place-items: center; padding: 30px; }
 .m-dialog { background: #fff; border-radius: 10px; width: 100%; max-width: 280px; overflow: hidden; }

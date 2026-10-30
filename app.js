@@ -136,6 +136,14 @@
     宝马:{ X3:[{name:'2026款 xDrive 30L 尊享型',price:449900,photos:[]}], '5系':[{name:'2026款 530Li 领先型',price:489900,photos:[]}] },
     奔驰:{ GLC:[{name:'2026款 GLC 300 L 动感型',price:478800,photos:[]}], 'E级':[{name:'2026款 E 300 L 豪华型',price:529800,photos:[]}] }
   };
+  // 新能源目录（REQ-001 第 2.5 节：车源类别分燃油车、新能源两种目录，选品牌页顶部切换）
+  const catalogNev = {
+    比亚迪:{ 秦L:[{name:'2025款 DM-i 120KM 超越型',price:109800,photos:[]}] },
+    特斯拉:{ 'Model Y':[{name:'2025款 后轮驱动版',price:263500,photos:[]}] },
+    理想:{ L6:[{name:'2025款 Pro',price:249800,photos:[]}] }
+  };
+  const catalogs = { 燃油车:catalog, 新能源:catalogNev };
+  let energy = '燃油车';
   // 供 PC 新增特价车（req-004-stock.js）选车读取，与小程序登记同一套车型目录
   window.CarCatalog=catalog;
 
@@ -287,24 +295,27 @@
   }
   function closeModal(){ $('#modal-root').innerHTML=''; state.photos=[]; state.preservedNote=''; }
   function wizardProgress(step){ return `<div class="wizard-progress">${[1,2,3,4].map((n)=>`<span class="${n<=step?'done':''}"></span>`).join('')}</div>`; }
-  function showBrandStep(){
-    pushPage('选择品牌',
-      `<div class="m-card" style="padding:0">${Object.keys(catalog).map((brand)=>`<button class="m-choice" data-brand="${brand}"><span><strong>${brand}</strong><br><small>常规／新能源目录</small></span><span class="m-arrow">›</span></button>`).join('')}</div>`,
+  function showBrandStep(replace){
+    const cat=catalogs[energy];
+    (replace?replacePage:pushPage)('选择品牌',
+      `<div class="m-energy" role="tablist">${Object.keys(catalogs).map((k)=>`<button type="button" role="tab" class="${k===energy?'on':''}" aria-selected="${k===energy}" data-energy="${k}">${k}</button>`).join('')}</div>`+
+      `<div class="m-card" style="padding:0">${Object.keys(cat).map((brand)=>`<button class="m-choice" data-brand="${brand}"><span><strong>${brand}</strong><br><small>${Object.keys(cat[brand]).length}个车型</small></span><span class="m-arrow">›</span></button>`).join('')}</div>`,
       `<button class="ghost" id="manual-vehicle">找不到？手动登记车源</button>`,
-      ()=>{ $$('[data-brand]').forEach((b)=>b.addEventListener('click',()=>showModelStep(b.dataset.brand)));
+      ()=>{ $$('[data-energy]').forEach((b)=>b.addEventListener('click',()=>{ if(b.dataset.energy===energy)return; energy=b.dataset.energy; showBrandStep(true); }));
+            $$('[data-brand]').forEach((b)=>b.addEventListener('click',()=>showModelStep(b.dataset.brand)));
             $('#manual-vehicle').addEventListener('click',()=>showVehicleForm({manual:true})); });
   }
   function showModelStep(brand){
     pushPage(brand,
-      `<div class="m-card" style="padding:0">${Object.keys(catalog[brand]).map((model)=>`<button class="m-choice" data-model="${escapeHtml(model)}"><span><strong>${escapeHtml(model)}</strong><br><small>${catalog[brand][model].length}个型号</small></span><span class="m-arrow">›</span></button>`).join('')}</div>`,
+      `<div class="m-card" style="padding:0">${Object.keys(catalogs[energy][brand]).map((model)=>`<button class="m-choice" data-model="${escapeHtml(model)}"><span><strong>${escapeHtml(model)}</strong><br><small>${catalogs[energy][brand][model].length}个型号</small></span><span class="m-arrow">›</span></button>`).join('')}</div>`,
       '',
       ()=>{ $$('[data-model]').forEach((b)=>b.addEventListener('click',()=>showVariantStep(brand,b.dataset.model))); });
   }
   function showVariantStep(brand,model){
     pushPage(`${brand} ${model}`,
-      `<div class="m-card" style="padding:0">${catalog[brand][model].map((variant,index)=>`<button class="m-choice" data-variant-index="${index}"><span><strong>${escapeHtml(variant.name)}</strong><br><small>指导价 ${variant.price.toLocaleString()}元</small></span><span class="m-arrow">›</span></button>`).join('')}</div>`,
+      `<div class="m-card" style="padding:0">${catalogs[energy][brand][model].map((variant,index)=>`<button class="m-choice" data-variant-index="${index}"><span><strong>${escapeHtml(variant.name)}</strong><br><small>指导价 ${variant.price.toLocaleString()}元</small></span><span class="m-arrow">›</span></button>`).join('')}</div>`,
       '',
-      ()=>{ $$('[data-variant-index]').forEach((b)=>b.addEventListener('click',()=>showVehicleForm({selection:{brand,model,variant:catalog[brand][model][Number(b.dataset.variantIndex)]}}))); });
+      ()=>{ $$('[data-variant-index]').forEach((b)=>b.addEventListener('click',()=>showVehicleForm({selection:{brand,model,variant:catalogs[energy][brand][model][Number(b.dataset.variantIndex)]}}))); });
   }
 
   // 从「车源登记登录」进入（登记人，原4S员工）时按登记人显示；从代理商后台进入为一级代理商
