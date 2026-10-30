@@ -880,16 +880,17 @@ main{padding:24px}.page-heading{margin-bottom:16px}.page-heading h2{font-size:20
 /* 状态水印（2026-10-29 定为单一做法）：驳回、等待审核、已下架三种，在架的不打。
    2026-10-30 用户：放到右侧文字区的空白处，不压车图。水印放在右侧内容区内，以该区为参照水平、垂直居中；
    右侧内容区自成层叠上下文（z-index:2）。2026-10-30 用户：水印放到卡片文字上层，更明显——z-index:1 压在车名标签价格按钮之上，半透明、不接收点击。
-   2026-10-30 用户：像水印一样不要底色——清掉全局 .review 等类带来的底色，只留字 */
+   2026-10-30 用户：像水印一样不要底色——清掉全局 .review 等类带来的底色，只留字。
+   2026-10-30 用户：标签看着还压着水印——层级本就在上，是透明度太低（约 0.2）显得在下面；字色加深到约 0.5，叠在标签、价格上能看出水印在最上面 */
 .vehicle-card{position:relative;isolation:isolate}
 .vehicle-card>.vehicle-side>.vehicle-cover{z-index:0}
 .vehicle-card>.vehicle-body,.vehicle-card>.vehicle-side>.vehicle-ref,.vehicle-card>.reject-line,.vehicle-card>.unlist-line{position:relative;z-index:2}
 .vehicle-card .vehicle-body>.body-mark{position:absolute;z-index:1;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-12deg);
   font-size:44px;line-height:1;font-weight:800;letter-spacing:8px;padding-left:8px;white-space:nowrap;pointer-events:none;user-select:none;
   background:none;border:0;border-radius:0;box-shadow:none}
-.body-mark.reject{color:rgba(245,34,45,.22)}
-.body-mark.review{color:rgba(250,140,22,.24)}
-.body-mark.off{color:rgba(80,86,96,.26)}
+.body-mark.reject{color:rgba(245,34,45,.5)}
+.body-mark.review{color:rgba(250,140,22,.55)}
+.body-mark.off{color:rgba(80,86,96,.5)}
 
 /* 2026-10-29 PC 车源管理：热销、banner 列头 ⓘ 悬停（或键盘聚焦）显示说明浮层 */
 .th-tip{position:relative;display:inline-block;margin:-4px -4px -4px 0;padding:4px;color:#8c8c8c;font-size:13px;font-weight:400;line-height:1;cursor:help;outline:0}
