@@ -169,7 +169,8 @@
       // REQ-001 第 2.2 节：驳回最前，其次等待审核，其余在后；段内按登记时间倒序
       .map((v,i)=>({v,i})).sort((a,b)=>{ const r=(x)=>x.approve==='驳回'?0:x.approve==='等待审核'?1:2; return r(a.v)-r(b.v)||String(b.v.createdAt).localeCompare(String(a.v.createdAt))||a.i-b.i; }).map((x)=>x.v);
   }
-  // 2026-10-29 会议：状态水印只留一种——卡片中间横穿的倾斜半透明大字（驳回、等待审核、已下架），在架的不打
+  // 2026-10-29 会议：状态水印只留一种——倾斜半透明大字（驳回、等待审核、已下架），在架的不打
+  // 2026-10-30 用户：水印放到右侧文字区的空白处，不压车图
   function bodyMark(v){
     if(v.approve==='驳回')return '<span class="body-mark reject" aria-hidden="true">驳回</span>';
     if(v.approve==='等待审核')return '<span class="body-mark review" aria-hidden="true">等待审核</span>';
@@ -235,7 +236,7 @@
       // R2-10：卡片只放 6 项——封面（左上角热销角标）、车名、状态、标签、价格、登记时间。不放备注、车源类型、内外颜色
       // R2-10：参考价放左列车图下方（右侧放不下三者并排，且图缩小后左下正好空着）
       const refPrice=`<div class="vehicle-ref">参考价 ${vehicle.referencePrice?`${vehicle.referencePrice.toLocaleString()}元`:'暂无'}</div>`;
-      return `<article class="vehicle-card${rejected?' is-reject':''}${onSale?' is-onsale':''}" data-id="${vehicle.id}">${bodyMark(vehicle)}<div class="vehicle-side"><div class="vehicle-cover">${vehicleCover(vehicle)}</div>${refPrice}</div><div class="vehicle-body"><h3>${escapeHtml(vehicle.brand)} ${escapeHtml(vehicle.model)} ${escapeHtml(vehicle.variant)}</h3><div class="chip-row">${st}${topChip}${typeChips}</div><div class="vehicle-time"><span>${vehicle.createdAt}</span>${topBtn}</div><div class="vehicle-foot"><strong class="vehicle-sale${vehicle.salePrice>=1000000?' price-long':''}">${vehicle.salePrice.toLocaleString()}元</strong><div class="vehicle-actions">${acts}</div></div></div>${rej}${off}</article>`;
+      return `<article class="vehicle-card${rejected?' is-reject':''}${onSale?' is-onsale':''}" data-id="${vehicle.id}"><div class="vehicle-side"><div class="vehicle-cover">${vehicleCover(vehicle)}</div>${refPrice}</div><div class="vehicle-body">${bodyMark(vehicle)}<h3>${escapeHtml(vehicle.brand)} ${escapeHtml(vehicle.model)} ${escapeHtml(vehicle.variant)}</h3><div class="chip-row">${st}${topChip}${typeChips}</div><div class="vehicle-time"><span>${vehicle.createdAt}</span>${topBtn}</div><div class="vehicle-foot"><strong class="vehicle-sale${vehicle.salePrice>=1000000?' price-long':''}">${vehicle.salePrice.toLocaleString()}元</strong><div class="vehicle-actions">${acts}</div></div></div>${rej}${off}</article>`;
     }).join(''):`<div class="empty-build"><h2>${hasQuery?'未找到符合条件的车辆':'暂无车辆'}</h2><p>${hasQuery?'请调整查询条件。':'可使用增加车源创建一条记录。'}</p></div>`;
     $('#list-footer').textContent=shown.length<all.length?'向下滚动加载后续记录':'没有更多了';
     $$('[data-vehicle-action]').forEach((button)=>button.addEventListener('click',(event)=>{event.stopPropagation(); const vehicle=vehicles.find((item)=>item.id===button.dataset.id); if(button.dataset.vehicleAction==='view')showVehicleDetail(vehicle); if(button.dataset.vehicleAction==='edit')showVehicleForm({vehicle}); if(button.dataset.vehicleAction==='unlist')confirmUnlist(vehicle); if(button.dataset.vehicleAction==='relist')confirmRelist(vehicle); if(button.dataset.vehicleAction==='top')openTopSheet(vehicle,renderVehicles);}));
