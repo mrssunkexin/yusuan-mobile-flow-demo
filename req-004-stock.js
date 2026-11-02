@@ -10,6 +10,9 @@
   var ORG = window.PcOrgs || { types: [], registrants: [] };
   var DAY = 86400000, NOW = Date.now();
   var PEOPLE_ORG = { '总部': '总部', '张伟': '华东名车行', '张三': '安信汽车', '李四': '德仁二手车', '王五': '天成车业', '赵六': '优选好车', '刘洋': '众诚车行', '周敏': '宏达名车' };
+  // 代理商登记地址：取代理商商铺地址（REQ-001 第 1.3 节）；登记人登记的取所属类型地址；特价车没有登记地址
+  var PEOPLE_ADDR = { '张伟': '浙江省 杭州市 西湖区 文三路 398 号', '张三': '浙江省 杭州市 余杭区 文一西路 1288 号', '李四': '浙江省 杭州市 滨江区 江南大道 588 号', '王五': '浙江省 宁波市 鄞州区 中山东路 266 号', '赵六': '上海市 市辖区 浦东新区 张江路 1000 号', '刘洋': '上海市 市辖区 闵行区 莘庄镇 沪闵路 6088 号', '周敏': '江苏省 南京市 鼓楼区 中山北路 200 号' };
+  function addrText(r) { if (r.special) return '—'; var s = staffById(r.staffId); if (s) { var t = typeOf(s.typeCode); return t ? t.region + ' ' + t.address : '—'; } return PEOPLE_ADDR[r.person] || '—'; }
   var LOCATIONS = ['东区', '西区', '南区', '北区', '大北区'];
   var HQ_REASON = '车辆照片与实车不符，请核实后重新上架';
   var SOLD_REASON = '三个用户标记该车辆已售';
@@ -41,15 +44,15 @@
     { car: 'firsthand-lc300', mapped: true, price: 825000, person: '张文静', views: 159 },
     { car: 'firsthand-lc76', mapped: true, price: 628000, person: '欧阳明轩', views: 88 },
     { car: 'firsthand-g63', mapped: true, price: 2558000, person: '张文静', views: 59 },
-    // 一手车源：其他类型登记人登记、总部已勾 banner 的车（含已下架的，下架的车勾了也不对外显示）
+    // 一手车源：其他类型登记人登记、总部已勾 banner 的车（只有在售车能勾 banner，下架时自动取消，v2.9）
     { car: 'firsthand-yuan', no: 'YB00001', price: 86800, days: 3, person: '王海涛', banner: 9, location: '西区', views: 77 },
     { car: 'firsthand-lc300', no: 'YB00002', price: 829000, days: 8, person: '刘佳', banner: 8, location: '东区', views: 64, sold: 1 },
     { car: 'firsthand-prado', no: 'YC00001', price: 772000, days: 5, person: '吴雅琴', banner: 7, hot: 3, location: '南区', views: 93 },
     { car: 'firsthand-g63', no: 'YD00001', price: 2549000, days: 6, person: '孙立群', banner: 6, location: '大北区', views: 41 },
-    { car: 'firsthand-yuan', no: 'YD00002', price: 84800, days: 14, person: '黄晓峰', banner: 5, on: false, off: '售价与实际报价不符，请核实后重新上架', offBy: '总部 admin', location: '北区', views: 52 },
-    { car: 'firsthand-lc76', no: 'YE00001', price: 625000, days: 16, person: '马丽华', banner: 4, on: false, off: SOLD_REASON, offBy: '系统', location: '东区', views: 118 },
+    { car: 'firsthand-yuan', no: 'YD00002', price: 84800, days: 14, person: '黄晓峰', on: false, off: '售价与实际报价不符，请核实后重新上架', offBy: '总部 admin', location: '北区', views: 52 },
+    { car: 'firsthand-lc76', no: 'YE00001', price: 625000, days: 16, person: '马丽华', on: false, off: SOLD_REASON, offBy: '系统', location: '东区', views: 118 },
     { car: 'firsthand-lc300', no: 'YF00001', price: 831000, days: 25, person: '林曼', banner: 3, location: '西区', views: 70 },
-    { car: 'firsthand-prado', no: 'YG00001', price: 769000, days: 33, person: '罗文博', banner: 2, on: false, off: '本人下架', offBy: '罗文博', location: '大北区', views: 36 },
+    { car: 'firsthand-prado', no: 'YG00001', price: 769000, days: 33, person: '罗文博', on: false, off: '本人下架', offBy: '罗文博', location: '大北区', views: 36 },
     // 一手车源：等待审核、驳回
     { car: 'firsthand-lc300', price: 826000, days: 1, person: '朱天翔', approve: '等待审核', views: 5 },
     { car: 'firsthand-g63', price: 2560000, days: 7, person: '梁秋萍', approve: '驳回', opinion: '实际售价与同款车差距较大，请核实后重新提交', views: 14 },
@@ -181,11 +184,11 @@
     return list;
   }
 
-  // 热销、banner 开关（第 5.4 节）：只有审核通过的车能点
+  // 热销、banner 开关（第 5.4 节）：热销只要审核通过就能点；banner 还要在售（v2.9：下架自动取消 banner，已下架不能再勾）
   function sw(r, flag) {
-    var on = r[flag], ok = r.approve === '通过', label = flag === 'hot' ? '热销' : 'banner';
+    var on = r[flag], passed = r.approve === '通过', ok = passed && (flag !== 'banner' || r.on), label = flag === 'hot' ? '热销' : 'banner';
     return '<button type="button" class="sw' + (on ? ' on' : '') + '" role="switch" aria-checked="' + on + '" aria-label="' + label + '" data-flag="' + flag + '" data-id="' + r.id + '"' +
-      (ok ? '' : ' disabled title="审核通过后可设置"') + '><i></i></button>';
+      (ok ? '' : ' disabled title="' + (passed ? '已下架的车不能设为 banner' : '审核通过后可设置') + '"') + '><i></i></button>';
   }
 
   function render() {
@@ -332,6 +335,7 @@
         if (!reason) return false;
         r.on = false;
         r.sold = 0;                 // R2-19 下架即清零
+        r.banner = false; r.bannerAt = 0;   // 下架自动取消 banner（REQ-001 第 1.7 节，v2.9）
         r.offReason = reason; r.offAt = nowText(); r.offBy = '总部 admin';
         r.ops.unshift({ t: r.offAt, who: '总部 admin', act: '下架：' + reason });
         toast('已下架');
@@ -358,12 +362,13 @@
       });
   }
 
-  // 热销、banner：立即保存，不弹确认；banner 每个列表（库存车、一手车源、特价车分别算）最多 10 台
+  // 热销、banner：立即保存，不弹确认；banner 每个列表（库存车、一手车源、特价车分别算）在售车最多 10 台
   function setFlag(r, flag) {
     if (!r || r.approve !== '通过') return false;
     var v = !r[flag];
+    if (flag === 'banner' && v && !r.on) { toast('已下架的车不能设为 banner'); return false; }
     if (flag === 'banner' && v) {
-      var n = rows.filter(function (x) { return x.srcType === r.srcType && x.banner; }).length;
+      var n = rows.filter(function (x) { return x.srcType === r.srcType && x.banner && x.on; }).length;   // 名额只算在售车（v2.9）
       if (n >= 10) { toast('每个列表最多 10 台 banner，请先取消其他车的 banner', 2600); return false; }
     }
     r[flag] = v;
@@ -409,7 +414,7 @@
         if (!r.no) r.no = nextNo(r);
         r.on = true;
         r.ops.unshift({ t: r.auditAt, who: r.auditor, act: '审核通过' });
-      } else { r.on = false; r.sold = 0; r.ops.unshift({ t: r.auditAt, who: r.auditor, act: '审核驳回：' + op }); }
+      } else { r.on = false; r.sold = 0; r.banner = false; r.bannerAt = 0; r.ops.unshift({ t: r.auditAt, who: r.auditor, act: '审核驳回：' + op }); }   // 驳回即下架，一并取消 banner（v2.9）
       closeModal(); render();
       if (pick === '通过') toast('已通过，车辆编号 ' + r.no + '，车辆已上架', 3200);
       else toast('已驳回，已通知登记人');
@@ -441,6 +446,7 @@
       '<dt>置顶</dt><dd>' + (isTop(r) ? '<span class="top-until">置顶至 ' + fmt(r.topEnd, true) + '</span>' : '未置顶') + '</dd>' +
       '<dt>登记人</dt><dd>' + esc(personText(r)) + '</dd>' +
       '<dt>所属机构</dt><dd>' + esc(orgText(r)) + '</dd>' +
+      '<dt>登记地址</dt><dd>' + esc(addrText(r)) + '</dd>' +
       '<dt>登记时间</dt><dd>' + r.time + '</dd>' +
       '<dt>备注</dt><dd>' + esc(r.remark) + '</dd>' +
       '<dt class="full">车辆照片' + (r.video ? '与视频' : '') + '</dt><dd class="full">' + pics + '</dd>' +
@@ -747,7 +753,7 @@
       };
       if (r) {
         Object.assign(r, patch);
-        r.ops.unshift({ t: now, who: '总部', act: '修改车辆信息' });
+        // 修改特价车不写操作记录（REQ-004 第 10、12.6.4 节）
         closeModal(); render(); toast('保存成功');
         return;
       }
@@ -806,6 +812,8 @@
 
     $('#stock-query').addEventListener('click', readQuery);
     $('#stock-reset').addEventListener('click', function () { clearFields(); readQuery(); });
+    // 统计条「等待审核」可点：等同于把审核状态筛为等待审核（REQ-004 第 5.2 节）
+    if ($('#s-pend-stat')) $('#s-pend-stat').addEventListener('click', function () { $('#pc-approve').value = '等待审核'; readQuery(); });
     $('#q-sort').addEventListener('change', function (e) { q.sort = e.target.value; page = 1; render(); });
     $('#stock-size').addEventListener('change', function (e) { size = Number(e.target.value); page = 1; render(); });
     $('#stock-prev').addEventListener('click', function () { if (page > 1) { page--; render(); } });

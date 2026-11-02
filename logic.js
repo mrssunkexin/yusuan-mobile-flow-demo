@@ -54,7 +54,7 @@
 
   function registrationDecision({ role, contactId }) {
     const sourceType = sourceTypeForRole(role);
-    if (!sourceType) return { allowed: false, reason: '当前账号不能使用库存车登记功能' };
+    if (!sourceType) return { allowed: false, reason: '当前账号不能使用车源登记功能' };
     return { allowed: true, sourceType };
   }
 

@@ -351,7 +351,7 @@
         <div class="form-field full"><span>标签（选填，可多选）</span><div class="chip-select" data-chip-group="labels">${VEHICLE_LABELS.map((t)=>`<button type="button" class="chip-choice ${(vehicle?.labels||[]).includes(t)?'selected':''}" data-val="${t}">${t}</button>`).join('')}</div></div>
         <label class="form-field full">备注<textarea name="note" maxlength="500" placeholder="请输入车辆备注">${escapeHtml(vehicle?.note??state.preservedNote??'')}</textarea><span class="field-help">最多500字。</span></label>
         <div class="form-field full"><span>详情图片（选填）</span><div id="detail-blocks" class="detail-pics"></div><div class="detail-tools"><label class="ghost detail-add">＋ 添加图片<input id="add-detail-image" type="file" accept="image/jpeg,image/png" multiple hidden></label></div><span class="field-help">只能添加图片，最多 9 张，可调整顺序。</span></div>
-        <label class="form-field">登记人<input readonly class="read-only" value="${role==='4S店员工'?'员工·李明':'代理商·周强'}"></label>
+        <label class="form-field">登记人<input readonly class="read-only" value="${role==='4S店员工'?'登记人·李明':'代理商·周强'}"></label>
         <label class="form-field">登录手机号<input readonly class="read-only" value="${role==='4S店员工'?'13800001234':'18686636658'}"></label>
         <label class="form-field${role==='4S店员工'?' full':''}">${organizationLabel}<input readonly class="read-only" value="${escapeHtml(storeName)}"></label>
         <label class="form-field full">登记地址<textarea readonly class="read-only">${escapeHtml(address)}</textarea></label>
@@ -421,7 +421,9 @@
     $('#vehicle-photos').addEventListener('change',(event)=>{
       const picked=[...event.target.files]; event.target.value='';
       const room=Math.max(0,9-state.photos.length); if(picked.filter((f)=>!f.type.startsWith('video')).length>room)mToast('最多上传9张车辆照片');
-      const files=picked.slice(0,room);   // v2.11：超过 10MB 自动压缩后上传，不再拒绝
+      // 视频最多 1 个（REQ-001 第 2.8 节）：已有视频时不再收，一次选多个只收第一个
+      let videoRoom=state.photos.some((src)=>src.startsWith('data:video'))?0:1; const pickedVideos=picked.filter((f)=>f.type.startsWith('video')); if(pickedVideos.length>videoRoom)mToast('最多上传 1 个视频');
+      const files=picked.filter((f)=>!f.type.startsWith('video')).slice(0,room).concat(pickedVideos.slice(0,videoRoom));   // v2.11：超过 10MB 自动压缩后上传，不再拒绝
       Promise.all(files.map((file)=>new Promise((res)=>{ const r=new FileReader(); r.onload=()=>res({src:r.result,video:file.type.startsWith('video')}); r.readAsDataURL(file); }))).then((items)=>{
         items.filter((it)=>it.video).forEach((it)=>state.photos.push(it.src));
         const imgs=items.filter((it)=>!it.video);
@@ -463,7 +465,7 @@
     } else {
       vehicles.unshift({id:'1789562340117'+String(vehicles.length*137).padStart(6,'0'),ownerId:state.ownerId,...next,
         approve:'等待审核',vehicleNo:'',hot:false,unlistReason:'',rejectReason:'',rejectedAt:'',status:'已下架',sourceType:meta.sourceType,
-        ownerName:meta.role==='4S店员工'?'员工·李明':'代理商·周强',storeName:meta.storeName,address:meta.address,
+        ownerName:meta.role==='4S店员工'?'登记人·李明':'代理商·周强',storeName:meta.storeName,address:meta.address,
         createdAt:'2026-09-13 20:30',updatedAt:'2026-09-13 20:30',unlistedAt:'',manual:meta.isManual});
       mToast('已提交，等待审核');
     }
@@ -605,7 +607,19 @@
     $('#store-form-cancel').addEventListener('click',()=>{if(onReturn)onReturn(null);else closeModal();}); $('#store-form-save').addEventListener('click',()=>{const form=$('#store-form');if(!form.reportValidity())return;const data=new FormData(form),candidate={name:data.get('name').trim(),region:`${data.get('province')} ${data.get('city')} ${data.get('district')}`,address:data.get('address').trim()};if(!candidate.name){$('#store-error').textContent='请输入类型名称';return;}const duplicate=stores.some((item)=>item.id!==store?.id&&item.name===candidate.name&&item.region===candidate.region&&item.address===candidate.address);if(duplicate){$('#store-error').textContent='该类型已存在，请使用已有记录';return;}let savedStore=store;if(store)Object.assign(store,candidate);else{const code=data.get('code');if(stores.some((item)=>item.code===code)){$('#store-error').textContent='该类型代码已被使用，请重新选择';return;}savedStore={id:`store-${code}`,code,...candidate,createdAt:Date.now()};stores.unshift(savedStore);state.storePage=1;}renderStores();renderEmployees();toast(store?'类型信息已更新':'类型新增成功');if(onReturn)onReturn(savedStore);else closeModal();});
   }
   // ---- REQ-006 v1.6 登记人维护 ----
-  function populateStoreOptions(){ const list=$('#employee-store-options'); if(list) list.innerHTML=typesByCode().map((store)=>`<option value="${escapeHtml(typeLabel(store.code))}">${store.region}</option>`).join(''); }
+  function populateStoreOptions(){}   // 2026-11-02：datalist 改为 attachTypeCombo 的两行可搜索下拉，此函数保留为空
+  // 所属类型可搜索下拉（REQ-006 第 2.4 节）：输入代码或名称过滤，候选项两行——第一行「代码 名称」、第二行省市区县；点选后填入输入框并触发 change
+  function attachTypeCombo(input){
+    if(!input||input.dataset.combo)return; input.dataset.combo='1'; input.setAttribute('autocomplete','off');
+    const wrap=document.createElement('div'); wrap.className='type-combo'; input.parentNode.insertBefore(wrap,input); wrap.appendChild(input);
+    const list=document.createElement('div'); list.className='type-combo-list'; list.hidden=true; wrap.appendChild(list);
+    const render=()=>{const kw=input.value.trim().toLowerCase(); const items=typesByCode().filter((t)=>!kw||typeLabel(t.code).toLowerCase().includes(kw)||t.region.includes(kw));
+      list.innerHTML=items.length?items.map((t)=>`<button type="button" class="type-combo-item" data-code="${t.code}"><b>${escapeHtml(typeLabel(t.code))}</b><small>${escapeHtml(t.region)}</small></button>`).join(''):'<div class="type-combo-empty">未找到匹配的类型</div>'; list.hidden=false;};
+    input.addEventListener('focus',render); input.addEventListener('input',render);
+    list.addEventListener('mousedown',(e)=>{const b=e.target.closest('[data-code]'); if(!b)return; e.preventDefault(); input.value=typeLabel(b.dataset.code); list.hidden=true; input.dispatchEvent(new Event('change',{bubbles:true}));});
+    input.addEventListener('blur',()=>setTimeout(()=>{list.hidden=true;},150));
+    input.addEventListener('keydown',(e)=>{if(e.key==='Escape')list.hidden=true;});
+  }
   function staffRecent(employee){return recentCount({staffId:employee.id});}
   function filteredEmployees(){const q=state.employeeQuery;const list=employees.filter((employee)=>employee.name.includes(q.name)&&employee.phone.includes(q.phone)&&(!q.store||typeLabel(employee.typeCode)===q.store)&&(!q.status||employee.status===q.status));if(state.employeeSort)list.sort((a,b)=>(staffRecent(a)-staffRecent(b))*(state.employeeSort==='asc'?1:-1));return list;}
   function renderEmployees(){
@@ -626,8 +640,8 @@
   function showEmployeeForm(employee=null){
     const store=employee?typeByCode(employee.typeCode):null;
     const values={name:employee?.name??'',phone:employee?.phone??'',idCard:employee?.idCard??'',note:employee?.note??''};
-    openModal(employee?'修改登记人':'新增登记人',`<form id="employee-form" class="form-grid"><div class="source-mark form-field full">新增登记人默认启用。启用／停用只在登记人列表操作并二次确认。</div><label class="form-field">登记人姓名<input name="name" maxlength="50" value="${escapeHtml(values.name)}" placeholder="请输入登记人姓名" required></label><label class="form-field">手机号<input name="phone" value="${values.phone}" pattern="1[3-9][0-9]{9}" placeholder="请输入11位手机号" required></label><label class="form-field">身份证号<input name="idCard" value="${values.idCard}" pattern="[0-9]{17}[0-9Xx]" placeholder="请输入18位身份证号" required></label><label class="form-field">所属类型<input name="store" list="form-store-options" value="${escapeHtml(store?typeLabel(store.code):'')}" placeholder="输入代码或名称搜索并选择" required><datalist id="form-store-options">${typesByCode().map((item)=>`<option value="${escapeHtml(typeLabel(item.code))}">${item.region}</option>`).join('')}</datalist></label><label class="form-field full">类型地址<textarea id="employee-store-address" readonly class="read-only">${escapeHtml(typeAddress(store))}</textarea></label><label class="form-field full">备注<textarea name="note" maxlength="500">${escapeHtml(values.note)}</textarea></label><div class="field-help form-field full">若类型尚未配置，请先到“类型维护”新增，再返回本页选择。</div><div id="employee-error" class="field-error form-field full"></div></form>`,`<button class="ghost" id="employee-form-cancel">取消</button><button class="primary" id="employee-form-save">保存</button>`,true);
-    const storeInput=$('[name="store"]');
+    openModal(employee?'修改登记人':'新增登记人',`<form id="employee-form" class="form-grid"><div class="source-mark form-field full">新增登记人默认启用。启用／停用只在登记人列表操作并二次确认。</div><label class="form-field">登记人姓名<input name="name" maxlength="50" value="${escapeHtml(values.name)}" placeholder="请输入登记人姓名" required></label><label class="form-field">手机号<input name="phone" value="${values.phone}" pattern="1[3-9][0-9]{9}" placeholder="请输入11位手机号" required></label><label class="form-field">身份证号<input name="idCard" value="${values.idCard}" pattern="[0-9]{17}[0-9Xx]" placeholder="请输入18位身份证号" required></label><label class="form-field">所属类型<input name="store" value="${escapeHtml(store?typeLabel(store.code):'')}" placeholder="输入代码或名称搜索并选择" required autocomplete="off"></label><label class="form-field full">类型地址<textarea id="employee-store-address" readonly class="read-only">${escapeHtml(typeAddress(store))}</textarea></label><label class="form-field full">备注<textarea name="note" maxlength="500">${escapeHtml(values.note)}</textarea></label><div class="field-help form-field full">若类型尚未配置，请先到“类型维护”新增，再返回本页选择。</div><div id="employee-error" class="field-error form-field full"></div></form>`,`<button class="ghost" id="employee-form-cancel">取消</button><button class="primary" id="employee-form-save">保存</button>`,true);
+    const storeInput=$('[name="store"]'); attachTypeCombo(storeInput);   // 两行可搜索下拉：代码 名称＋省市区县（REQ-006 第 2.4 节）
     const pick=()=>stores.find((item)=>typeLabel(item.code)===storeInput.value.trim());
     storeInput.addEventListener('change',()=>{$('#employee-store-address').value=typeAddress(pick());});
     $('#employee-form-cancel').addEventListener('click',closeModal);
@@ -845,6 +859,7 @@
   });
   $('#vehicle-list').addEventListener('scroll',(event)=>{const el=event.currentTarget;if(el.scrollTop+el.clientHeight>=el.scrollHeight-30){const total=filteredVehicles().length;if(state.vehicleVisible<total){state.vehicleVisible+=20;renderVehicles();}}});$('#add-vehicle').addEventListener('click',()=>{state.photos=[];state.preservedNote='';showBrandStep();});
   $('#query-store').addEventListener('click',()=>{state.storeQuery={code:$('#store-code-filter')?.value||'',name:$('#store-search').value.trim()};state.storePage=1;renderStores();});$('#reset-store').addEventListener('click',()=>{$('#store-search').value='';if($('#store-code-filter'))$('#store-code-filter').value='';state.storeQuery={code:'',name:''};state.storePage=1;renderStores();});$('#add-store').addEventListener('click',()=>showStoreForm());$('#store-page-size').addEventListener('change',(event)=>{state.storePageSize=Number(event.target.value);state.storePage=1;renderStores();});$('#store-prev').addEventListener('click',()=>{state.storePage--;renderStores();});$('#store-next').addEventListener('click',()=>{state.storePage++;renderStores();});
+  attachTypeCombo($('#employee-store-filter'));
   $('#query-employee').addEventListener('click',()=>{const typeText=$('#employee-store-filter').value.trim();if(typeText&&!stores.some((item)=>typeLabel(item.code)===typeText)){toast('请选定类型或清空类型筛选');return;}state.employeeQuery={name:$('#employee-name').value.trim(),phone:$('#employee-phone').value.trim(),store:typeText,status:$('#employee-status').value};state.employeePage=1;renderEmployees();});$('#reset-employee').addEventListener('click',()=>{$('#employee-name').value='';$('#employee-phone').value='';$('#employee-store-filter').value='';$('#employee-status').value='';state.employeeQuery={name:'',phone:'',store:'',status:''};state.employeePage=1;renderEmployees();});$('#employee-prev').addEventListener('click',()=>{state.employeePage--;renderEmployees();});$('#employee-next').addEventListener('click',()=>{state.employeePage++;renderEmployees();});$('#add-employee').addEventListener('click',()=>showEmployeeForm());$('#contact-setting').addEventListener('click',showContactSetting);
   if($('#import-employee'))$('#import-employee').addEventListener('click',showImport);
   if($('#employee-sort'))$('#employee-sort').addEventListener('click',()=>{state.employeeSort=state.employeeSort===''?'desc':state.employeeSort==='desc'?'asc':'';state.employeePage=1;renderEmployees();});

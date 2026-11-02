@@ -57,7 +57,7 @@
           '<div class="l9s-head">' +
             '<div class="l9s-logo"><img src="' + A9 + 'logo.png?v=1" alt="logo"></div>' +
             '<div class="l9s-title">车源登记</div>' +
-            '<div class="l9s-sub">4S店员工使用手机号和身份证号后六位登录</div>' +
+            '<div class="l9s-sub">登记人使用手机号和身份证号后六位登录</div>' +
           '</div>' +
           '<div class="l9s-card">' +
             '<label class="l9s-label" for="l9-s-mobile">手机号</label>' +
@@ -99,7 +99,7 @@
     var m = $('l9-m-mobile').value.trim();
     if (!m) return toast('请输入手机号');
     if (!$('l9-m-code').value) return toast('请输入手机验证码');
-    if (STAFF[m]) return toast('4S店员工请点击下方【车源登记登录】');
+    if (STAFF[m]) return toast('登记人请点击下方【车源登记登录】');
     staffMode(false);
     // 手机端整体流程演示：非4S号码视为代理商验证码登录成功，进代理商后台首页（入口页）
     if (window.__mobileNav) { window.__mobileNav({ view: 'inventory', mode: 'entry' }); return; }

@@ -34,7 +34,7 @@
     });
 
     var c = car();
-    window.DemoCarUI.gallery(document.querySelector('#view-contact2 .d2-swiper'),c,c.source!=='special_price');
+    window.DemoCarUI.gallery(document.querySelector('#view-contact2 .d2-swiper'),c,true);   // 2026-11-02：新特价车顶部轮播也显示序号角标，与库存车、一手车源相同（REQ-003 v2.13 第 4.1 节）
     // 2026-10-29：特价车也显示车辆信息区，与库存车、一手车源同一结构
     document.querySelector('#view-contact2 .d2-info').hidden=false;
     $('#d2-big').textContent = c.sale;

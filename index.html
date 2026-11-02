@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="预蒜 车源登记与 4S 店维护 页面方案">
   <title>预蒜 · 页面方案</title>
-  <link rel="stylesheet" href="styles.css?v=6.26.5">
+  <link rel="stylesheet" href="styles.css?v=6.26.6">
 </head>
 <body>
   <header class="topbar">
@@ -27,7 +27,7 @@
       <button class="nav-item" data-view="list008"><i>REQ-008</i>车辆列表页 <span>一行一台 · 置顶 · R3 已改写</span></button>
       <button class="nav-item" data-view="fav"><i>REQ-003</i>我的收藏 <span>R3-11 新增页</span></button>
       <button class="nav-item" data-view="contact2"><i>REQ-003</i>详情页 · 含车辆信息 <span>已采用 · 效果认可</span></button>
-      <button class="nav-item" data-view="login009"><i>REQ-009</i>4S店登录 <span>车源登记登录 · R3 已改写</span></button>
+      <button class="nav-item" data-view="login009"><i>REQ-009</i>车源登记登录 <span>登记人登录 · R3 已改写</span></button>
       <button class="nav-item" data-view="clue010"><i>REQ-010</i>线索一键拨号 <span>新增拨号键 · 待审阅</span></button>
 
       <p class="nav-group">PC 端</p>
@@ -133,7 +133,7 @@
             <li><strong>车辆照片裁成正方形（R3-08）</strong>：不是正方形的照片先进裁剪页，拖动选择保留区域（手机上可双指缩放）；点上传选择非正方形照片后自动弹出裁剪，不单设「待裁剪」入口。</li>
           </ul>
           <h3>本轮新增（R2-10，2026-09-16）</h3>
-          <ul><li><strong>卡片精简为 6 项</strong>：封面（左上角热销角标）、车名、状态、标签、价格、登记时间。去掉备注、车源类型、内外颜色与「查看」按钮；操作按钮移到价格同一行。</li><li><strong>查询区一行横排</strong>：品牌／类型／审核／上下架，点选即生效，去掉查询、重置、收起三个按钮。</li><li><strong>排序</strong>：驳回最前，其次等待审核，其余按登记时间倒序。</li></ul>
+          <ul><li><strong>卡片精简为 6 项</strong>：封面（左上角热销角标）、车名、状态、标签、价格、登记时间。去掉备注、车源类型、内外颜色与「查看」按钮；操作按钮移到价格同一行。</li><li><strong>查询区一行横排</strong>：品牌／审核／上下架（车辆类型已取消，v2.9），点选即生效，去掉查询、重置、收起三个按钮。</li><li><strong>排序</strong>：驳回最前，其次等待审核，其余按登记时间倒序。</li></ul>
           <h3>2026-10-28 会议后（v2.11）</h3>
           <ul>
             <li><strong>驳回卡片</strong>：审核状态「不通过」改叫「驳回」；点卡片不进详情，只有加大的绿色实底「修改」；驳回原因红字，整张卡片通栏，最多两行。</li>
@@ -143,7 +143,7 @@
             <li><strong>登记表与修改表</strong>：「促销标识」改为「车辆位置」单选必填（东区／西区／南区／北区／大北区）；标签换成 9 个、选填；修改页品牌、车型、型号都只读（手动登记的也一样），没有「重选型号」；照片超过 10MB 自动压缩，不再提示；选车页入口「找不到？手动登记车源」。</li>
             <li><strong>车辆详情</strong>：「车辆主键 ID」改为「车辆编号」，审核通过前显示「审核通过后生成」；已下架显示下架原因。</li>
           </ul>
-          <p class="side-info-src">完整规则见 REQ-001 需求方案 v2.7；本页不重复维护规则。</p>
+          <p class="side-info-src">完整规则见 REQ-001 需求方案 v2.15；本页不重复维护规则。</p>
         </aside>
        </div>
       </section>
@@ -161,7 +161,7 @@
           <div class="panel toolbar employee-toolbar">
             <label>登记人姓名<input id="employee-name" maxlength="50" placeholder="请输入登记人姓名"></label>
             <label>手机号<input id="employee-phone" placeholder="请输入手机号"></label>
-            <label>所属类型<input id="employee-store-filter" list="employee-store-options" placeholder="全部类型／输入代码或名称搜索"><datalist id="employee-store-options"></datalist></label>
+            <label>所属类型<input id="employee-store-filter" placeholder="全部类型／输入代码或名称搜索"></label>
             <label>状态<select id="employee-status"><option value="">全部</option><option>启用</option><option>停用</option></select></label>
             <button id="query-employee" class="primary">查询</button><button id="reset-employee" class="ghost">重置</button>
           </div>
@@ -198,7 +198,7 @@
           </div>
           <div class="stat-row panel compact">
             <div class="stat"><b id="s-total">0</b><span>车源总数</span></div>
-            <div class="stat"><b id="s-pend" style="color:#b25b00">0</b><span>等待审核</span></div>
+            <div class="stat stat-link" id="s-pend-stat" role="button" tabindex="0" title="点击只看等待审核的车"><b id="s-pend" style="color:#b25b00">0</b><span>等待审核</span></div>
             <div class="stat"><b id="s-on" style="color:#21a081">0</b><span>在售</span></div>
             <div class="stat"><b id="s-off" style="color:#b73b3b">0</b><span>已下架</span></div>
             <div class="stat"><b id="s-views">0</b><span>累计查看</span></div>
@@ -329,7 +329,7 @@
               <li>选「是」提示「感谢反馈」，同一人对同一台车只算一次，之后再拨号不再弹；选「否」或 × 直接关闭、不计数。</li>
               <li>3 个不同用户选「是」自动下架，下架原因「三个用户标记该车辆已售」。特价车只拨号，不弹这个确认窗。</li>
             </ul>
-            <p class="side-info-src">完整规则见 REQ-003 需求方案 v2.8。另含车源详情读取、线索写入与线索读取，属后台行为，页面上看不到。</p>
+            <p class="side-info-src">完整规则见 REQ-003 需求方案 v2.15。另含车源详情读取、线索写入与线索读取，属后台行为，页面上看不到。</p>
           </aside>
         </div>
       </section>
@@ -500,7 +500,7 @@
             <ul>
               <li>价格按实际售价筛（PENDING-016）；车名下标签排一行（PENDING-017）；车源图片与运营图同一 OSS（PENDING-014）；商品分类不再用来区分车（PENDING-008）。</li>
             </ul>
-            <p class="side-info-src">上传天数按今天日期实时计算。完整规则见 REQ-008 需求方案 v1.11。</p>
+            <p class="side-info-src">上传天数按今天日期实时计算。完整规则见 REQ-008 需求方案 v1.14。</p>
           </aside>
         </div>
       </section>
@@ -526,7 +526,7 @@
               <li><b>车源登记登录页</b>（R3-05 改版）：不要顶部轮播图，另做布局，色系与商户登录页一致。上方浅绿标题区（logo、「车源登记」、一句使用说明），下方白色卡片放手机号、密码和登录按钮，卡片下方提示代理商、商家走验证码登录。左上角返回回到商户登录页。</li>
               <li><b>密码</b>：身份证号后六位，末位 X 大小写都行；输错不限次数。</li>
               <li><b>登录后</b>：直接进车源登记页，不经过代理商后台首页；在车源登记页点返回，回到商户登录页。</li>
-              <li><b>4S 员工误用验证码登录</b>：提示「4S店员工请点击下方【车源登记登录】」。</li>
+              <li><b>登记人误用验证码登录</b>：提示「登记人请点击下方【车源登记登录】」（2026-11-02 随 REQ-006 改名）。</li>
               <li><b>代理商、商家误入车源登记登录</b>：提示「代理商、商家请返回上一页，用手机号验证码登录」。</li>
             </ul>
             <h3>可试填的账号</h3>
@@ -541,7 +541,7 @@
               <li>4S 员工退出（PENDING-019 已确认）：从「车源登记登录」进入车源登记页后，顶栏右侧铃铛左边显示「退出」，点后确认，确定回到「我的」；代理商从后台进入不显示。</li>
               <li>PC「4S店信息维护」改为「类型维护」（PENDING-020 已确认，PC 页面已改）。</li>
             </ul>
-            <p class="side-info-src">不连接接口。完整规则见 REQ-009 需求方案 v1.2。</p>
+            <p class="side-info-src">不连接接口。完整规则见 REQ-009 需求方案 v1.4。</p>
           </aside>
         </div>
       </section>
@@ -590,7 +590,7 @@
               <li>点手机号仍能拨号；卡片其他内容、筛选、线索数量都不变。</li>
               <li>9.9元查车线索卡片点「拨号」只拨号，不进入详情。</li>
             </ul>
-            <p class="side-info-src">不连接接口、不真实拨号。完整规则见 REQ-010 需求方案 v1.1（含线索页现在读取的数据）。</p>
+            <p class="side-info-src">不连接接口、不真实拨号。完整规则见 REQ-010 需求方案 v1.3（含线索页现在读取的数据）。</p>
           </aside>
         </div>
       </section>
@@ -607,17 +607,17 @@
   <div id="modal-root"></div>
   <script src="demo-cars.js?v=1.8.2"></script>
   <script src="demo-car-ui.js?v=1.2.0"></script>
-  <script src="logic.js?v=6.4.0"></script>
-  <script src="app.js?v=5.17.2"></script>
-  <script src="req-007-notice.js?v=4.9.0"></script>
+  <script src="logic.js?v=6.4.1"></script>
+  <script src="app.js?v=5.17.3"></script>
+  <script src="req-007-notice.js?v=4.9.1"></script>
   <script src="req-003-contact.js?v=5.3.0"></script>
   <script src="req-003-fav.js?v=1.2.0"></script>
-  <script src="req-003-detail2.js?v=5.7.0"></script>
+  <script src="req-003-detail2.js?v=5.7.1"></script>
   <script src="req-008-list.js?v=1.9.1"></script>
-  <script src="req-009-login.js?v=1.5.0"></script>
+  <script src="req-009-login.js?v=1.5.1"></script>
   <script src="req-010-clue.js?v=1.3.0"></script>
-  <script src="req-004-stock.js?v=5.6.1"></script>
-  <script src="req-pending.js?v=5.12.1"></script>
+  <script src="req-004-stock.js?v=5.6.2"></script>
+  <script src="req-pending.js?v=5.12.2"></script>
   <script>
     // REQ-002 样稿按自身真实高度撑开，避免内层滚动条或底部空白
     window.addEventListener('message', function (e) {
